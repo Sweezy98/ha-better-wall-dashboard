@@ -18,7 +18,7 @@ const StyledBadge = styled.span`
   color: var(--secondary-text-color, #9b9b9b);
 `;
 
-type UserPatch = Partial<Pick<DashboardUser, 'dashboard' | 'kiosk' | 'default_panel'>>;
+type UserPatch = Partial<Pick<DashboardUser, 'dashboard' | 'kiosk' | 'default_panel' | 'sidebar_only'>>;
 
 /**
  * Who sees which dashboard, who gets it full screen, and whose Home
@@ -86,6 +86,12 @@ const UsersForm: React.FC<{ dashboards: { id: string; name: string }[] }> = ({ d
                 onChange={default_panel => save(user, { default_panel })}
               />
             </StyledRow>
+            <CheckField
+              label={t('sidebar_only')}
+              hint={t('sidebar_only_hint')}
+              value={user.sidebar_only}
+              onChange={sidebar_only => save(user, { sidebar_only })}
+            />
           </div>
         </StyledDetails>
       ))}

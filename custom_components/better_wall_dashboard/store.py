@@ -42,6 +42,14 @@ class DashboardStore:
             # they would change under a tablet between two restarts.
             await self._store.async_save(self.document)
 
+    def sidebar_only_users(self) -> list[str]:
+        """The users whose Home Assistant sidebar shows only the dashboard."""
+        return [
+            key
+            for key, value in self.document["users"].items()
+            if value["sidebar_only"]
+        ]
+
     def snapshot(self) -> dict[str, Any]:
         """A copy the caller may keep; the live document is only ours."""
         return copy.deepcopy(self.document)
@@ -66,7 +74,12 @@ class DashboardStore:
         return True
 
     async def async_save_user(
-        self, user_id: str, *, dashboard: str | None = None, kiosk: bool | None = None
+        self,
+        user_id: str,
+        *,
+        dashboard: str | None = None,
+        kiosk: bool | None = None,
+        sidebar_only: bool | None = None,
     ) -> dict[str, Any]:
         users = self.document["users"]
         current = dict(users.get(user_id) or {})
@@ -74,6 +87,8 @@ class DashboardStore:
             current["dashboard"] = dashboard
         if kiosk is not None:
             current["kiosk"] = kiosk
+        if sidebar_only is not None:
+            current["sidebar_only"] = sidebar_only
         users[user_id] = current
         self.document = model.normalize_document(self.document)
         await self._async_commit()

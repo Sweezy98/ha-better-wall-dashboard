@@ -256,6 +256,9 @@ const en = {
   about_page: 'This page',
   about_repo: 'Documentation',
   about_issues: 'Report a problem',
+  sidebar_only: 'Only this dashboard in Home Assistant’s sidebar',
+  sidebar_only_hint:
+    'Hides every other entry and the notifications from this user’s sidebar; the profile stays. Panels added later are hidden too.',
   reload_tablets: 'Reload tablets showing it',
   tablets_reloaded: 'Reloaded on {count} tablet(s) showing this dashboard.',
   cancel: 'Cancel',
@@ -515,6 +518,9 @@ const de: Record<TranslationKey, string> = {
   about_page: 'Diese Seite',
   about_repo: 'Dokumentation',
   about_issues: 'Problem melden',
+  sidebar_only: 'Nur dieses Dashboard in der Seitenleiste von Home Assistant',
+  sidebar_only_hint:
+    'Blendet alle anderen Einträge und die Benachrichtigungen in der Seitenleiste dieses Benutzers aus; das Profil bleibt. Später hinzugefügte Panels werden ebenfalls ausgeblendet.',
   reload_tablets: 'Tablets damit neu laden',
   tablets_reloaded: 'Auf {count} Tablet(s) mit diesem Dashboard neu geladen.',
   cancel: 'Abbrechen',

@@ -379,6 +379,9 @@ def _user(raw: Any, dashboards: dict[str, Any]) -> dict[str, Any]:
         if isinstance(dashboard, str) and dashboard in dashboards
         else DEFAULT_DASHBOARD_ID,
         "kiosk": _bool(raw.get("kiosk"), False),
+        # Home Assistant's sidebar shows this user the dashboard and nothing
+        # else (see ha_sidebar.py).
+        "sidebar_only": _bool(raw.get("sidebar_only"), False),
     }
 
 

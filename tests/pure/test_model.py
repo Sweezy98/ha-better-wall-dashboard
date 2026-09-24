@@ -157,6 +157,7 @@ def test_a_user_on_a_deleted_dashboard_falls_back_to_the_default() -> None:
     assert document["users"]["u1"] == {
         "dashboard": model.DEFAULT_DASHBOARD_ID,
         "kiosk": True,
+        "sidebar_only": False,
     }
 
 

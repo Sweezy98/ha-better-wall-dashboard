@@ -105,6 +105,8 @@ export interface DashboardView {
   is_admin: boolean;
   /** The dashboard has a PIN, which the integration checks. */
   pin_required: boolean;
+  /** Home Assistant's sidebar shows this user only the dashboard. */
+  sidebar_only?: boolean;
 }
 
 /** What `better_wall_dashboard/document` returns to the editor. */
@@ -120,6 +122,8 @@ export interface DashboardUser {
   is_active: boolean;
   dashboard: string;
   kiosk: boolean;
+  /** Home Assistant's sidebar shows this user only the dashboard. */
+  sidebar_only: boolean;
   /** Whether this user's start page is the dashboard; null if unknown. */
   default_panel: boolean | null;
 }

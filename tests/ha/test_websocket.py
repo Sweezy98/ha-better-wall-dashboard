@@ -301,3 +301,62 @@ async def test_only_an_admin_reloads_tablets(
     await tablet.send_json_auto_id({"type": f"{DOMAIN}/reload_tablets"})
     result = await tablet.receive_json()
     assert result["error"]["code"] == "unauthorized"
+
+
+async def test_a_tablet_user_can_see_only_the_dashboard_in_the_sidebar(
+    hass, hass_ws_client, hass_read_only_user
+) -> None:
+    await _setup(hass)
+    admin = await hass_ws_client(hass)
+    await admin.send_json_auto_id(
+        {
+            "type": f"{DOMAIN}/save_user",
+            "user_id": hass_read_only_user.id,
+            "sidebar_only": True,
+        }
+    )
+    result = await admin.receive_json()
+    assert result["result"]["sidebar_only"] is True
+
+    store = await async_user_store(hass, hass_read_only_user.id)
+    hidden = store.data["sidebar"]["hiddenPanels"]
+    assert PANEL_URL_PATH not in hidden
+    assert "better-wall-dashboard-editor" in hidden
+
+    await admin.send_json_auto_id(
+        {
+            "type": f"{DOMAIN}/save_user",
+            "user_id": hass_read_only_user.id,
+            "sidebar_only": False,
+        }
+    )
+    await admin.receive_json()
+    assert store.data["sidebar"]["hiddenPanels"] == []
+
+
+async def test_a_panel_added_later_is_hidden_too(
+    hass, hass_ws_client, hass_read_only_user
+) -> None:
+    from homeassistant.components import frontend
+
+    await _setup(hass)
+    admin = await hass_ws_client(hass)
+    await admin.send_json_auto_id(
+        {
+            "type": f"{DOMAIN}/save_user",
+            "user_id": hass_read_only_user.id,
+            "sidebar_only": True,
+        }
+    )
+    await admin.receive_json()
+    frontend.async_register_built_in_panel(
+        hass,
+        "iframe",
+        sidebar_title="Later",
+        sidebar_icon="mdi:web",
+        frontend_url_path="later",
+        config={"url": "https://example.com"},
+    )
+    await hass.async_block_till_done()
+    store = await async_user_store(hass, hass_read_only_user.id)
+    assert "later" in store.data["sidebar"]["hiddenPanels"]

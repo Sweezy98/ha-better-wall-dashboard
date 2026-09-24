@@ -20,7 +20,7 @@ from homeassistant.helpers.dispatcher import (
     async_dispatcher_send,
 )
 
-from . import model
+from . import ha_sidebar, model
 from .const import (
     DOMAIN,
     PANEL_URL_PATH,
@@ -72,6 +72,7 @@ def _view(store: DashboardStore, user: Any, requested: str | None) -> dict[str, 
             for key, value in document["dashboards"].items()
         ],
         "kiosk": bool(settings.get("kiosk")),
+        "sidebar_only": bool(settings.get("sidebar_only")),
         "is_admin": user.is_admin,
     }
 
@@ -333,6 +334,7 @@ async def websocket_users(
                 "is_active": user.is_active,
                 "dashboard": settings.get("dashboard", model.DEFAULT_DASHBOARD_ID),
                 "kiosk": bool(settings.get("kiosk")),
+                "sidebar_only": bool(settings.get("sidebar_only")),
                 "default_panel": await _default_panel(hass, user.id),
             }
         )
@@ -347,6 +349,7 @@ async def websocket_users(
         vol.Required("user_id"): str,
         vol.Optional("dashboard"): str,
         vol.Optional("kiosk"): bool,
+        vol.Optional("sidebar_only"): bool,
         vol.Optional("default_panel"): bool,
     }
 )
@@ -368,10 +371,15 @@ async def websocket_save_user(
         return
 
     settings = store.document["users"].get(user.id) or {}
-    if dashboard is not None or "kiosk" in msg:
+    if dashboard is not None or "kiosk" in msg or "sidebar_only" in msg:
         settings = await store.async_save_user(
-            user.id, dashboard=dashboard, kiosk=msg.get("kiosk")
+            user.id,
+            dashboard=dashboard,
+            kiosk=msg.get("kiosk"),
+            sidebar_only=msg.get("sidebar_only"),
         )
+    if "sidebar_only" in msg:
+        await ha_sidebar.async_show_only_dashboard(hass, user.id, msg["sidebar_only"])
     default_panel = (
         await _async_set_default_panel(hass, user.id, msg["default_panel"])
         if "default_panel" in msg
@@ -382,6 +390,7 @@ async def websocket_save_user(
         {
             "dashboard": settings.get("dashboard", model.DEFAULT_DASHBOARD_ID),
             "kiosk": bool(settings.get("kiosk")),
+            "sidebar_only": bool(settings.get("sidebar_only")),
             "default_panel": default_panel,
         },
     )
