@@ -27,7 +27,7 @@ frontend/.env.*
 # Generated from one particular Home Assistant by `npm run sync`.
 frontend/supported-types.d.ts
 # A local Home Assistant config for trying the integration.
-config/
+/config/
 
 # Editors / OS
 .vscode/
