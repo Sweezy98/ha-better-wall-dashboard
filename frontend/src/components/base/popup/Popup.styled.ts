@@ -1,6 +1,7 @@
 import styled, { keyframes } from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import { pressable } from '../../../themes/interaction';
+import { glass } from '../../../themes/glass';
 
 const rise = keyframes`
   from { opacity: 0; transform: translateY(${u(3)}) scale(0.98); }
@@ -18,12 +19,12 @@ export const StyledDialog = styled.dialog<{ $width: number; $full: boolean }>`
   height: ${({ $full }) => ($full ? 'calc(100dvh - 32px)' : 'fit-content')};
   max-height: ${({ $full }) => ($full ? 'none' : 'min(calc(100dvh - 32px), 92dvh)')};
   padding: 0;
-  border: ${({ theme }) => theme.card.border};
   border-radius: ${u(1.8)};
-  background: ${({ theme }) => theme.popup.background};
-  backdrop-filter: blur(${({ theme }) => theme.common.blur});
-  -webkit-backdrop-filter: blur(${({ theme }) => theme.common.blur});
-  box-shadow: 0 ${u(1)} ${u(4)} rgba(0, 0, 0, 0.5);
+  ${glass('rgba(24, 24, 28, 0.62)', 28)}
+  /* Lifted further than a tile: it floats over the dashboard. */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 ${u(1)} ${u(4)} rgba(0, 0, 0, 0.5);
   color: ${({ theme }) => theme.text.primary};
   font-family: ${({ theme }) => theme.font};
   overflow: hidden;

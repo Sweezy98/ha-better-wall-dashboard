@@ -13,11 +13,19 @@ const StyledGraphCard = styled.button`
   width: 100%;
   min-width: 0;
   border-radius: ${u(1.65)};
-  background: ${({ theme }) => theme.bubble.inset};
+  /* The card's own tint starts halfway down the header: behind the
+     header's top corners there is nothing of it to show as a darker rim. */
+  background: linear-gradient(transparent ${u(1.7)}, ${({ theme }) => theme.bubble.inset} ${u(1.7)});
   border: ${({ theme }) => theme.card.border};
   overflow: hidden;
   cursor: pointer;
   ${({ theme }) => pressable(theme.bubble.background, theme.bubble.hover)}
+
+  /* The header fills the card's top corners: the card's inner radius there,
+     a pill's round underneath. */
+  > :first-child {
+    border-radius: calc(${u(1.65)} - 0.5px) calc(${u(1.65)} - 0.5px) ${u(1.7)} ${u(1.7)};
+  }
 `;
 
 const StyledGraphArea = styled.div`

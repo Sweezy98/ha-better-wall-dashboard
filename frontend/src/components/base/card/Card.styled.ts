@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
+import { glass } from '../../../themes/glass';
 
 export const StyledCardContainer = styled.div`
   position: relative;
@@ -8,10 +9,7 @@ export const StyledCardContainer = styled.div`
   min-width: 0;
   min-height: 0;
   border-radius: ${u(1.2)};
-  background-color: ${({ theme }) => theme.card.background};
-  box-shadow: ${({ theme }) => theme.card.shadow};
-  backdrop-filter: blur(${({ theme }) => theme.common.blur});
-  -webkit-backdrop-filter: blur(${({ theme }) => theme.common.blur});
+  ${glass('rgba(255, 255, 255, 0.03)', 20)}
   padding: ${u(1)};
   display: flex;
   overflow: hidden;

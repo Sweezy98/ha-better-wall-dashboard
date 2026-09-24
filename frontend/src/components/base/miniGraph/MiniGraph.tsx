@@ -76,14 +76,19 @@ const StyledLabels = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  font-size: ${u(0.75)};
-  color: ${({ theme }) => theme.text.secondary};
+  font-size: ${u(0.85)};
+  font-weight: 500;
+  color: ${({ theme }) => theme.text.primary};
   pointer-events: none;
+  z-index: 1;
 
+  /* A dark chip under each, so it reads over the line and the fill alike. */
   span {
-    background: rgba(0, 0, 0, 0.25);
-    border-radius: ${u(0.3)};
-    padding: 0 ${u(0.3)};
+    background: rgba(18, 18, 22, 0.72);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-radius: ${u(0.5)};
+    padding: ${u(0.05)} ${u(0.45)};
   }
 `;
 

@@ -13,13 +13,7 @@ export const u = (n: number): string => `calc(var(--u) * ${n})`;
 
 const theme: DefaultTheme = {
   font: 'var(--ha-font-family-body, Roboto, Noto, sans-serif)',
-  // Measured from the reference screenshot: over the page, a card is white at
-  // about 4 %, the graph card inside the sidebar another 3.5 %, the graph's
-  // header 10 % and a bubble button 5 %.
   card: {
-    background: 'rgba(255, 255, 255, 0.04)',
-    shadow:
-      '0.5px 0.5px 1px 0px rgba(255, 255, 255, 0.40) inset, -0.5px -0.5px 1px 0px rgba(255, 255, 255, 0.10) inset, 0px 1px 2px 0px rgba(0, 0, 0, 0.10)',
     border: '0.5px solid rgba(255, 255, 255, 0.05)',
   },
   bubble: {
@@ -45,11 +39,7 @@ const theme: DefaultTheme = {
     calendar: '#03a9f4',
   },
   popup: {
-    background: 'rgba(28, 28, 32, 0.82)',
     backdrop: 'rgba(0, 0, 0, 0.45)',
-  },
-  common: {
-    blur: '20px',
   },
 };
 
