@@ -6,7 +6,7 @@ import { swipeTarget } from './swipe';
 import { parseRoutes, routesRequest, trafficDelayMinutes, waypoint } from './routes';
 import { isStaleCandidate } from './reload';
 import { move } from './editing';
-import { groupByDay, type CalendarEvent } from './calendar';
+import { calendarColor, eventProgress, eventSpan, groupByDay, plainText, type CalendarEvent } from './calendar';
 import { unitFor } from './unit';
 
 describe('openings', () => {
@@ -80,6 +80,39 @@ describe('groupByDay', () => {
     const holiday = event(new Date(2026, 8, 25), new Date(2026, 8, 26), true);
     const days = groupByDay([trip, holiday], 3, today);
     expect(days.map(day => day.events.length)).toEqual([1, 2, 1]);
+  });
+});
+
+describe('calendar event details', () => {
+  const event = (start: Date, end: Date, allDay = false): CalendarEvent => ({ calendar: 'calendar.x', summary: 's', start, end, allDay });
+
+  it('reports progress only while an event is on', () => {
+    const meeting = event(new Date(2026, 8, 24, 10), new Date(2026, 8, 24, 12));
+    expect(eventProgress(meeting, new Date(2026, 8, 24, 11).getTime())).toBe(0.5);
+    expect(eventProgress(meeting, new Date(2026, 8, 24, 9).getTime())).toBeNull();
+    expect(eventProgress(meeting, new Date(2026, 8, 24, 12).getTime())).toBeNull();
+  });
+
+  it('numbers the days of a multi-day event, and not a single day', () => {
+    const trip = event(new Date(2026, 8, 24), new Date(2026, 8, 27), true);
+    expect(eventSpan(trip, new Date(2026, 8, 25))).toEqual({ index: 2, count: 3 });
+    expect(eventSpan(event(new Date(2026, 8, 24), new Date(2026, 8, 25), true), new Date(2026, 8, 24))).toBeNull();
+    expect(eventSpan(event(new Date(2026, 8, 24, 9), new Date(2026, 8, 24, 10)), new Date(2026, 8, 24))).toBeNull();
+  });
+
+  it('counts a multi-day event across a clock change in whole days', () => {
+    const trip = event(new Date(2026, 9, 24), new Date(2026, 9, 27), true);
+    expect(eventSpan(trip, new Date(2026, 9, 26))).toEqual({ index: 3, count: 3 });
+  });
+
+  it('turns an HTML description into text', () => {
+    expect(plainText('<p>Bring <b>cake</b></p><br>&amp; candles')).toBe('Bring cake\n& candles');
+    expect(plainText(undefined)).toBe('');
+  });
+
+  it('gives every calendar a colour, repeating after the palette', () => {
+    expect(calendarColor(0)).toBe(calendarColor(7));
+    expect(calendarColor(0)).not.toBe(calendarColor(1));
   });
 });
 

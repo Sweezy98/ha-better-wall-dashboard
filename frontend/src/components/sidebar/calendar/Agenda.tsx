@@ -70,15 +70,13 @@ const StyledEmpty = styled.p`
 interface DayProps {
   day: Date;
   events: CalendarEvent[];
-  /** Also show where, and every event rather than the first three. */
-  detailed?: boolean;
 }
 
 /** One day of the agenda: the date on the left, its events beside a rule. */
-const AgendaDay: React.FC<DayProps> = ({ day, events, detailed = false }) => {
+const AgendaDay: React.FC<DayProps> = ({ day, events }) => {
   const language = useLanguage();
   const t = useT();
-  const shown = detailed ? events : events.slice(0, 3);
+  const shown = events.slice(0, 3);
   return (
     <StyledDay>
       <StyledDate>
@@ -93,11 +91,10 @@ const AgendaDay: React.FC<DayProps> = ({ day, events, detailed = false }) => {
             <div className='summary'>{event.summary}</div>
             <div className='when'>
               {event.allDay ? t('all_day') : `${formatTime(event.start, language)} – ${formatTime(event.end, language)}`}
-              {detailed && event.location ? ` · ${event.location}` : ''}
             </div>
           </StyledEvent>
         ))}
-        {!detailed && events.length > shown.length && <StyledEmpty>+{events.length - shown.length}</StyledEmpty>}
+        {events.length > shown.length && <StyledEmpty>+{events.length - shown.length}</StyledEmpty>}
       </StyledEvents>
     </StyledDay>
   );

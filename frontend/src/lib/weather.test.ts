@@ -1,5 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { CONDITION_LABELS, CONDITIONS, compassPoint, conditionLabel, rangeBar, weatherIconName, weatherIconUrl } from './weather';
+import {
+  CONDITION_LABELS,
+  CONDITIONS,
+  barometerFraction,
+  barometerZone,
+  compassPoint,
+  pressureToHpa,
+  conditionLabel,
+  rangeBar,
+  weatherIconName,
+  weatherIconUrl,
+} from './weather';
 
 describe('weatherIconName', () => {
   it('turns the sun into the moon after dark', () => {
@@ -47,5 +58,29 @@ describe('compassPoint', () => {
     expect(compassPoint(45, 'en')).toBe('NE');
     expect(compassPoint(350, 'en')).toBe('N');
     expect(compassPoint(-90, 'en')).toBe('W');
+  });
+});
+
+describe('barometer', () => {
+  it('reads every pressure unit Home Assistant reports in hPa', () => {
+    expect(pressureToHpa(1013, 'hPa')).toBe(1013);
+    expect(pressureToHpa(1013, 'mbar')).toBe(1013);
+    expect(pressureToHpa(29.92, 'inHg')).toBeCloseTo(1013.2, 1);
+    expect(pressureToHpa(760, 'mmHg')).toBeCloseTo(1013.2, 1);
+    expect(pressureToHpa(101.3, 'kPa')).toBeCloseTo(1013, 1);
+  });
+
+  it('names the zone the needle is in, as a barometer dial does', () => {
+    expect(barometerZone(965).key).toBe('pressure_stormy');
+    expect(barometerZone(1013).key).toBe('pressure_change');
+    expect(barometerZone(1020).key).toBe('pressure_fair');
+    expect(barometerZone(1075).key).toBe('pressure_dry');
+    expect(barometerZone(900).key).toBe('pressure_stormy');
+  });
+
+  it('keeps the needle on the dial', () => {
+    expect(barometerFraction(1005)).toBeCloseTo(0.5, 5);
+    expect(barometerFraction(900)).toBe(0);
+    expect(barometerFraction(1100)).toBe(1);
   });
 });

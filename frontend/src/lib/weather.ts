@@ -128,3 +128,32 @@ export function compassPoint(bearing: number, language: string): string {
   const points = COMPASS[language.split('-')[0]] ?? COMPASS.en;
   return points[Math.round((((bearing % 360) + 360) % 360) / 45) % 8];
 }
+
+const HPA_PER_UNIT: Record<string, number> = { hPa: 1, mbar: 1, Pa: 0.01, kPa: 10, inHg: 33.8639, mmHg: 1.33322, psi: 68.9476 };
+
+/** A pressure in hPa, whatever unit the weather entity reports it in. */
+export function pressureToHpa(value: number, unit: string | undefined): number {
+  return value * (HPA_PER_UNIT[unit ?? 'hPa'] ?? 1);
+}
+
+/** A barometer's dial, from 950 to 1060 hPa. */
+export const BAROMETER_MIN = 950;
+export const BAROMETER_MAX = 1060;
+
+/** The classic barometer's words, each from the pressure it starts at. */
+export const BAROMETER_ZONES = [
+  { key: 'pressure_stormy', from: BAROMETER_MIN, color: '#4a7fe0' },
+  { key: 'pressure_rain', from: 980, color: '#4aa8e0' },
+  { key: 'pressure_change', from: 1000, color: '#7fd2c4' },
+  { key: 'pressure_fair', from: 1020, color: '#ffd27a' },
+  { key: 'pressure_dry', from: 1040, color: '#ff8a3c' },
+] as const;
+
+export function barometerZone(hpa: number): (typeof BAROMETER_ZONES)[number] {
+  return [...BAROMETER_ZONES].reverse().find(zone => hpa >= zone.from) ?? BAROMETER_ZONES[0];
+}
+
+/** Where on the dial a pressure sits, from 0 to 1, clamped to its ends. */
+export function barometerFraction(hpa: number): number {
+  return Math.min(1, Math.max(0, (hpa - BAROMETER_MIN) / (BAROMETER_MAX - BAROMETER_MIN)));
+}

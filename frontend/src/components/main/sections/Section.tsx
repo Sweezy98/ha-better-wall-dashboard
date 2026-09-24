@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { Fragment, memo } from 'react';
 import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import type { Section as SectionConfig } from '../../../config/types';
@@ -36,13 +36,24 @@ const StyledHeader = styled.header`
     text-overflow: ellipsis;
   }
 
-  .line {
-    flex: 1;
-    min-width: ${u(1)};
+  .line,
+  .dot {
     height: ${u(0.4)};
     border-radius: ${u(0.4)};
     background: rgba(255, 255, 255, 0.06);
+  }
+
+  .line {
+    flex: 1;
+    min-width: ${u(1)};
     margin-right: ${u(0.9)};
+  }
+
+  /* Between two readings: the rule again, as a dot. */
+  .dot {
+    flex: none;
+    width: ${u(0.4)};
+    margin-left: ${u(0.9)};
   }
 `;
 
@@ -85,8 +96,11 @@ const Section: React.FC<{ section: SectionConfig }> = ({ section }) => {
           {section.icon && <Icon className='icon' icon={section.icon} />}
           {section.name && <h2>{section.name}</h2>}
           <span className='line' />
-          {section.status.map(id => (
-            <Reading key={id} entityId={id} />
+          {section.status.map((id, index) => (
+            <Fragment key={id}>
+              {index > 0 && <span className='dot' />}
+              <Reading entityId={id} />
+            </Fragment>
           ))}
         </StyledHeader>
       )}

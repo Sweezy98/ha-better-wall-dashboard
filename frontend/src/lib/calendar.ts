@@ -21,3 +21,46 @@ export function groupByDay(events: CalendarEvent[], days: number, today = new Da
     return { day, events: events.filter(event => event.start < next && event.end > day) };
   });
 }
+
+const DAY = 86_400_000;
+
+/** One colour per calendar, in the order they are configured. */
+const PALETTE = ['#03a9f4', '#ff9f43', '#4cd964', '#ff5e8a', '#b388ff', '#26c6da', '#ffd54f'];
+
+export function calendarColor(index: number): string {
+  return PALETTE[((index % PALETTE.length) + PALETTE.length) % PALETTE.length];
+}
+
+/** How far through the event `now` is, from 0 to 1, or null while it is not on. */
+export function eventProgress(event: CalendarEvent, now = Date.now()): number | null {
+  const start = event.start.getTime();
+  const end = event.end.getTime();
+  if (end <= start || now < start || now >= end) return null;
+  return (now - start) / (end - start);
+}
+
+/**
+ * Which day of a multi-day event `day` is -- "day 2 of 3" -- or null for an
+ * event within one day. Rounded, because a day across a clock change is 23 or
+ * 25 hours long.
+ */
+export function eventSpan(event: CalendarEvent, day: Date): { index: number; count: number } | null {
+  const first = startOfDay(event.start).getTime();
+  // An event ending exactly at midnight -- every all-day event -- ends the day before.
+  const last = startOfDay(new Date(event.end.getTime() - 1)).getTime();
+  const count = Math.round((last - first) / DAY) + 1;
+  if (count <= 1) return null;
+  return { index: Math.round((startOfDay(day).getTime() - first) / DAY) + 1, count };
+}
+
+/** An event description as plain text: some providers send HTML. */
+export function plainText(value: string | undefined): string {
+  return (value ?? '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/ *\n */g, '\n')
+    .trim();
+}

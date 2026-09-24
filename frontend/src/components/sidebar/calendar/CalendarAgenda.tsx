@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import type { SidebarConfig } from '../../../config/types';
 import AgendaDay from './Agenda';
-import Popup from '../../base/popup/Popup';
+import CalendarPopup from '../../popups/CalendarPopup';
 import { useGroupedEvents } from '../../../hooks/useCalendarEvents';
 import { useT } from '../../../hooks/useHa';
 
@@ -14,6 +14,7 @@ const StyledAgenda = styled.div`
      calendar; a scroll gesture does not, because it never becomes a click. */
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
   width: 100%;
   height: 100%;
   overflow-y: auto;
@@ -48,24 +49,7 @@ const CalendarAgenda: React.FC<{ config: SidebarConfig['calendar'] }> = ({ confi
           <AgendaDay key={day.getTime()} day={day} events={events} />
         ))}
       </StyledAgenda>
-      <Popup open={open} onClose={close} title={t('calendar')} icon='mdi:calendar' width={54}>
-        <CalendarPopupContent entities={config.entities} />
-      </Popup>
-    </>
-  );
-};
-
-/** Two weeks, with locations, and only the days that have something on. */
-const CalendarPopupContent: React.FC<{ entities: string[] }> = ({ entities }) => {
-  const t = useT();
-  const days = useGroupedEvents(entities, 14);
-  const busy = days?.filter(day => day.events.length) ?? [];
-  if (days && !busy.length) return <p>✓ {t('no_events')}</p>;
-  return (
-    <>
-      {busy.map(({ day, events }) => (
-        <AgendaDay key={day.getTime()} day={day} events={events} detailed />
-      ))}
+      <CalendarPopup open={open} onClose={close} entities={config.entities} />
     </>
   );
 };

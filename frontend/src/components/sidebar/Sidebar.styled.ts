@@ -15,7 +15,9 @@ import { u } from '../../themes/default.theme';
 export const StyledSidebarContainer = styled(StyledCardContainer)`
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto auto auto auto auto auto minmax(0, 1fr) auto;
+  /* The calendar takes what is left, but never less than one day: squeezed to
+     nothing it would sit behind the weather. */
+  grid-template-rows: auto auto auto auto auto auto minmax(auto, 1fr) auto;
   grid-template-areas:
     'header'
     'climate'
@@ -30,6 +32,14 @@ export const StyledSidebarContainer = styled(StyledCardContainer)`
   row-gap: 0;
   padding: ${u(0.9)} ${u(1.1)} ${u(0.6)};
   align-content: start;
+  /* Only on a very short screen, where even one calendar day does not fit:
+     the whole column scrolls rather than cutting off the footer. */
+  overflow-y: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   [data-orientation='portrait'] & {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -65,10 +75,19 @@ export const StyledColumn = styled.div<{ $side: 'left' | 'right' }>`
 export const StyledArea = styled.div<{ $area: string }>`
   grid-area: ${({ $area }) => $area};
   min-width: 0;
-  min-height: 0;
 
   &:not(:empty) {
     padding-bottom: ${u(0.6)};
+  }
+
+  /* Every other block keeps its content's height; the calendar alone gives
+     way, down to one day. */
+  &[data-area='calendar'] {
+    min-height: 0;
+  }
+
+  &[data-area='calendar']:not(:empty) {
+    min-height: ${u(6.5)};
   }
 
   /* The last block sits on the card's own padding, not on its own too. */

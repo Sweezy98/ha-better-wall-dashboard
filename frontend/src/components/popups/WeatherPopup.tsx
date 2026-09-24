@@ -4,11 +4,21 @@ import { u } from '../../themes/default.theme';
 import Popup from '../base/popup/Popup';
 import Icon from '../base/icon/Icon';
 import WeatherIcon from '../base/weatherIcon/WeatherIcon';
+import Gauge, { type GaugeSegment } from '../base/gauge/Gauge';
 import { useEntity, useIsNight, useLanguage, useT } from '../../hooks/useHa';
 import { useForecast, type ForecastEntry } from '../../hooks/useForecast';
 import { useTick } from '../../hooks/useNow';
 import { formatNumber, formatTime, formatWeekday } from '../../lib/format';
-import { compassPoint, conditionLabel, rangeBar } from '../../lib/weather';
+import {
+  BAROMETER_MAX,
+  BAROMETER_ZONES,
+  barometerFraction,
+  barometerZone,
+  compassPoint,
+  conditionLabel,
+  pressureToHpa,
+  rangeBar,
+} from '../../lib/weather';
 import { smoothPath } from '../../lib/graph';
 
 const StyledNow = styled.div`
@@ -50,6 +60,8 @@ const StyledFacts = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(${u(10.5)}, 1fr));
   gap: ${u(0.6)};
 
+  grid-auto-flow: dense;
+
   > div {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
@@ -59,6 +71,13 @@ const StyledFacts = styled.div`
     padding: ${u(0.6)} ${u(0.8)};
     border-radius: ${u(1)};
     background: ${({ theme }) => theme.bubble.background};
+  }
+
+  > .gauge {
+    display: block;
+    grid-row: span 2;
+    height: ${u(9.5)};
+    padding: ${u(0.5)} ${u(0.6)};
   }
 
   .icon {
@@ -80,6 +99,31 @@ const StyledFacts = styled.div`
     text-overflow: ellipsis;
   }
 `;
+
+/** Beside the facts, two of their rows high. */
+const BAROMETER_SEGMENTS: GaugeSegment[] = BAROMETER_ZONES.map((zone, index) => ({
+  from: barometerFraction(zone.from),
+  to: barometerFraction(BAROMETER_ZONES[index + 1]?.from ?? BAROMETER_MAX),
+  color: zone.color,
+}));
+
+const Barometer: React.FC<{ value: number; unit: string | undefined }> = ({ value, unit }) => {
+  const t = useT();
+  const language = useLanguage();
+  const hpa = pressureToHpa(value, unit);
+  const digits = hpa === value ? 0 : unit === 'inHg' || unit === 'kPa' ? 2 : 1;
+  return (
+    <Gauge
+      fraction={barometerFraction(hpa)}
+      segments={BAROMETER_SEGMENTS}
+      // No grouping: "1.013" reads as one-point-something in German.
+      value={new Intl.NumberFormat(language, { maximumFractionDigits: digits, useGrouping: false }).format(value)}
+      unit={unit ?? 'hPa'}
+      caption={t(barometerZone(hpa).key)}
+      label={t('pressure')}
+    />
+  );
+};
 
 const StyledHeading = styled.h3`
   margin: ${u(0.6)} 0 0;
@@ -391,10 +435,10 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
           .join(' · ') || undefined,
     },
     { icon: 'mdi:sun-wireless', label: t('uv_index'), value: number(a.uv_index) },
-    { icon: 'mdi:gauge', label: t('pressure'), value: number(a.pressure) && `${number(a.pressure)} ${a.pressure_unit ?? 'hPa'}` },
     { icon: 'mdi:weather-sunset-up', label: t('sunrise'), value: time(sun?.attributes.next_rising) },
     { icon: 'mdi:weather-sunset-down', label: t('sunset'), value: time(sun?.attributes.next_setting) },
   ].filter(fact => fact.value);
+  const pressure = typeof a.pressure === 'number' ? { value: a.pressure, unit: a.pressure_unit as string | undefined } : null;
 
   return (
     <>
@@ -421,8 +465,13 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
         )}
       </StyledNow>
 
-      {facts.length > 0 && (
+      {(facts.length > 0 || pressure) && (
         <StyledFacts>
+          {pressure && (
+            <div className='gauge'>
+              <Barometer value={pressure.value} unit={pressure.unit} />
+            </div>
+          )}
           {facts.map(fact => (
             <div key={fact.label}>
               <Icon className='icon' icon={fact.icon} />
