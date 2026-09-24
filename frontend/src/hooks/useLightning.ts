@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useHass } from '@hakit/core';
 import { useConnection } from './useHa';
+import { demoStrikes } from '../lib/devLightning';
 import { bearing, findBlitzortung, type BlitzortungSensors, type RegistryDisplayEntry, type Strike } from '../lib/lightning';
 
 /**
@@ -55,7 +56,12 @@ export function useLightning(): Lightning | null {
   });
 
   return useMemo(() => {
-    if (!sensors) return null;
+    if (!sensors) {
+      if (import.meta.env.DEV && import.meta.env.VITE_DEV_DEMO_LIGHTNING === '1') {
+        return { sensors: { distance: '', azimuth: '', counter: '' }, strikes: demoStrikes(), unit: 'km' };
+      }
+      return null;
+    }
     const [homeRow, ...rows] = key.split('|');
     const [homeLat, homeLon] = homeRow.split(',').map(Number);
     let unit = 'km';
