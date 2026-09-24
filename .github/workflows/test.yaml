@@ -11,12 +11,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # The oldest supported Home Assistant and the newest. 2026.3 runs on
-        # Python 3.13, so this matrix also stops 3.14-only syntax reaching a
-        # release that cannot parse it.
+        # The oldest supported Home Assistant and the newest. Both need
+        # Python 3.14: Home Assistant 2026.3 already requires >= 3.14.2.
         include:
           - homeassistant: "2026.3.4"
-            python: "3.13"
+            python: "3.14"
           - homeassistant: "2026.9.2"
             python: "3.14"
     steps:
