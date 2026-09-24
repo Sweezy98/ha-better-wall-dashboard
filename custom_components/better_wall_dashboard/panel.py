@@ -150,8 +150,11 @@ async def _async_register(
         ) == module_url:
             return
         # Registered from an older build: replace it, or the sidebar keeps
-        # pointing at a URL nothing will ever fetch again.
-        frontend.async_remove_panel(hass, url_path)
+        # pointing at a URL nothing will ever fetch again. Replaced in place,
+        # never removed and added: the frontend hears of a removal at once,
+        # and a page open on the dashboard -- the tablet on the wall --
+        # navigates away to the default panel before the new one arrives.
+        panels.pop(url_path)
 
     await panel_custom.async_register_panel(
         hass,
@@ -221,7 +224,9 @@ def async_remove_panel(hass: HomeAssistant) -> None:
 
     Panels are not tied to a config entry, so nothing does this for us: an
     uninstalled integration would otherwise leave a sidebar item loading a
-    script that is no longer served.
+    script that is no longer served. Only on removal -- a reload or a restart
+    that took the panel away would send every tablet showing it to Home
+    Assistant's default dashboard, and leave it there.
     """
     for url_path in (PANEL_URL_PATH, EDITOR_URL_PATH):
         if url_path in hass.data.get("frontend_panels", {}):

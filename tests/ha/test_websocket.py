@@ -217,3 +217,57 @@ async def test_version_reports_the_build_fingerprint(hass, hass_ws_client) -> No
     result = (await client.receive_json())["result"]
     assert len(result["app"]) == 12
     assert result["version"]
+
+
+async def _save_pin(hass, hass_ws_client, pin: str) -> None:
+    admin = await hass_ws_client(hass)
+    await admin.send_json_auto_id({"type": f"{DOMAIN}/document"})
+    document = (await admin.receive_json())["result"]
+    dashboard = {**document["dashboards"]["default"], "pin": pin}
+    await admin.send_json_auto_id(
+        {"type": f"{DOMAIN}/save_dashboard", "dashboard": dashboard}
+    )
+    assert (await admin.receive_json())["success"]
+
+
+async def _verify(client, pin: str) -> dict:
+    await client.send_json_auto_id({"type": f"{DOMAIN}/verify_pin", "pin": pin})
+    result = await client.receive_json()
+    assert result["success"], result
+    return result["result"]
+
+
+async def test_a_tablet_is_told_there_is_a_pin_but_never_sent_it(
+    hass, hass_ws_client, hass_read_only_access_token
+) -> None:
+    await _setup(hass)
+    await _save_pin(hass, hass_ws_client, "4711")
+    tablet = await hass_ws_client(hass, hass_read_only_access_token)
+    view = await _subscribe(tablet)
+    assert view["pin_required"] is True
+    assert "pin" not in view["dashboard"]
+
+    assert (await _verify(tablet, "0000"))["ok"] is False
+    assert (await _verify(tablet, "4711"))["ok"] is True
+
+
+async def test_wrong_pins_lock_the_user_out_for_a_while(
+    hass, hass_ws_client, hass_read_only_access_token
+) -> None:
+    await _setup(hass)
+    await _save_pin(hass, hass_ws_client, "4711")
+    tablet = await hass_ws_client(hass, hass_read_only_access_token)
+    for _ in range(4):
+        assert (await _verify(tablet, "1234"))["locked_for"] == 0
+    assert (await _verify(tablet, "1234"))["locked_for"] > 0
+    # Locked: even the right PIN is refused until the wait is over.
+    right = await _verify(tablet, "4711")
+    assert right["ok"] is False
+    assert right["locked_for"] > 0
+
+
+async def test_no_pin_means_no_question(hass, hass_ws_client) -> None:
+    await _setup(hass)
+    client = await hass_ws_client(hass)
+    view = await _subscribe(client)
+    assert view["pin_required"] is False

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { countOpen, isOpen } from './openings';
 import { mapEmbedUrl } from './travel';
 import { uniformCell } from './cell';
-import { swipeTarget } from './swipe';
+import { swipeDismiss, swipeTarget } from './swipe';
 import { mergeRoutes, parseRoutes, routesRequests, trafficDelayMinutes, waypoint } from './routes';
 import { isStaleCandidate } from './reload';
 import { move } from './editing';
@@ -156,6 +156,19 @@ describe('uniformCell', () => {
 
   it('ignores sections that have no size yet', () => {
     expect(uniformCell([{ width: 0, height: 0, columns: 2, rows: 2, gap: 5 }])).toBeNull();
+  });
+});
+
+describe('swipeDismiss', () => {
+  it('throws a card away past a third of its width, either way', () => {
+    expect(swipeDismiss(-400, 900)).toBe(-1);
+    expect(swipeDismiss(350, 900)).toBe(1);
+    expect(swipeDismiss(200, 900)).toBe(0);
+  });
+
+  it('takes a flick, but not a twitch', () => {
+    expect(swipeDismiss(80, 900, 1.2)).toBe(1);
+    expect(swipeDismiss(10, 900, 1.2)).toBe(0);
   });
 });
 

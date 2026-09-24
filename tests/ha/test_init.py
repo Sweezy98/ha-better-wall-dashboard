@@ -113,9 +113,39 @@ async def test_reload_keeps_exactly_one_panel_and_one_icon_url(
     assert len(urls) == 1
 
 
-async def test_unload_takes_the_panel_away(hass: HomeAssistant) -> None:
+async def test_reload_never_leaves_the_tablet_without_its_panel(
+    hass: HomeAssistant,
+) -> None:
+    """Every panels-updated event a page can hear still has the dashboard.
+
+    A page open on a panel that is missing from an update navigates to the
+    default dashboard, and a wall tablet has nobody to bring it back.
+    """
+    entry = await _setup(hass)
+    seen: list[bool] = []
+    hass.bus.async_listen(
+        "panels_updated", lambda _event: seen.append(_panel_url(hass) is not None)
+    )
+    # A new build, as an upgrade brings: the fingerprint no longer matches.
+    panel = hass.data["frontend_panels"][PANEL_URL_PATH]
+    panel.config["_panel_custom"]["module_url"] = "/stale.js?v=old"
+    assert await hass.config_entries.async_reload(entry.entry_id)
+    await hass.async_block_till_done()
+
+    assert seen and all(seen)
+    assert _panel_url(hass) != "/stale.js?v=old"
+
+
+async def test_unload_keeps_the_panel(hass: HomeAssistant) -> None:
     entry = await _setup(hass)
     assert await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
+    assert _panel_url(hass) is not None
+
+
+async def test_removal_takes_the_panel_away(hass: HomeAssistant) -> None:
+    entry = await _setup(hass)
+    assert await hass.config_entries.async_remove(entry.entry_id)
     await hass.async_block_till_done()
     assert _panel_url(hass) is None
     assert _panel_url(hass, EDITOR_URL_PATH) is None

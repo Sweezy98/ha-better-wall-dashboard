@@ -81,6 +81,8 @@ export interface SidebarConfig {
 export interface Dashboard {
   id: string;
   name: string;
+  /** Four to eight digits guarding Home Assistant's sidebar; empty for none. Only the editor is sent it. */
+  pin?: string;
   background: { image: string; dim: number; blur: number };
   sidebar: SidebarConfig;
   pages: Page[];
@@ -93,6 +95,8 @@ export interface DashboardView {
   dashboards: { id: string; name: string }[];
   kiosk: boolean;
   is_admin: boolean;
+  /** The dashboard has a PIN, which the integration checks. */
+  pin_required: boolean;
 }
 
 /** What `better_wall_dashboard/document` returns to the editor. */

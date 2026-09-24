@@ -24,6 +24,7 @@ see why an entire save was rejected on a tablet across the room.
 
 from __future__ import annotations
 
+import hmac
 import re
 import secrets
 from collections.abc import Callable, Iterable
@@ -49,6 +50,7 @@ MAX_URL: Final = 2000
 GUEST_WIFI_SECURITY: Final = ("WPA", "WEP", "nopass")
 
 _ID = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+_PIN = re.compile(r"^[0-9]{4,8}$")
 _ENTITY_ID = re.compile(r"^[a-z0-9_]+\.[a-z0-9_]+$")
 
 
@@ -106,6 +108,11 @@ def _entities(value: Any, limit: int = MAX_LIST) -> list[str]:
 
 def _choice(value: Any, choices: Iterable[str], default: str) -> str:
     return value if isinstance(value, str) and value in choices else default
+
+
+def _pin(value: Any) -> str:
+    """Four to eight digits, or empty for none."""
+    return value if isinstance(value, str) and _PIN.match(value) else ""
 
 
 def _dict(value: Any) -> dict[str, Any]:
@@ -322,6 +329,9 @@ def normalize_dashboard(
             "dim": _float(background.get("dim"), 0.8, 0.0, 0.95),
             "blur": _int(background.get("blur"), 0, 0, 40),
         },
+        # Asked for before the tablet opens Home Assistant's own sidebar, where
+        # anyone could reach every setting. Empty: no PIN, a long press opens it.
+        "pin": _pin(raw.get("pin")),
         "sidebar": _sidebar(raw.get("sidebar"), assign),
         "pages": [_page(item, assign) for item in pages[:MAX_PAGES]]
         # A dashboard with no pages would have nothing to swipe, and the
@@ -377,6 +387,21 @@ def dashboard_for(
     if user and user["dashboard"] in dashboards:
         return dashboards[user["dashboard"]]
     return dashboards[DEFAULT_DASHBOARD_ID]
+
+
+def public_dashboard(dashboard: dict[str, Any]) -> dict[str, Any]:
+    """A dashboard as a tablet receives it: everything but its PIN.
+
+    The tablet only needs to know that there is one; the check happens here,
+    so the PIN is not readable by anyone holding the tablet's login.
+    """
+    return {key: value for key, value in dashboard.items() if key != "pin"}
+
+
+def pin_matches(dashboard: dict[str, Any], entered: str) -> bool:
+    """Whether `entered` is the dashboard's PIN; always true when it has none."""
+    pin = dashboard.get("pin") or ""
+    return not pin or hmac.compare_digest(pin.encode(), entered.encode())
 
 
 def default_dashboard() -> dict[str, Any]:

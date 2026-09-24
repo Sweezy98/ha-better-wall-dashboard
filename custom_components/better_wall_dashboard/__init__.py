@@ -44,7 +44,8 @@ async def async_setup_entry(
 async def async_unload_entry(
     hass: HomeAssistant, entry: WallDashboardConfigEntry
 ) -> bool:
-    async_remove_panel(hass)
+    # The panels stay: see async_remove_panel. Setting up again finds them
+    # and replaces them only if the build changed.
     return True
 
 
@@ -53,5 +54,6 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
     Here and not in unload, which runs on every restart and reload.
     """
+    async_remove_panel(hass)
     await async_clear_default_panels(hass)
     await DashboardStore(hass).async_remove()

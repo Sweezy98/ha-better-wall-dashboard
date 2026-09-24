@@ -1,4 +1,4 @@
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import type { SidebarConfig } from '../../../config/types';
@@ -6,6 +6,8 @@ import Clock from '../../base/clock/Clock';
 import Icon from '../../base/icon/Icon';
 import IconButton from '../../base/iconButton/IconButton';
 import WifiPopup from '../../popups/WifiPopup';
+import PinPopup from '../../popups/PinPopup';
+import { useDashboardContext } from '../../../config/DashboardProvider';
 import { useEntity, useT } from '../../../hooks/useHa';
 import { useLongPress } from '../../../hooks/useLongPress';
 import { openHomeAssistantSidebar } from '../../../panel/kiosk';
@@ -83,11 +85,39 @@ const WifiButton: React.FC<{ config: SidebarConfig }> = ({ config }) => {
   );
 };
 
+/**
+ * A long press on the clock opens Home Assistant's own sidebar -- behind the
+ * dashboard's PIN when it has one, since every setting is behind that.
+ */
+function useSidebarUnlock() {
+  const { view } = useDashboardContext();
+  const [asking, setAsking] = useState(false);
+  const required = Boolean(view?.pin_required);
+  // The clock that was held: the event opening the sidebar starts from it.
+  const pressed = useRef<HTMLElement | null>(null);
+  const longPress = useLongPress(target => {
+    pressed.current = target;
+    if (required || import.meta.env.DEV) setAsking(true);
+    else openHomeAssistantSidebar(target);
+  });
+  const popup = (
+    <PinPopup
+      open={asking}
+      onClose={() => setAsking(false)}
+      dashboardId={view?.dashboard.id ?? ''}
+      required={required}
+      onUnlocked={() => pressed.current && openHomeAssistantSidebar(pressed.current)}
+    />
+  );
+  return { longPress, popup };
+}
+
 const SidebarHeader: React.FC<{ config: SidebarConfig }> = ({ config }) => {
   const t = useT();
-  const longPress = useLongPress(openHomeAssistantSidebar);
+  const { longPress, popup } = useSidebarUnlock();
   return (
     <StyledHeader>
+      {popup}
       <Clock timeProps={longPress} />
       <StyledStatus>
         {/* Right to left: Wi-Fi first, so it always holds the corner. */}

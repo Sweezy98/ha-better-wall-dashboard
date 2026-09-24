@@ -8,6 +8,7 @@ from a desk, never from the tablet on the wall.
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 from typing import Any
 
@@ -32,6 +33,7 @@ def async_register_commands(hass: HomeAssistant) -> None:
         websocket_users,
         websocket_save_user,
         websocket_version,
+        websocket_verify_pin,
     ):
         websocket_api.async_register_command(hass, handler)
 
@@ -50,8 +52,10 @@ def _view(store: DashboardStore, user: Any, requested: str | None) -> dict[str, 
     """What one user's tablet needs to draw itself."""
     document = store.document
     settings = document["users"].get(user.id) or {}
+    dashboard = model.dashboard_for(document, user.id, requested)
     return {
-        "dashboard": model.dashboard_for(document, user.id, requested),
+        "dashboard": model.public_dashboard(dashboard),
+        "pin_required": bool(dashboard["pin"]),
         # Names only: enough for an admin to preview another tablet's
         # dashboard without being sent every one of them on every save.
         "dashboards": [
@@ -153,6 +157,53 @@ async def websocket_delete_dashboard(
         )
         return
     connection.send_result(msg["id"], {"deleted": True})
+
+
+# Wrong PINs a user may enter before having to wait, and how long for.
+PIN_ATTEMPTS = 5
+PIN_LOCKOUT_SECONDS = 60
+_PIN_FAILURES = f"{DOMAIN}_pin_failures"
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/verify_pin",
+        vol.Required("pin"): str,
+        vol.Optional("dashboard"): vol.Any(str, None),
+    }
+)
+@callback
+def websocket_verify_pin(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Check the PIN that guards Home Assistant's sidebar on a tablet.
+
+    Here rather than on the tablet, which is never sent the PIN. Four digits
+    are guessed quickly, so after a few wrong ones the user waits a minute.
+    """
+    if (store := _store(hass)) is None:
+        _not_loaded(connection, msg["id"])
+        return
+    failures: dict[str, tuple[int, float]] = hass.data.setdefault(_PIN_FAILURES, {})
+    count, since = failures.get(connection.user.id, (0, 0.0))
+    wait = since + PIN_LOCKOUT_SECONDS - time.monotonic()
+    if count >= PIN_ATTEMPTS and wait > 0:
+        connection.send_result(msg["id"], {"ok": False, "locked_for": round(wait)})
+        return
+    if count >= PIN_ATTEMPTS:
+        count = 0
+    dashboard = model.dashboard_for(
+        store.document, connection.user.id, msg.get("dashboard")
+    )
+    if model.pin_matches(dashboard, msg["pin"]):
+        failures.pop(connection.user.id, None)
+        connection.send_result(msg["id"], {"ok": True, "locked_for": 0})
+        return
+    failures[connection.user.id] = (count + 1, time.monotonic())
+    locked = count + 1 >= PIN_ATTEMPTS
+    connection.send_result(
+        msg["id"], {"ok": False, "locked_for": PIN_LOCKOUT_SECONDS if locked else 0}
+    )
 
 
 async def _default_panel(hass: HomeAssistant, user_id: str) -> bool | None:

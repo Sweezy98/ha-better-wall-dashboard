@@ -171,3 +171,18 @@ def test_dashboard_for_prefers_request_then_assignment() -> None:
     assert model.dashboard_for(document, "u1", "kitchen")["id"] == "kitchen"
     assert model.dashboard_for(document, "u1", "missing")["id"] == "hall"
     assert model.dashboard_for(document, "nobody")["id"] == model.DEFAULT_DASHBOARD_ID
+
+
+def test_a_pin_is_four_to_eight_digits_or_none() -> None:
+    assert model.normalize_dashboard({"pin": "0815"})["pin"] == "0815"
+    assert model.normalize_dashboard({"pin": "12345678"})["pin"] == "12345678"
+    for bad in ("123", "123456789", "12a4", 1234, None):
+        assert model.normalize_dashboard({"pin": bad})["pin"] == ""
+
+
+def test_the_pin_stays_on_the_server() -> None:
+    dashboard = model.normalize_dashboard({"pin": "0815"})
+    assert "pin" not in model.public_dashboard(dashboard)
+    assert model.pin_matches(dashboard, "0815")
+    assert not model.pin_matches(dashboard, "0816")
+    assert model.pin_matches(model.normalize_dashboard({}), "anything")

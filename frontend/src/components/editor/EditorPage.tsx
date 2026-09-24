@@ -311,6 +311,13 @@ const EditorPage: React.FC = () => {
                 <legend>{t('tab_general')}</legend>
                 <TextField label={t('name')} value={draft.name} onChange={name => update({ ...draft, name })} />
                 <TextField
+                  label={t('pin')}
+                  hint={t('pin_hint')}
+                  type='password'
+                  value={draft.pin ?? ''}
+                  onChange={pin => update({ ...draft, pin: pin.replace(/\D/g, '').slice(0, 8) })}
+                />
+                <TextField
                   label={t('background_image')}
                   hint={t('background_image_hint')}
                   value={draft.background.image}

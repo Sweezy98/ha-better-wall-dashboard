@@ -63,7 +63,7 @@ const EditorPreview: React.FC<{ dashboard: Dashboard; device: (typeof DEVICES)[n
     return () => observer.disconnect();
   }, [width, height]);
 
-  const view = useMemo(() => ({ dashboard, dashboards: [], kiosk: false, is_admin: true }), [dashboard]);
+  const view = useMemo(() => ({ dashboard, dashboards: [], kiosk: false, is_admin: true, pin_required: false }), [dashboard]);
 
   return (
     <StyledPreview ref={ref} aria-label={t('preview')}>
