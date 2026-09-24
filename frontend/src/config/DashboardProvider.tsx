@@ -2,6 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { DashboardView } from './types';
 import { useSubscription } from '../hooks/useSubscription';
 import { setKioskWanted } from '../panel/kiosk';
+import { reloadDashboard } from '../lib/reload';
+import { getEntryUrl } from '../panel/entry';
 
 interface DashboardContextValue {
   view: DashboardView | null;
@@ -49,10 +51,16 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [error, setError] = useState<string | null>(null);
   const [previewing, setPreviewing] = useState<string | null>(readPreview);
 
-  useSubscription<DashboardView>(
+  useSubscription<DashboardView | { reload: true }>(
     previewing ?? '',
     () => ({ type: 'better_wall_dashboard/subscribe', dashboard: previewing }),
     event => {
+      // An admin reloading the tablets from the editor: this page reloads
+      // itself as its own settings popup would, past the app's cache.
+      if ('reload' in event) {
+        void reloadDashboard(getEntryUrl());
+        return;
+      }
       setError(null);
       setView(event);
     },

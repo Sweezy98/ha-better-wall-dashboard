@@ -14,6 +14,15 @@ const StyledPin = styled.div`
   align-items: center;
   gap: ${u(1.2)};
   padding-bottom: ${u(0.4)};
+  /* A keypad, not text: a long press on a key must not select its digit. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+
+  /* Focused to take key presses; nothing to show for it. */
+  &:focus {
+    outline: none;
+  }
 
   .dots {
     display: flex;

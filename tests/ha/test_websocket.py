@@ -271,3 +271,33 @@ async def test_no_pin_means_no_question(hass, hass_ws_client) -> None:
     client = await hass_ws_client(hass)
     view = await _subscribe(client)
     assert view["pin_required"] is False
+
+
+async def test_an_admin_reloads_the_tablets_showing_a_dashboard(
+    hass, hass_ws_client, hass_read_only_access_token
+) -> None:
+    await _setup(hass)
+    tablet = await hass_ws_client(hass, hass_read_only_access_token)
+    await _subscribe(tablet)
+
+    admin = await hass_ws_client(hass)
+    await admin.send_json_auto_id(
+        {"type": f"{DOMAIN}/reload_tablets", "dashboard_id": "elsewhere"}
+    )
+    assert (await admin.receive_json())["result"] == {"reached": 0}
+
+    await admin.send_json_auto_id(
+        {"type": f"{DOMAIN}/reload_tablets", "dashboard_id": "default"}
+    )
+    assert (await admin.receive_json())["result"] == {"reached": 1}
+    assert (await tablet.receive_json())["event"] == {"reload": True}
+
+
+async def test_only_an_admin_reloads_tablets(
+    hass, hass_ws_client, hass_read_only_access_token
+) -> None:
+    await _setup(hass)
+    tablet = await hass_ws_client(hass, hass_read_only_access_token)
+    await tablet.send_json_auto_id({"type": f"{DOMAIN}/reload_tablets"})
+    result = await tablet.receive_json()
+    assert result["error"]["code"] == "unauthorized"

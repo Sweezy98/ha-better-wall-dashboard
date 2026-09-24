@@ -15,10 +15,18 @@ from typing import Any
 import voluptuous as vol
 from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers.dispatcher import (
+    async_dispatcher_connect,
+    async_dispatcher_send,
+)
 
 from . import model
-from .const import DOMAIN, PANEL_URL_PATH, SIGNAL_DOCUMENT_UPDATED
+from .const import (
+    DOMAIN,
+    PANEL_URL_PATH,
+    SIGNAL_DOCUMENT_UPDATED,
+    SIGNAL_RELOAD_TABLETS,
+)
 from .panel import app_entry, fingerprint
 from .store import DashboardStore
 
@@ -34,6 +42,7 @@ def async_register_commands(hass: HomeAssistant) -> None:
         websocket_save_user,
         websocket_version,
         websocket_verify_pin,
+        websocket_reload_tablets,
     ):
         websocket_api.async_register_command(hass, handler)
 
@@ -96,9 +105,28 @@ def websocket_subscribe(
             )
         )
 
-    connection.subscriptions[msg["id"]] = async_dispatcher_connect(
+    @callback
+    def reload(dashboard_id: str | None, reached: list[str]) -> None:
+        # Only the tablets showing that dashboard; each says it heard.
+        shown = model.dashboard_for(store.document, connection.user.id, requested)
+        if dashboard_id is not None and shown["id"] != dashboard_id:
+            return
+        reached.append(connection.user.id)
+        connection.send_message(
+            websocket_api.event_message(msg["id"], {"reload": True})
+        )
+
+    unsubscribe_document = async_dispatcher_connect(
         hass, SIGNAL_DOCUMENT_UPDATED, forward
     )
+    unsubscribe_reload = async_dispatcher_connect(hass, SIGNAL_RELOAD_TABLETS, reload)
+
+    @callback
+    def unsubscribe() -> None:
+        unsubscribe_document()
+        unsubscribe_reload()
+
+    connection.subscriptions[msg["id"]] = unsubscribe
     connection.send_result(msg["id"])
     forward()
 
@@ -157,6 +185,30 @@ async def websocket_delete_dashboard(
         )
         return
     connection.send_result(msg["id"], {"deleted": True})
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/reload_tablets",
+        vol.Optional("dashboard_id"): vol.Any(str, None),
+    }
+)
+@callback
+def websocket_reload_tablets(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """Reload every open dashboard showing one dashboard, or every one.
+
+    For a tablet that has got stuck on the wall: its page is told to reload
+    itself, the way its own settings popup would, and nobody has to climb up
+    to it. Answers with how many were reached -- a tablet that is off, or
+    frozen past answering, is not among them.
+    """
+    reached: list[str] = []
+    # Dispatcher callbacks run here and now, so `reached` is filled on return.
+    async_dispatcher_send(hass, SIGNAL_RELOAD_TABLETS, msg.get("dashboard_id"), reached)
+    connection.send_result(msg["id"], {"reached": len(reached)})
 
 
 # Wrong PINs a user may enter before having to wait, and how long for.

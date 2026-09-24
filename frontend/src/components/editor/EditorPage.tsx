@@ -182,6 +182,20 @@ const EditorPage: React.FC = () => {
     open({ kind: 'general' });
   };
 
+  const reloadTablets = async () => {
+    setMenu(false);
+    if (!connection || !draft) return;
+    try {
+      const result = await connection.sendMessagePromise<{ reached: number }>({
+        type: 'better_wall_dashboard/reload_tablets',
+        dashboard_id: draft.id,
+      });
+      setStatus(t('tablets_reloaded', { count: result.reached }));
+    } catch (error) {
+      setStatus(String((error as { message?: string })?.message ?? error));
+    }
+  };
+
   const remove = async () => {
     setMenu(false);
     if (!connection || !draft || !document || draft.id === 'default') return;
@@ -287,6 +301,9 @@ const EditorPage: React.FC = () => {
                 </button>
                 <button type='button' role='menuitem' onClick={() => void create(draft)}>
                   <Icon icon='mdi:content-copy' /> {t('duplicate')}
+                </button>
+                <button type='button' role='menuitem' onClick={() => void reloadTablets()}>
+                  <Icon icon='mdi:tablet-cellphone' /> {t('reload_tablets')}
                 </button>
                 <button type='button' role='menuitem' onClick={() => open({ kind: 'json' })}>
                   <Icon icon='mdi:code-json' /> {t('edit_json')}

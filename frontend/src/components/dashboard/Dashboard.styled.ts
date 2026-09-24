@@ -9,6 +9,11 @@ export const StyledDashboardContainer = styled.div`
   /* Until the first measurement; see useUnit. */
   --u: 12px;
   isolation: isolate;
+  /* A wall tablet is touched, never read by selecting: a long press on a
+     tile or a key must not highlight its text. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 `;
 
 export const StyledBackground = styled.div<{ $image: string; $dim: number; $blur: number }>`

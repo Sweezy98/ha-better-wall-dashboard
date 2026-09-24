@@ -41,3 +41,5 @@ STORAGE_VERSION: Final = 1
 # Dispatcher signal fired after every save, so each open dashboard redraws
 # the moment an admin saves rather than on its next reload.
 SIGNAL_DOCUMENT_UPDATED: Final = f"{DOMAIN}_document_updated"
+# An admin asks the tablets showing a dashboard to reload themselves.
+SIGNAL_RELOAD_TABLETS: Final = f"{DOMAIN}_reload_tablets"
