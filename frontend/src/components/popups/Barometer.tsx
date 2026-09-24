@@ -79,7 +79,7 @@ const Barometer: React.FC<{ entityId: string; value: number; unit: string | unde
   const shownRange = range && range.max > range.min ? range : null;
 
   return (
-    <div className='barometer'>
+    <div className='tall'>
       <Icon className='icon' icon='mdi:gauge' />
       <span className='label'>{t('pressure')}</span>
       <span className='value'>

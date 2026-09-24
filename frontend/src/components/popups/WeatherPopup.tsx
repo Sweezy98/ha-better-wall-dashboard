@@ -6,6 +6,9 @@ import PopupScroll from '../base/popup/PopupScroll';
 import Icon from '../base/icon/Icon';
 import WeatherIcon from '../base/weatherIcon/WeatherIcon';
 import Barometer from './Barometer';
+import { StyledFacts } from './WeatherFacts.styled';
+import { LightningFacts, QuietLightningFact } from './Lightning';
+import { useLightning } from '../../hooks/useLightning';
 import { useEntity, useIsNight, useLanguage, useT } from '../../hooks/useHa';
 import { useForecast, type ForecastEntry } from '../../hooks/useForecast';
 import { useTick } from '../../hooks/useNow';
@@ -44,51 +47,6 @@ const StyledNow = styled.div`
 
   .today span {
     color: ${({ theme }) => theme.text.secondary};
-  }
-`;
-
-const StyledFacts = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(${u(10.5)}, 1fr));
-  gap: ${u(0.6)};
-
-  grid-auto-flow: dense;
-
-  > div {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-rows: auto auto;
-    column-gap: ${u(0.6)};
-    align-items: center;
-    padding: ${u(0.6)} ${u(0.8)};
-    border-radius: ${u(1)};
-    background: ${({ theme }) => theme.bubble.background};
-  }
-
-  /* Two rows high: the reading on top as in every fact, the dial under it. */
-  > .barometer {
-    grid-row: span 2;
-    grid-template-rows: auto auto minmax(0, 1fr);
-    align-items: start;
-  }
-
-  .icon {
-    grid-row: 1 / 3;
-    font-size: ${u(1.6)};
-    color: ${({ theme }) => theme.text.secondary};
-  }
-
-  .label {
-    font-size: ${u(0.85)};
-    color: ${({ theme }) => theme.text.secondary};
-  }
-
-  .value {
-    font-size: ${u(1.15)};
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 `;
 
@@ -408,6 +366,10 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
     { icon: 'mdi:weather-sunset-up', label: t('sunrise'), value: time(sun?.attributes.next_rising) },
     { icon: 'mdi:weather-sunset-down', label: t('sunset'), value: time(sun?.attributes.next_setting) },
   ].filter(fact => fact.value);
+  // Blitzortung, when it is installed: a quiet tile while it hears nothing,
+  // a section of its own while a storm is about.
+  const lightning = useLightning();
+  const storm = lightning && lightning.strikes.length > 0 ? lightning : null;
   const pressure = typeof a.pressure === 'number' ? { value: a.pressure, unit: a.pressure_unit as string | undefined } : null;
 
   return (
@@ -438,6 +400,7 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
       {(facts.length > 0 || pressure) && (
         <StyledFacts>
           {pressure && <Barometer entityId={entityId} value={pressure.value} unit={pressure.unit} />}
+          {lightning && !storm && <QuietLightningFact />}
           {facts.map(fact => (
             <div key={fact.label}>
               <Icon className='icon' icon={fact.icon} />
@@ -446,6 +409,13 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
             </div>
           ))}
         </StyledFacts>
+      )}
+
+      {storm && (
+        <>
+          <StyledHeading>{t('thunderstorm')}</StyledHeading>
+          <LightningFacts lightning={storm} />
+        </>
       )}
 
       {hours.length > 1 && (
