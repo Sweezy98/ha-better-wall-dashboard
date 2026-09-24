@@ -22,25 +22,6 @@ const StyledCode = styled.div`
   }
 `;
 
-const StyledDetails = styled.dl`
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: ${u(0.3)} ${u(1)};
-  margin: 0;
-  font-size: ${u(1.14)};
-
-  dt {
-    color: ${({ theme }) => theme.text.secondary};
-  }
-
-  dd {
-    margin: 0;
-    font-weight: 600;
-    user-select: text;
-    word-break: break-all;
-  }
-`;
-
 const StyledHint = styled.p`
   text-align: center;
   color: ${({ theme }) => theme.text.secondary};
@@ -53,7 +34,8 @@ const StyledHint = styled.p`
  * From the UniFi integration's image entity when there is one -- it already
  * draws the code for each WLAN, and it follows a password rotated in UniFi --
  * otherwise drawn here from the name and password stored with the dashboard
- * in Home Assistant.
+ * in Home Assistant. The code only, never the password in plain text: a
+ * tablet in the hall is read by more than the guests it is meant for.
  */
 const WifiPopup: React.FC<{ open: boolean; onClose: () => void; config: SidebarConfig }> = ({ open, onClose, config }) => {
   const t = useT();
@@ -88,16 +70,6 @@ const WifiContent: React.FC<{ wifi: SidebarConfig['guest_wifi'] }> = ({ wifi }) 
         <QRCodeSVG value={wifiQrPayload(wifi.ssid, wifi.password, wifi.security, wifi.hidden)} level='M' marginSize={0} />
       </StyledCode>
       <StyledHint>{t('guest_wifi_hint')}</StyledHint>
-      <StyledDetails>
-        <dt>{t('network')}</dt>
-        <dd>{wifi.ssid}</dd>
-        {wifi.security !== 'nopass' && (
-          <>
-            <dt>{t('password')}</dt>
-            <dd>{wifi.password}</dd>
-          </>
-        )}
-      </StyledDetails>
     </>
   );
 };

@@ -1,20 +1,25 @@
 import styled from 'styled-components';
-import { u } from '../../themes/default.theme';
+
+/*
+ * The plain controls, drawn in Home Assistant's own colours and sizes so a
+ * page without its controls still reads as one of its settings pages. In
+ * pixels, as Home Assistant's are: the editor runs on a desk, not on the wall.
+ */
 
 export const StyledField = styled.label`
   display: flex;
   flex-direction: column;
-  gap: ${u(0.25)};
+  gap: 6px;
   min-width: 0;
-  font-size: ${u(0.85)};
 
   > span.label {
-    color: ${({ theme }) => theme.text.secondary};
+    font-weight: 500;
   }
 
-  > small {
-    color: ${({ theme }) => theme.text.muted};
-    font-size: ${u(0.75)};
+  small {
+    display: block;
+    color: var(--secondary-text-color);
+    font-size: 13px;
   }
 
   input:not([type='checkbox']):not([type='range']),
@@ -22,79 +27,88 @@ export const StyledField = styled.label`
   textarea {
     width: 100%;
     min-width: 0;
-    padding: ${u(0.5)} ${u(0.7)};
-    border-radius: ${u(0.6)};
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(0, 0, 0, 0.25);
+    box-sizing: border-box;
+    padding: 9px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--divider-color, #3d3d3d);
+    background: var(--card-background-color, #1c1c1c);
     color: inherit;
-    font-size: ${u(0.9)};
-    outline: none;
+    font: inherit;
   }
 
   input:focus,
   select:focus,
   textarea:focus {
-    border-color: ${({ theme }) => theme.colors.accent};
+    outline: 2px solid var(--primary-color, #03a9f4);
+    outline-offset: -1px;
   }
 
-  option {
-    background: #222;
+  input[type='range'] {
+    accent-color: var(--primary-color, #03a9f4);
+  }
+
+  .with-icon {
+    display: flex;
+    gap: 8px;
+    align-items: center;
   }
 `;
 
 export const StyledCheck = styled.label`
   display: flex;
-  align-items: center;
-  gap: ${u(0.6)};
-  font-size: ${u(0.9)};
-  min-height: ${u(2.2)};
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
 
   input {
-    width: ${u(1.1)};
-    height: ${u(1.1)};
-    accent-color: ${({ theme }) => theme.colors.accent};
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    accent-color: var(--primary-color, #03a9f4);
+  }
+
+  small {
+    display: block;
+    color: var(--secondary-text-color);
+    font-size: 13px;
   }
 `;
 
+/** Fields side by side where there is room, one under the other where there is not. */
 export const StyledRow = styled.div<{ $columns?: string }>`
   display: grid;
-  grid-template-columns: ${({ $columns }) => $columns ?? 'repeat(auto-fill, minmax(14em, 1fr))'};
-  gap: ${u(0.6)} ${u(0.9)};
-  align-items: end;
+  grid-template-columns: ${({ $columns }) => $columns ?? 'repeat(auto-fit, minmax(220px, 1fr))'};
+  gap: 16px;
+  align-items: start;
 `;
 
-export const StyledGroup = styled.fieldset`
-  border: ${({ theme }) => theme.card.border};
-  border-radius: ${u(1)};
-  background: rgba(255, 255, 255, 0.025);
-  padding: ${u(0.8)} ${u(1)} ${u(1)};
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: ${u(0.7)};
-  min-width: 0;
-
-  > legend {
-    padding: 0 ${u(0.4)};
-    font-weight: 600;
-    font-size: ${u(0.95)};
-  }
-`;
-
-export const StyledSmallButton = styled.button<{ $danger?: boolean; $primary?: boolean }>`
+/** Home Assistant's round icon button: 40 px, a wash on hover, red when it deletes. */
+export const StyledIconButton = styled.button<{ $danger?: boolean }>`
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 50%;
   display: inline-flex;
   align-items: center;
-  gap: ${u(0.35)};
-  padding: ${u(0.4)} ${u(0.8)};
-  border-radius: ${u(0.6)};
-  font-size: ${u(0.85)};
-  white-space: nowrap;
-  background: ${({ $primary, $danger, theme }) => ($primary ? theme.colors.accent : $danger ? 'rgba(255, 77, 77, 0.18)' : theme.bubble.background)};
-  color: ${({ $primary }) => ($primary ? '#0b141d' : 'inherit')};
-  font-weight: ${({ $primary }) => ($primary ? 600 : 400)};
+  justify-content: center;
+  background: transparent;
+  color: var(--secondary-text-color);
+  cursor: pointer;
+  --mdc-icon-size: 20px;
+  font-size: 20px;
+
+  &:hover:enabled {
+    background: ${({ $danger }) => ($danger ? 'var(--error-color, #db4437)' : 'var(--secondary-background-color)')};
+    color: ${({ $danger }) => ($danger ? '#fff' : 'var(--primary-text-color)')};
+  }
 
   &:disabled {
-    opacity: 0.4;
+    opacity: 0.3;
     cursor: default;
+  }
+
+  &.add {
+    color: var(--primary-color, #03a9f4);
   }
 `;

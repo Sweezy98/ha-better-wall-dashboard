@@ -6,20 +6,31 @@
  * Home Assistant sets `hass`, `narrow`, `route` and `panel` on each. The
  * dashboard borrows Home Assistant's own connection through
  * `window.hassConnection` (ha-component-kit's inherited auth), so `hass` is
- * accepted and never acted on: it is set on every state change in the house,
- * and doing anything with it here would re-render everything dozens of times
- * a minute -- the bug this rewrite exists to remove. Only `narrow` is read.
+ * never rendered from: it is set on every state change in the house, and
+ * re-rendering on it would redraw everything dozens of times a minute -- the
+ * bug this rewrite exists to remove. It is only passed on, outside React, to
+ * the editor's borrowed Home Assistant controls (see hassObject.ts).
  */
 import { attach, detach } from './mount';
 import { setEntryUrl } from './entry';
 import { setModeState, type Mode } from './mode';
+import { setHassObject, type HassObject } from './hassObject';
 
 function define(tag: string, mode: Mode): void {
   class WallDashboardPanel extends HTMLElement {
-    hass?: unknown;
     route?: unknown;
     panel?: unknown;
     private _narrow = false;
+    private _hass: HassObject | null = null;
+
+    get hass(): HassObject | null {
+      return this._hass;
+    }
+
+    set hass(value: HassObject | null) {
+      this._hass = value;
+      if (this.isConnected) setHassObject(value);
+    }
 
     get narrow(): boolean {
       return this._narrow;
@@ -31,15 +42,17 @@ function define(tag: string, mode: Mode): void {
     }
 
     connectedCallback(): void {
-      // Home Assistant may have set `narrow` before this class was defined;
-      // that left a plain property shadowing the setter above.
-      if (Object.prototype.hasOwnProperty.call(this, 'narrow')) {
-        const value = (this as unknown as { narrow: boolean }).narrow;
-        delete (this as unknown as { narrow?: boolean }).narrow;
-        this.narrow = value;
+      // Home Assistant may have set these before this class was defined;
+      // that left plain properties shadowing the setters above.
+      for (const key of ['narrow', 'hass'] as const) {
+        if (!Object.prototype.hasOwnProperty.call(this, key)) continue;
+        const value = (this as unknown as Record<string, unknown>)[key];
+        delete (this as unknown as Record<string, unknown>)[key];
+        (this as unknown as Record<string, unknown>)[key] = value;
       }
       attach(this, { hassUrl: window.location.origin, embedded: true }, mode);
       setModeState({ narrow: this._narrow });
+      setHassObject(this._hass);
     }
 
     disconnectedCallback(): void {

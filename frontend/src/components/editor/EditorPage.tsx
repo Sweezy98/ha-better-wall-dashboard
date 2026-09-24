@@ -1,177 +1,94 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import styled from 'styled-components';
-import { u } from '../../themes/default.theme';
 import type { Dashboard, DashboardDocument } from '../../config/types';
 import { useConnection, useT } from '../../hooks/useHa';
+import type { TranslationKey } from '../../lib/i18n';
 import { useModeState } from '../../panel/mode';
 import { openHomeAssistantSidebar } from '../../panel/kiosk';
 import Icon from '../base/icon/Icon';
-import SidebarForm from './SidebarForm';
-import PagesForm from './PagesForm';
-import ButtonsForm from './ButtonsForm';
-import UsersForm from './UsersForm';
+import HaButton from './ha/HaButton';
+import EditorNav from './EditorNav';
 import EditorPreview from './EditorPreview';
+import UsersForm from './UsersForm';
+import GeneralScreen from './screens/GeneralScreen';
+import SidebarScreen from './screens/SidebarScreen';
+import JsonScreen from './screens/JsonScreen';
+import { PageScreen, PagesScreen, SectionScreen } from './screens/PagesScreens';
+import { ButtonScreen, ButtonsScreen } from './screens/ButtonsScreens';
 import { DEVICES } from '../../lib/devices';
-import { EntityCatalog, RangeField, TextField } from './fields';
-import { StyledField, StyledGroup, StyledRow, StyledSmallButton } from './fields.styled';
-import { newId } from '../../lib/editing';
+import { EntityCatalog, SelectField } from './fields';
+import { copyOf, newId } from '../../lib/editing';
+import { branchesOf, clampView, crumbsOf, type EditorView } from '../../lib/editorNav';
+import {
+  StyledBody,
+  StyledEditor,
+  StyledHeader,
+  StyledHeaderButton,
+  StyledOverflow,
+  StyledPreviewCard,
+  StyledScreen,
+  StyledScrim,
+} from './editor.styled';
+import type { ScreenProps } from './screens/common';
 
-const TABS = ['general', 'sidebar', 'pages', 'buttons', 'users', 'json'] as const;
-type Tab = (typeof TABS)[number];
-
-/**
- * The editor runs on a desk, not on the wall: a fixed unit rather than one
- * scaled to the screen, so forms are the same size in any window.
- */
-const StyledPage = styled.div`
-  --u: 14px;
-  width: 100%;
-  height: 100%;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  background: #101316;
-  color: ${({ theme }) => theme.text.primary};
-`;
-
-const StyledTopBar = styled.header`
-  display: flex;
-  align-items: center;
-  gap: ${u(0.7)};
-  padding: ${u(0.7)} ${u(1.2)};
-  border-bottom: ${({ theme }) => theme.card.border};
-  background: #14191e;
-  flex-wrap: wrap;
-
-  h1 {
-    margin: 0 auto 0 0;
-    font-size: ${u(1.3)};
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: ${u(0.6)};
-    white-space: nowrap;
+/** The screen for where the editor is. */
+const Screen: React.FC<ScreenProps & { view: EditorView; dashboards: { id: string; name: string }[] }> = ({
+  view,
+  dashboards,
+  ...props
+}) => {
+  switch (view.kind) {
+    case 'general':
+      return <GeneralScreen {...props} />;
+    case 'sidebar':
+      return <SidebarScreen {...props} part={view.part} />;
+    case 'pages':
+      return <PagesScreen {...props} />;
+    case 'page':
+      return <PageScreen {...props} page={view.page} />;
+    case 'section':
+      return <SectionScreen {...props} page={view.page} section={view.section} />;
+    case 'buttons':
+      return <ButtonsScreen {...props} />;
+    case 'button':
+      return <ButtonScreen {...props} button={view.button} />;
+    case 'users':
+      return <UsersForm dashboards={dashboards} />;
+    case 'json':
+      // Keyed by the dashboard, so switching to another starts from its text.
+      return <JsonScreen key={props.draft.id} {...props} />;
   }
-
-  select {
-    padding: ${u(0.45)} ${u(0.7)};
-    border-radius: ${u(0.6)};
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    color: inherit;
-    font-size: ${u(0.9)};
-  }
-
-  .status {
-    font-size: ${u(0.85)};
-    color: ${({ theme }) => theme.text.secondary};
-    white-space: nowrap;
-  }
-`;
-
-const StyledBody = styled.div`
-  display: grid;
-  grid-template-columns: minmax(${u(30)}, 42%) minmax(0, 1fr);
-  min-height: 0;
-
-  @media (max-width: 1100px) {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) ${u(24)};
-  }
-`;
-
-const StyledForms = styled.div`
-  overflow-y: auto;
-  padding: ${u(0.4)} ${u(1.2)} ${u(2)};
-  display: flex;
-  flex-direction: column;
-  gap: ${u(0.8)};
-  border-right: ${({ theme }) => theme.card.border};
-`;
-
-const StyledTabs = styled.div`
-  display: flex;
-  gap: ${u(0.3)};
-  flex-wrap: wrap;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  padding: ${u(0.6)} 0;
-  background: #101316;
-
-  button {
-    padding: ${u(0.45)} ${u(0.9)};
-    border-radius: ${u(1)};
-    font-size: ${u(0.95)};
-    color: ${({ theme }) => theme.text.secondary};
-  }
-
-  button[aria-selected='true'] {
-    background: ${({ theme }) => theme.bubble.header};
-    color: ${({ theme }) => theme.text.primary};
-  }
-`;
-
-const StyledPreviewPane = styled.section`
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  min-height: 0;
-  min-width: 0;
-  background: radial-gradient(80% 80% at 50% 40%, #1a2129, #0c0f12);
-
-  .toolbar {
-    display: flex;
-    gap: ${u(0.6)};
-    align-items: center;
-    padding: ${u(0.6)} ${u(1)};
-    font-size: ${u(0.85)};
-    color: ${({ theme }) => theme.text.secondary};
-  }
-
-  .toolbar select {
-    padding: ${u(0.35)} ${u(0.6)};
-    border-radius: ${u(0.6)};
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    color: inherit;
-  }
-`;
-
-const StyledJson = styled.textarea`
-  min-height: 60dvh;
-  font-family: ui-monospace, 'JetBrains Mono', monospace;
-  font-size: ${u(0.8)};
-`;
-
-const copyOf = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
+};
 
 /**
  * Where an admin builds the dashboards: its own panel in Home Assistant's
- * sidebar, admin-only, and never on the wall tablet.
+ * sidebar, admin-only, and never on the wall tablet -- laid out as Home
+ * Assistant lays out its own settings: its toolbar, a menu of what there is
+ * to set up, one screen at a time, and here the tablet itself beside it.
  *
- * Edits a draft of one dashboard, shown live beside the forms as the chosen
- * tablet would draw it, and saves it whole. Every tablet showing that
- * dashboard redraws the moment the save lands.
+ * Edits a draft of one dashboard, shown live as the chosen tablet would draw
+ * it, and saves it whole. Every tablet showing that dashboard redraws the
+ * moment the save lands.
  */
 const EditorPage: React.FC = () => {
   const t = useT();
   const connection = useConnection();
   const { narrow } = useModeState();
   const [document, setDocument] = useState<DashboardDocument | null>(null);
-  const [selected, setSelected] = useState('default');
   const [draft, setDraft] = useState<Dashboard | null>(null);
   const [dirty, setDirty] = useState(false);
-  const [tab, setTab] = useState<Tab>('general');
   const [status, setStatus] = useState('');
-  const [jsonText, setJsonText] = useState('');
+  const [view, setView] = useState<EditorView>({ kind: 'general' });
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  const [drawer, setDrawer] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [deviceId, setDeviceId] = useState<string>(DEVICES[0].id);
   const [portrait, setPortrait] = useState(false);
   const device = DEVICES.find(item => item.id === deviceId) ?? DEVICES[0];
 
   /** Start editing one dashboard of `source`, dropping any unsaved draft. */
-  const open = useCallback((source: DashboardDocument, id: string) => {
-    const dashboard = source.dashboards[id] ?? source.dashboards.default;
-    setSelected(dashboard.id);
-    setDraft(copyOf(dashboard));
+  const load = useCallback((source: DashboardDocument, id: string) => {
+    setDraft(copyOf(source.dashboards[id] ?? source.dashboards.default));
     setDirty(false);
   }, []);
 
@@ -180,10 +97,10 @@ const EditorPage: React.FC = () => {
       ?.sendMessagePromise<DashboardDocument>({ type: 'better_wall_dashboard/document' })
       .then(result => {
         setDocument(result);
-        open(result, 'default');
+        load(result, 'default');
       })
       .catch(error => setStatus(String(error?.message ?? error)));
-  }, [connection, open]);
+  }, [connection, load]);
 
   // Leaving the page with unsaved changes asks first, like any editor.
   useEffect(() => {
@@ -193,18 +110,30 @@ const EditorPage: React.FC = () => {
     return () => window.removeEventListener('beforeunload', warn);
   }, [dirty]);
 
-  const showTab = (name: Tab) => {
-    // The JSON view is a snapshot taken when it is opened, so typing into it
-    // is not overwritten by the draft it is about to replace.
-    if (name === 'json' && draft) setJsonText(JSON.stringify(draft, null, 2));
-    setTab(name);
-  };
-
   const update = useCallback((next: Dashboard) => {
     setDraft(next);
     setDirty(true);
     setStatus('');
   }, []);
+
+  /** Open a screen, unfold the menu on the way to it, and fold the drawer away. */
+  const open = useCallback((next: EditorView, expand?: string) => {
+    setView(next);
+    setExpanded(current => new Set([...current, ...branchesOf(next), ...(expand ? [expand] : [])]));
+    setDrawer(false);
+    setMenu(false);
+    setShowPreview(false);
+  }, []);
+
+  const toggle = useCallback((key: string) => {
+    setExpanded(current => {
+      const next = new Set(current);
+      if (!next.delete(key)) next.add(key);
+      return next;
+    });
+  }, []);
+
+  const confirmDiscard = () => !dirty || window.confirm(`${t('discard')}?`);
 
   const save = async () => {
     if (!connection || !draft) return;
@@ -217,7 +146,6 @@ const EditorPage: React.FC = () => {
       setDocument(current =>
         current ? { ...current, dashboards: { ...current.dashboards, [result.dashboard.id]: result.dashboard } } : current
       );
-      setSelected(result.dashboard.id);
       setDraft(copyOf(result.dashboard));
       setDirty(false);
       setStatus(t('saved'));
@@ -226,172 +154,199 @@ const EditorPage: React.FC = () => {
     }
   };
 
-  const confirmDiscard = () => !dirty || window.confirm(t('discard') + '?');
+  const discard = () => {
+    if (!document || !draft || !confirmDiscard()) return;
+    const stored = document.dashboards[draft.id];
+    if (stored) load(document, draft.id);
+    else load(document, 'default');
+    setStatus('');
+  };
+
+  const switchTo = (id: string) => {
+    if (!document || !confirmDiscard()) return;
+    load(document, id);
+    open({ kind: 'general' });
+  };
 
   const create = (from?: Dashboard) => {
     if (!document || !confirmDiscard()) return;
     const base = copyOf(from ?? document.dashboards.default);
-    const created: Dashboard = { ...base, id: newId(), name: from ? `${from.name} (2)` : t('new_dashboard') };
-    setDraft(created);
-    setSelected(created.id);
+    setDraft({ ...base, id: newId(), name: from ? `${from.name} (2)` : t('new_dashboard') });
     setDirty(true);
-    showTab('general');
+    open({ kind: 'general' });
   };
 
   const remove = async () => {
+    setMenu(false);
     if (!connection || !draft || !document || draft.id === 'default') return;
     if (!window.confirm(t('confirm_delete', { name: draft.name }))) return;
-    await connection.sendMessagePromise({ type: 'better_wall_dashboard/delete_dashboard', dashboard_id: draft.id });
+    if (document.dashboards[draft.id]) {
+      await connection.sendMessagePromise({ type: 'better_wall_dashboard/delete_dashboard', dashboard_id: draft.id });
+    }
     const dashboards = { ...document.dashboards };
     delete dashboards[draft.id];
     const next = { ...document, dashboards };
     setDocument(next);
-    open(next, 'default');
+    load(next, 'default');
+    open({ kind: 'general' });
   };
 
   const dashboards = useMemo(() => {
     const list = Object.values(document?.dashboards ?? {}).map(item => ({ id: item.id, name: item.name }));
     if (draft && !list.some(item => item.id === draft.id)) list.push({ id: draft.id, name: draft.name });
-    return list;
+    return list.map(item => (item.id === draft?.id ? { ...item, name: draft.name } : item));
   }, [document, draft]);
 
+  if (!draft) {
+    return (
+      <StyledEditor>
+        <StyledHeader data-narrow={narrow}>
+          <span className='app-title'>{t('editor_title')}</span>
+        </StyledHeader>
+        <p style={{ padding: 24 }}>{status || t('loading')}</p>
+      </StyledEditor>
+    );
+  }
+
+  const current = clampView(view, draft);
+  const crumbs = crumbsOf(current, {
+    label: key => t(key as TranslationKey),
+    page: index => t('page_n', { n: index + 1 }),
+    section: (page, index) => draft.pages[page]?.sections[index]?.name || t('section_n', { n: index + 1 }),
+    button: index => draft.buttons[index]?.name || t('button_n', { n: index + 1 }),
+  });
+  const previewPage = current.kind === 'page' || current.kind === 'section' ? current.page : undefined;
+  const savesWithDashboard = current.kind !== 'users';
+
   return (
-    <StyledPage>
-      <StyledTopBar>
-        {narrow && (
-          <StyledSmallButton type='button' aria-label='Menu' onClick={event => openHomeAssistantSidebar(event.currentTarget)}>
+    <EntityCatalog>
+      <StyledEditor>
+        <StyledHeader data-narrow={narrow}>
+          <StyledHeaderButton
+            type='button'
+            className='only-narrow'
+            aria-label={t('menu')}
+            onClick={event => openHomeAssistantSidebar(event.currentTarget)}
+          >
             <Icon icon='mdi:menu' />
-          </StyledSmallButton>
-        )}
-        <h1>
-          <Icon icon='mdi:view-dashboard-edit' /> {t('editor_title')}
-        </h1>
-        <span className='status'>{dirty ? t('unsaved') : status}</span>
-        <select
-          value={selected}
-          aria-label={t('dashboard')}
-          onChange={event => {
-            if (!confirmDiscard() || !document) return;
-            open(document, event.target.value);
-          }}
-        >
-          {dashboards.map(item => (
-            <option key={item.id} value={item.id}>
-              {item.name}
-            </option>
-          ))}
-        </select>
-        <StyledSmallButton type='button' disabled={!document} onClick={() => create()} title={t('new_dashboard')}>
-          <Icon icon='mdi:plus' /> {t('new_dashboard')}
-        </StyledSmallButton>
-        <StyledSmallButton type='button' disabled={!draft} onClick={() => draft && create(draft)} title={t('duplicate')}>
-          <Icon icon='mdi:content-copy' />
-        </StyledSmallButton>
-        <StyledSmallButton type='button' $danger disabled={!draft || draft.id === 'default'} onClick={remove} title={t('delete_dashboard')}>
-          <Icon icon='mdi:delete-outline' />
-        </StyledSmallButton>
-        <StyledSmallButton type='button' $primary disabled={!dirty} onClick={save}>
-          <Icon icon='mdi:content-save' /> {t('save')}
-        </StyledSmallButton>
-      </StyledTopBar>
-
-      <EntityCatalog>
-        <StyledBody>
-          <StyledForms>
-            <StyledTabs role='tablist'>
-              {TABS.map(name => (
-                <button key={name} type='button' role='tab' aria-selected={tab === name} onClick={() => showTab(name)}>
-                  {t(`tab_${name}`)}
-                </button>
+          </StyledHeaderButton>
+          <StyledHeaderButton type='button' className='only-drawer' aria-label={t('editor_menu')} onClick={() => setDrawer(true)}>
+            <Icon icon='mdi:format-list-bulleted' />
+          </StyledHeaderButton>
+          <div className='titles'>
+            <span className='app-title'>{t('editor_title')}</span>
+            <nav aria-label={t('editor_menu')}>
+              <button type='button' onClick={() => open({ kind: 'general' })}>
+                {draft.name}
+              </button>
+              {crumbs.map((crumb, index) => (
+                <span key={index}>
+                  {'› '}
+                  {crumb.view ? (
+                    <button type='button' onClick={() => open(crumb.view!)}>
+                      {crumb.label}
+                    </button>
+                  ) : (
+                    crumb.label
+                  )}
+                </span>
               ))}
-            </StyledTabs>
-            {!draft && <p>{status || t('loading')}</p>}
-            {draft && tab === 'general' && (
-              <StyledGroup>
-                <legend>{t('tab_general')}</legend>
-                <TextField label={t('name')} value={draft.name} onChange={name => update({ ...draft, name })} />
-                <TextField
-                  label={t('pin')}
-                  hint={t('pin_hint')}
-                  type='password'
-                  value={draft.pin ?? ''}
-                  onChange={pin => update({ ...draft, pin: pin.replace(/\D/g, '').slice(0, 8) })}
-                />
-                <TextField
-                  label={t('background_image')}
-                  hint={t('background_image_hint')}
-                  value={draft.background.image}
-                  onChange={image => update({ ...draft, background: { ...draft.background, image } })}
-                />
-                <StyledRow>
-                  <RangeField
-                    label={t('background_dim')}
-                    value={draft.background.dim}
-                    min={0}
-                    max={0.95}
-                    step={0.05}
-                    format={value => `${Math.round(value * 100)} %`}
-                    onChange={dim => update({ ...draft, background: { ...draft.background, dim } })}
-                  />
-                  <RangeField
-                    label={t('background_blur')}
-                    value={draft.background.blur}
-                    min={0}
-                    max={40}
-                    step={1}
-                    format={value => `${value} px`}
-                    onChange={blur => update({ ...draft, background: { ...draft.background, blur } })}
-                  />
-                </StyledRow>
-              </StyledGroup>
+            </nav>
+          </div>
+          <span className='spacer' />
+          <StyledHeaderButton
+            type='button'
+            className='only-no-preview'
+            aria-pressed={showPreview}
+            aria-label={t('preview')}
+            title={t('preview')}
+            onClick={() => setShowPreview(value => !value)}
+          >
+            <Icon icon={showPreview ? 'mdi:form-select' : 'mdi:tablet-dashboard'} />
+          </StyledHeaderButton>
+          <StyledOverflow>
+            <StyledHeaderButton type='button' aria-label={t('more')} aria-expanded={menu} onClick={() => setMenu(value => !value)}>
+              <Icon icon='mdi:dots-vertical' />
+            </StyledHeaderButton>
+            {menu && (
+              <div className='menu' role='menu'>
+                <button type='button' role='menuitem' onClick={() => create()}>
+                  <Icon icon='mdi:plus' /> {t('new_dashboard')}
+                </button>
+                <button type='button' role='menuitem' onClick={() => create(draft)}>
+                  <Icon icon='mdi:content-copy' /> {t('duplicate')}
+                </button>
+                <button type='button' role='menuitem' onClick={() => open({ kind: 'json' })}>
+                  <Icon icon='mdi:code-json' /> {t('edit_json')}
+                </button>
+                <hr />
+                <button type='button' role='menuitem' className='danger' disabled={draft.id === 'default'} onClick={remove}>
+                  <Icon icon='mdi:delete-outline' /> {t('delete_dashboard')}
+                </button>
+              </div>
             )}
-            {draft && tab === 'sidebar' && <SidebarForm value={draft.sidebar} onChange={sidebar => update({ ...draft, sidebar })} />}
-            {draft && tab === 'pages' && <PagesForm pages={draft.pages} onChange={pages => update({ ...draft, pages })} />}
-            {draft && tab === 'buttons' && <ButtonsForm buttons={draft.buttons} onChange={buttons => update({ ...draft, buttons })} />}
-            {tab === 'users' && <UsersForm dashboards={dashboards} />}
-            {draft && tab === 'json' && (
-              <StyledField>
-                <span className='label'>{t('json_hint')}</span>
-                <StyledJson value={jsonText} spellCheck={false} onChange={event => setJsonText(event.target.value)} />
-                <div>
-                  <StyledSmallButton
-                    type='button'
-                    onClick={() => {
-                      try {
-                        const parsed = JSON.parse(jsonText) as Dashboard;
-                        update({ ...parsed, id: draft.id });
-                      } catch {
-                        setStatus(t('json_invalid'));
-                      }
-                    }}
-                  >
-                    {t('apply')}
-                  </StyledSmallButton>
-                </div>
-              </StyledField>
-            )}
-          </StyledForms>
+          </StyledOverflow>
+        </StyledHeader>
 
-          <StyledPreviewPane>
-            <div className='toolbar'>
-              <span>{t('preview')}</span>
-              <select value={deviceId} onChange={event => setDeviceId(event.target.value)} aria-label={t('preview')}>
-                {DEVICES.map(item => (
-                  <option key={item.id} value={item.id}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-              <StyledSmallButton type='button' onClick={() => setPortrait(value => !value)} aria-pressed={portrait}>
-                <Icon icon={portrait ? 'mdi:phone-rotate-landscape' : 'mdi:phone-rotate-portrait'} />
-                {portrait ? t('landscape') : t('portrait')}
-              </StyledSmallButton>
+        <StyledBody>
+          <StyledScrim $open={drawer} onClick={() => setDrawer(false)} />
+          <EditorNav
+            dashboards={dashboards}
+            draft={draft}
+            view={current}
+            expanded={expanded}
+            open={drawer}
+            onToggle={toggle}
+            onOpen={open}
+            onSwitch={switchTo}
+            onNewDashboard={() => create()}
+          />
+
+          <StyledScreen $hidden={showPreview}>
+            <div className='screen-body'>
+              <Screen view={current} dashboards={dashboards} draft={draft} update={update} open={open} />
             </div>
-            {draft && <EditorPreview dashboard={draft} device={device} portrait={portrait} />}
-          </StyledPreviewPane>
+            {savesWithDashboard && (
+              <div className='screen-foot'>
+                <span className='status'>{dirty ? t('unsaved') : status}</span>
+                <span className='end'>
+                  <HaButton appearance='plain' disabled={!dirty} onClick={discard}>
+                    {t('discard')}
+                  </HaButton>
+                  <HaButton appearance='accent' icon='mdi:content-save-outline' disabled={!dirty} onClick={save}>
+                    {t('save')}
+                  </HaButton>
+                </span>
+              </div>
+            )}
+          </StyledScreen>
+
+          <StyledPreviewCard $shown={showPreview}>
+            <div className='preview-bar'>
+              <h2>{t('preview')}</h2>
+              <SelectField
+                label={t('device')}
+                value={deviceId}
+                options={DEVICES.map(item => ({ value: item.id, label: item.label }))}
+                onChange={setDeviceId}
+              />
+              <StyledHeaderButton
+                type='button'
+                style={{ color: 'var(--secondary-text-color)' }}
+                aria-label={portrait ? t('landscape') : t('portrait')}
+                title={portrait ? t('landscape') : t('portrait')}
+                onClick={() => setPortrait(value => !value)}
+              >
+                <Icon icon={portrait ? 'mdi:phone-rotate-landscape' : 'mdi:phone-rotate-portrait'} />
+              </StyledHeaderButton>
+            </div>
+            <div className='stage'>
+              <EditorPreview dashboard={draft} device={device} portrait={portrait} page={previewPage} />
+            </div>
+          </StyledPreviewCard>
         </StyledBody>
-      </EntityCatalog>
-    </StyledPage>
+      </StyledEditor>
+    </EntityCatalog>
   );
 };
 

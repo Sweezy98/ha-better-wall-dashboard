@@ -39,10 +39,11 @@ const StyledFrame = styled.div`
  * leaves alone.) Popups opened here fill the editor's window: they live in the
  * browser's top layer, which no transform reaches.
  */
-const EditorPreview: React.FC<{ dashboard: Dashboard; device: (typeof DEVICES)[number]; portrait: boolean }> = ({
+const EditorPreview: React.FC<{ dashboard: Dashboard; device: (typeof DEVICES)[number]; portrait: boolean; page?: number }> = ({
   dashboard,
   device,
   portrait,
+  page,
 }) => {
   const t = useT();
   const ref = useRef<HTMLDivElement>(null);
@@ -68,7 +69,7 @@ const EditorPreview: React.FC<{ dashboard: Dashboard; device: (typeof DEVICES)[n
   return (
     <StyledPreview ref={ref} aria-label={t('preview')}>
       <StyledFrame style={{ width, height, transform: `translate(-50%, -50%) scale(${scale})` }}>
-        <DashboardViewProvider view={view}>
+        <DashboardViewProvider view={view} focusPage={page}>
           <DashboardLayout />
         </DashboardViewProvider>
       </StyledFrame>

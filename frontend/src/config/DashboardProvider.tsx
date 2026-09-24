@@ -9,6 +9,8 @@ interface DashboardContextValue {
   /** Preview another dashboard on this device (admins, from the editor). */
   preview: (id: string | null) => void;
   previewing: string | null;
+  /** The editor's preview: the page it is editing, which the swiper turns to. */
+  focusPage?: number;
 }
 
 const DashboardContext = createContext<DashboardContextValue>({ view: null, error: null, preview: () => undefined, previewing: null });
@@ -75,8 +77,12 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
  * components the tablet uses. No subscription and no kiosk mode -- it is a
  * picture of the dashboard, not a tablet.
  */
-export const DashboardViewProvider: React.FC<{ view: DashboardView; children: React.ReactNode }> = ({ view, children }) => {
-  const value = useMemo(() => ({ view, error: null, preview: () => undefined, previewing: null }), [view]);
+export const DashboardViewProvider: React.FC<{ view: DashboardView; focusPage?: number; children: React.ReactNode }> = ({
+  view,
+  focusPage,
+  children,
+}) => {
+  const value = useMemo(() => ({ view, error: null, preview: () => undefined, previewing: null, focusPage }), [view, focusPage]);
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
 };
 

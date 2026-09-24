@@ -1,4 +1,5 @@
 import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useDashboardContext } from '../../../config/DashboardProvider';
 import { uniformCell } from '../../../lib/cell';
 import { useMouseSwipe } from '../../../hooks/useMouseSwipe';
 import styled from 'styled-components';
@@ -149,6 +150,14 @@ const PageSwiper: React.FC<{ pages: PageConfig[] }> = ({ pages }) => {
     const element = track.current;
     element?.scrollTo({ left: index * element.clientWidth, behavior: 'smooth' });
   };
+
+  // In the editor's preview: turn to the page being edited.
+  const { focusPage } = useDashboardContext();
+  useEffect(() => {
+    const element = track.current;
+    if (focusPage === undefined || !element) return;
+    element.scrollTo({ left: focusPage * element.clientWidth, behavior: 'smooth' });
+  }, [focusPage]);
 
   return (
     <StyledSwiper>
