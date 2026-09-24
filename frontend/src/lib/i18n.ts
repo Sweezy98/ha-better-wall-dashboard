@@ -67,7 +67,13 @@ const en = {
   highest: 'Highest',
   average: 'Average',
   route: 'Route',
-  no_map: 'Add a Google Maps embed URL or a Maps API key in the editor to see the route here.',
+  via: 'via',
+  traffic_delay: '+{minutes} min traffic',
+  map_blocked:
+    'Google blocked the map for this key. Add the Maps JavaScript API to the key’s API restrictions in the Google Cloud Console.',
+  map_key_error:
+    'The map could not be loaded with this key. Enable the Maps JavaScript API and the Routes API for it in the Google Cloud Console.',
+  no_map: 'Add a Google Maps API key (or an embed URL) in the editor to see the routes here.',
   close: 'Close',
   reload: 'Reload the dashboard',
   reload_hint: 'Fetches the newest version, past the app’s cache.',
@@ -127,8 +133,9 @@ const en = {
   travel_sensor: 'Travel time sensor',
   map_url: 'Google Maps embed URL',
   map_url_hint: 'In Google Maps: plan the route, then Share → Embed a map, and copy the src of the iframe.',
-  maps_api_key: 'Maps Embed API key',
-  maps_api_key_hint: 'Instead of an embed URL: the route is then drawn from the sensor’s origin and destination.',
+  maps_api_key: 'Google Maps API key',
+  maps_api_key_hint:
+    'Needs the Maps JavaScript API and the Routes API. The routes are then drawn on the dashboard’s own map, without Google’s overlays.',
   calendars: 'Calendars',
   days: 'Days',
   weather_entity: 'Weather entity',
@@ -224,7 +231,13 @@ const de: Record<TranslationKey, string> = {
   highest: 'Höchstwert',
   average: 'Durchschnitt',
   route: 'Route',
-  no_map: 'Im Editor eine Google-Maps-Einbettungs-URL oder einen Maps-API-Schlüssel eintragen, um die Route hier zu sehen.',
+  via: 'über',
+  traffic_delay: '+{minutes} Min. Verkehr',
+  map_blocked:
+    'Google hat die Karte für diesen Schlüssel blockiert. In der Google Cloud Console die Maps JavaScript API zu den API-Einschränkungen des Schlüssels hinzufügen.',
+  map_key_error:
+    'Die Karte konnte mit diesem Schlüssel nicht geladen werden. In der Google Cloud Console die Maps JavaScript API und die Routes API dafür aktivieren.',
+  no_map: 'Im Editor einen Google-Maps-API-Schlüssel (oder eine Einbettungs-URL) eintragen, um die Routen hier zu sehen.',
   close: 'Schließen',
   reload: 'Dashboard neu laden',
   reload_hint: 'Holt die neueste Version, am Cache der App vorbei.',
@@ -283,8 +296,9 @@ const de: Record<TranslationKey, string> = {
   travel_sensor: 'Fahrzeit-Sensor',
   map_url: 'Google-Maps-Einbettungs-URL',
   map_url_hint: 'In Google Maps die Route planen, dann Teilen → Karte einbetten, und den src des iframes kopieren.',
-  maps_api_key: 'Maps-Embed-API-Schlüssel',
-  maps_api_key_hint: 'Statt einer Einbettungs-URL: die Route wird dann aus Start und Ziel des Sensors gezeichnet.',
+  maps_api_key: 'Google-Maps-API-Schlüssel',
+  maps_api_key_hint:
+    'Benötigt die Maps JavaScript API und die Routes API. Die Routen werden dann auf einer eigenen Karte ohne Google-Einblendungen gezeichnet.',
   calendars: 'Kalender',
   days: 'Tage',
   weather_entity: 'Wetter-Entität',

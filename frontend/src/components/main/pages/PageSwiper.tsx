@@ -24,9 +24,10 @@ const StyledSwiper = styled.div`
 /*
  * The track reaches out into the gutter on either side and fades to nothing
  * across exactly that gutter; each page pads itself back in by the same
- * amount (see Page). At rest the fade covers only empty gutter, so nothing is
- * dimmed; during a swipe the pages wash out into the edges instead of being
- * sliced off by them.
+ * amount (see Page). So the haze lies between the pages and the sidebar's
+ * edge, never over the content: at rest it covers only empty gutter, and a
+ * page swiped away washes out as it reaches the sidebar (or the screen's
+ * edge) instead of being sliced off there.
  */
 const EDGE = u(1.1);
 
@@ -34,14 +35,6 @@ const StyledTrack = styled.div`
   margin: 0 calc(-1 * ${EDGE});
   mask-image: linear-gradient(to right, transparent, black ${EDGE}, black calc(100% - ${EDGE}), transparent);
   -webkit-mask-image: linear-gradient(to right, transparent, black ${EDGE}, black calc(100% - ${EDGE}), transparent);
-
-  /* While pages move, the edges wash out much further in, so a page leaves
-     through a haze rather than a line. Set from the scroll events, not from
-     React state: a swipe renders nothing. */
-  &[data-moving] {
-    mask-image: linear-gradient(to right, transparent, black 9%, black 91%, transparent);
-    -webkit-mask-image: linear-gradient(to right, transparent, black 9%, black 91%, transparent);
-  }
 
   display: flex;
   overflow-x: auto;
@@ -105,17 +98,9 @@ const PageSwiper: React.FC<{ pages: PageConfig[] }> = ({ pages }) => {
     const element = track.current;
     if (!element) return;
     let frame = 0;
-    let settle = 0;
     // The index only, and only when it changes: scrolling fires dozens of
     // events a second, and only the dots care.
     const onScroll = () => {
-      element.dataset.moving = '';
-      window.clearTimeout(settle);
-      // A finger or mouse still holding the page keeps the haze on even
-      // while it pauses; only a page at rest clears it.
-      settle = window.setTimeout(() => {
-        if (!('dragging' in element.dataset)) delete element.dataset.moving;
-      }, 250);
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         const index = Math.round(element.scrollLeft / Math.max(1, element.clientWidth));
@@ -126,7 +111,6 @@ const PageSwiper: React.FC<{ pages: PageConfig[] }> = ({ pages }) => {
     return () => {
       element.removeEventListener('scroll', onScroll);
       cancelAnimationFrame(frame);
-      window.clearTimeout(settle);
     };
   }, []);
 

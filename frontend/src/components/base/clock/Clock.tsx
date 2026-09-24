@@ -23,6 +23,7 @@ const StyledDate = styled.p`
   font-size: ${u(2.05)};
   margin-top: ${u(0.35)};
   padding-left: ${u(0.1)};
+  white-space: nowrap;
 `;
 
 /**
@@ -31,12 +32,14 @@ const StyledDate = styled.p`
  * Ticks on the minute -- the display has no seconds -- and is the only thing
  * on the dashboard that re-renders because time passed.
  */
-const Clock: React.FC = () => {
+const Clock: React.FC<{ timeProps?: React.HTMLAttributes<HTMLDivElement> }> = ({ timeProps }) => {
   const now = new Date(useTick(60_000));
   const language = useLanguage();
   return (
     <StyledClock>
-      <StyledTime>{formatTime(now, language)}</StyledTime>
+      <div {...timeProps}>
+        <StyledTime>{formatTime(now, language)}</StyledTime>
+      </div>
       <StyledDate>{formatDate(now, language)}</StyledDate>
     </StyledClock>
   );

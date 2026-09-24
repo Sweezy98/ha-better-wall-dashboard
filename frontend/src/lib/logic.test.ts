@@ -3,6 +3,7 @@ import { countOpen, isOpen } from './openings';
 import { mapEmbedUrl } from './travel';
 import { uniformCell } from './cell';
 import { swipeTarget } from './swipe';
+import { parseRoutes, routesRequest, trafficDelayMinutes, waypoint } from './routes';
 import { isStaleCandidate } from './reload';
 import { move } from './editing';
 import { groupByDay, type CalendarEvent } from './calendar';
@@ -36,23 +37,16 @@ describe('mapEmbedUrl', () => {
 
   it('accepts a pasted iframe snippet and keeps only its src', () => {
     const snippet = '<iframe src="https://www.google.com/maps/embed?pb=abc" width="600"></iframe>';
-    expect(mapEmbedUrl({ ...none, map_url: snippet }, undefined, undefined, 'de')).toBe('https://www.google.com/maps/embed?pb=abc');
+    expect(mapEmbedUrl({ ...none, map_url: snippet })).toBe('https://www.google.com/maps/embed?pb=abc');
   });
 
   it('refuses anything that is not a Google Maps embed', () => {
-    expect(mapEmbedUrl({ ...none, map_url: 'https://example.com/maps/embed' }, undefined, undefined, 'de')).toBeNull();
-    expect(mapEmbedUrl({ ...none, map_url: 'javascript:alert(1)' }, undefined, undefined, 'de')).toBeNull();
+    expect(mapEmbedUrl({ ...none, map_url: 'https://example.com/maps/embed' })).toBeNull();
+    expect(mapEmbedUrl({ ...none, map_url: 'javascript:alert(1)' })).toBeNull();
   });
 
-  it('builds a directions embed from an API key and the sensor', () => {
-    const url = new URL(mapEmbedUrl({ ...none, maps_api_key: 'KEY' }, 'A town', 'B city', 'de')!);
-    expect(url.pathname).toBe('/maps/embed/v1/directions');
-    expect(url.searchParams.get('origin')).toBe('A town');
-    expect(url.searchParams.get('mode')).toBe('driving');
-  });
-
-  it('has nothing to show without either', () => {
-    expect(mapEmbedUrl(none, 'A', 'B', 'de')).toBeNull();
+  it('has nothing to show without one', () => {
+    expect(mapEmbedUrl(none)).toBeNull();
   });
 });
 
@@ -138,5 +132,42 @@ describe('swipeTarget', () => {
   it('never goes past either end', () => {
     expect(swipeTarget(0, 400, 1000, 3)).toBe(0);
     expect(swipeTarget(2, -400, 1000, 3)).toBe(2);
+  });
+});
+
+describe('routes', () => {
+  it('sends an address as an address and coordinates as a location', () => {
+    expect(waypoint('Some Street 1, 1000 Town')).toEqual({ address: 'Some Street 1, 1000 Town' });
+    expect(waypoint('47.07, 15.44')).toEqual({ location: { latLng: { latitude: 47.07, longitude: 15.44 } } });
+  });
+
+  it('asks for traffic-aware alternatives by car', () => {
+    const body = routesRequest('A', 'B', 'de');
+    expect(body.travelMode).toBe('DRIVE');
+    expect(body.routingPreference).toBe('TRAFFIC_AWARE');
+    expect(body.computeAlternativeRoutes).toBe(true);
+  });
+
+  it('parses the protobuf durations and sorts the fastest first', () => {
+    const routes = parseRoutes({
+      routes: [
+        { description: 'B1', duration: '1500s', staticDuration: '1300s', distanceMeters: 11000, polyline: { encodedPolyline: 'abc' } },
+        { description: 'A2', duration: '1200s', staticDuration: '1150s', distanceMeters: 9600, polyline: { encodedPolyline: 'def' } },
+        { description: 'no line', duration: '900s' },
+      ],
+    });
+    expect(routes.map(route => route.description)).toEqual(['A2', 'B1']);
+    expect(routes[0].duration).toBe(1200);
+  });
+
+  it('survives an error response', () => {
+    expect(parseRoutes({ error: { code: 403 } })).toEqual([]);
+    expect(parseRoutes(null)).toEqual([]);
+  });
+
+  it('mentions traffic only when it costs a few minutes', () => {
+    const route = { description: '', distanceMeters: 0, polyline: 'x', staticDuration: 1200 };
+    expect(trafficDelayMinutes({ ...route, duration: 1260 })).toBe(0);
+    expect(trafficDelayMinutes({ ...route, duration: 1500 })).toBe(5);
   });
 });

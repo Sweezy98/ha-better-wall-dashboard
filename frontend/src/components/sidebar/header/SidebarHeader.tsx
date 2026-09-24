@@ -16,28 +16,40 @@ const StyledHeader = styled.div`
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: ${u(0.5)};
+  /* No gap: the icons' own boxes already keep them clear of the clock. */
   padding: 0 0 ${u(0.5)} ${u(0.3)};
 `;
 
+/**
+ * Top right, in as few rows as fit: one line when there is room beside the
+ * clock, wrapping only when there is not (four icons on a 10-inch tablet
+ * make two rows of two). Filled from the right, so the Wi-Fi button holds the
+ * corner; every cell is one button's size, so each row shares a centre line.
+ */
 const StyledStatus = styled.div`
+  flex: 1 1 0;
+  /* At least two to a row before it wraps. */
+  min-width: ${u(6)};
   display: flex;
-  align-items: center;
-  gap: ${u(0.1)};
-  /* Level with the top of the clock's digits, not with its line box: the
-     digits sit well below the top of a 6-unit line. */
-  margin-top: ${u(-0.2)};
-  margin-right: ${u(-0.5)};
+  flex-direction: row-reverse;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  align-content: flex-start;
+  margin: ${u(-0.3)} ${u(-0.6)} 0 0;
+
+  > :not(dialog) {
+    width: ${u(3)};
+    height: ${u(3)};
+    flex: none;
+  }
 `;
 
+/** The same box as the Wi-Fi button beside it, so their glyphs line up. */
 const StyledStatusIcon = styled.span`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: ${u(2.6)};
-  height: ${u(3)};
+  width: 100%;
+  height: 100%;
   font-size: ${u(1.5)};
 `;
 
@@ -76,14 +88,13 @@ const SidebarHeader: React.FC<{ config: SidebarConfig }> = ({ config }) => {
   const longPress = useLongPress(openHomeAssistantSidebar);
   return (
     <StyledHeader>
-      <div {...longPress}>
-        <Clock />
-      </div>
+      <Clock timeProps={longPress} />
       <StyledStatus>
-        {config.status.absence && <ModeIcon entityId={config.status.absence} icon='mdi:account-off' label={t('absence_mode')} />}
-        {config.status.guest && <ModeIcon entityId={config.status.guest} icon='mdi:account-multiple' label={t('guest_mode')} />}
-        {config.status.night && <ModeIcon entityId={config.status.night} icon='mdi:weather-night' label={t('night_mode')} />}
+        {/* Right to left: Wi-Fi first, so it always holds the corner. */}
         <WifiButton config={config} />
+        {config.status.night && <ModeIcon entityId={config.status.night} icon='mdi:weather-night' label={t('night_mode')} />}
+        {config.status.guest && <ModeIcon entityId={config.status.guest} icon='mdi:account-multiple' label={t('guest_mode')} />}
+        {config.status.absence && <ModeIcon entityId={config.status.absence} icon='mdi:account-off' label={t('absence_mode')} />}
       </StyledStatus>
     </StyledHeader>
   );

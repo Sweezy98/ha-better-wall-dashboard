@@ -7,6 +7,7 @@ import { useEntity, useLanguage, useT } from '../../hooks/useHa';
 import { useHistory } from '../../hooks/useHistory';
 import { durationToMinutes, formatMinutes } from '../../lib/format';
 import { mapEmbedUrl } from '../../lib/travel';
+import TravelMap from './TravelMap';
 
 const StyledMap = styled.div`
   width: 100%;
@@ -63,21 +64,28 @@ const TravelContent: React.FC<{ config: SidebarConfig['travel'] }> = ({ config }
   const entity = useEntity(config.entity || undefined);
   const samples = useHistory(config.entity || undefined, 24);
   const attributes = entity?.attributes ?? {};
-  // Only for drawing the route from an API key. Not shown: everybody at
-  // home knows where home and work are.
+  // Only for drawing the route. Not shown: everybody at home knows where
+  // home and work are.
   const origin = attributes.origin as string | undefined;
   const destination = attributes.destination as string | undefined;
-  const src = mapEmbedUrl(config, origin, destination, language);
+  // With a key the dashboard draws the map itself, free of Google's route
+  // card; a pasted embed URL is the fallback, card and all.
+  const ownMap = Boolean(config.maps_api_key && origin && destination);
+  const src = ownMap ? null : mapEmbedUrl(config);
 
   return (
     <>
-      <StyledMap>
-        {src ? (
-          <iframe src={src} title={t('route')} loading='lazy' referrerPolicy='no-referrer-when-downgrade' allowFullScreen />
-        ) : (
-          <StyledHint>{t('no_map')}</StyledHint>
-        )}
-      </StyledMap>
+      {ownMap ? (
+        <TravelMap apiKey={config.maps_api_key} origin={origin!} destination={destination!} />
+      ) : (
+        <StyledMap>
+          {src ? (
+            <iframe src={src} title={t('route')} loading='lazy' referrerPolicy='no-referrer-when-downgrade' allowFullScreen />
+          ) : (
+            <StyledHint>{t('no_map')}</StyledHint>
+          )}
+        </StyledMap>
+      )}
       <StyledGraph>
         <MiniGraph
           samples={samples}
