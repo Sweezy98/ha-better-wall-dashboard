@@ -1010,6 +1010,15 @@ function print() { __p += __j.call(arguments, '') }
   overflow: hidden;
   background: #1d2126;
 
+  /* Nothing of Google's on top of the map: not the logo, not the
+     attribution and terms bar. The owner's decision for a private wall
+     tablet -- Google's terms ask for both. */
+  .gm-style-cc,
+  .gm-style a[href*='maps.google.com'],
+  .gm-style a[href*='google.com/maps'] {
+    display: none !important;
+  }
+
   /* The one part that gives way on a short screen, so the routes and the
      graph below always fit without the popup scrolling. */
   && {
@@ -1775,7 +1784,7 @@ function print() { __p += __j.call(arguments, '') }
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
   }
-`;function O_(e,t){let n=t>e,r=8+.007*(n?e:t),i=n?e/58:e/94;return Math.max(11,Math.min(22,r,i))}function k_(e){(0,v.useLayoutEffect)(()=>{let t=e.current;if(!t)return;let n=()=>{let e=t.offsetWidth,n=t.offsetHeight;e&&n&&(t.style.setProperty(`--u`,`${O_(e,n).toFixed(2)}px`),t.dataset.orientation=n>e?`portrait`:`landscape`)};n();let r=new ResizeObserver(n);return r.observe(t),()=>r.disconnect()},[e])}var A_=new URL(`background-D0ndr4z6.jpg`,import.meta.url).href,j_=()=>{let{view:e,error:t}=Sd(),n=Z();return t?(0,C.jsx)(w_,{message:t===`not_loaded`||t===`unknown_command`?n(`not_loaded`):t}):e?(0,C.jsx)(M_,{}):(0,C.jsx)(w_,{message:n(`loading`)})},M_=()=>{let e=(0,v.useRef)(null),{view:t}=Sd();k_(e);let n=id(),r=t.dashboard.background,i=r.image?r.image.startsWith(`/`)?n(r.image):r.image:A_;return(0,C.jsxs)(T_,{ref:e,children:[(0,C.jsx)(E_,{$image:i,$dim:r.dim,$blur:r.blur}),(0,C.jsxs)(D_,{children:[(0,C.jsx)(x_,{}),(0,C.jsx)(ip,{})]})]})},N_={mode:`dashboard`,narrow:!1},P_=new Set;function F_(e){let t={...N_,...e};(t.mode!==N_.mode||t.narrow!==N_.narrow)&&(N_=t,P_.forEach(e=>e()))}function I_(){return(0,v.useSyncExternalStore)(e=>(P_.add(e),()=>P_.delete(e)),()=>N_)}function L_(e,t=3){return(0,v.lazy)(async()=>{for(let n=1;;n+=1)try{return await e()}catch(e){if(n>=t)throw e;await new Promise(e=>setTimeout(e,1e3*n))}})}var R_=L_(()=>M(()=>import(`./EditorPage-yEo57MNP.js`),[],import.meta.url)),z_=()=>{let{mode:e}=I_();return e===`editor`?(0,C.jsx)(v.Suspense,{fallback:(0,C.jsx)(w_,{}),children:(0,C.jsx)(R_,{})}):(0,C.jsx)(bd,{children:(0,C.jsx)(j_,{})})},B_=({hassUrl:e,hassToken:t,embedded:n,styleTarget:r})=>{let i=(0,v.useMemo)(()=>ct({key:`bwd`,container:r,speedy:!1}),[r]);return(0,C.jsx)(Pu,{target:r,disableCSSOMInjection:!0,children:(0,C.jsx)(ui,{value:i,children:(0,C.jsxs)(Lu,{theme:Zu,children:[(0,C.jsx)(Qu,{}),(0,C.jsx)(Hs,{hassUrl:e,hassToken:t,loading:(0,C.jsx)(w_,{}),wrapperProps:{className:`bwd-connect`},options:{handleResumeOptions:{suspendWhenHidden:!n}},children:(0,C.jsx)(z_,{})})]})})})},V_=null,H_=`
+`;function O_(e,t){let n=t>e,r=8+.007*(n?e:t),i=n?e/58:e/94;return Math.max(11,Math.min(22,r,i))}function k_(e){(0,v.useLayoutEffect)(()=>{let t=e.current;if(!t)return;let n=()=>{let e=t.offsetWidth,n=t.offsetHeight;e&&n&&(t.style.setProperty(`--u`,`${O_(e,n).toFixed(2)}px`),t.dataset.orientation=n>e?`portrait`:`landscape`)};n();let r=new ResizeObserver(n);return r.observe(t),()=>r.disconnect()},[e])}var A_=new URL(`background-D0ndr4z6.jpg`,import.meta.url).href,j_=()=>{let{view:e,error:t}=Sd(),n=Z();return t?(0,C.jsx)(w_,{message:t===`not_loaded`||t===`unknown_command`?n(`not_loaded`):t}):e?(0,C.jsx)(M_,{}):(0,C.jsx)(w_,{message:n(`loading`)})},M_=()=>{let e=(0,v.useRef)(null),{view:t}=Sd();k_(e);let n=id(),r=t.dashboard.background,i=r.image?r.image.startsWith(`/`)?n(r.image):r.image:A_;return(0,C.jsxs)(T_,{ref:e,children:[(0,C.jsx)(E_,{$image:i,$dim:r.dim,$blur:r.blur}),(0,C.jsxs)(D_,{children:[(0,C.jsx)(x_,{}),(0,C.jsx)(ip,{})]})]})},N_={mode:`dashboard`,narrow:!1},P_=new Set;function F_(e){let t={...N_,...e};(t.mode!==N_.mode||t.narrow!==N_.narrow)&&(N_=t,P_.forEach(e=>e()))}function I_(){return(0,v.useSyncExternalStore)(e=>(P_.add(e),()=>P_.delete(e)),()=>N_)}function L_(e,t=3){return(0,v.lazy)(async()=>{for(let n=1;;n+=1)try{return await e()}catch(e){if(n>=t)throw e;await new Promise(e=>setTimeout(e,1e3*n))}})}var R_=L_(()=>M(()=>import(`./EditorPage-BRpOZSaZ.js`),[],import.meta.url)),z_=()=>{let{mode:e}=I_();return e===`editor`?(0,C.jsx)(v.Suspense,{fallback:(0,C.jsx)(w_,{}),children:(0,C.jsx)(R_,{})}):(0,C.jsx)(bd,{children:(0,C.jsx)(j_,{})})},B_=({hassUrl:e,hassToken:t,embedded:n,styleTarget:r})=>{let i=(0,v.useMemo)(()=>ct({key:`bwd`,container:r,speedy:!1}),[r]);return(0,C.jsx)(Pu,{target:r,disableCSSOMInjection:!0,children:(0,C.jsx)(ui,{value:i,children:(0,C.jsxs)(Lu,{theme:Zu,children:[(0,C.jsx)(Qu,{}),(0,C.jsx)(Hs,{hassUrl:e,hassToken:t,loading:(0,C.jsx)(w_,{}),wrapperProps:{className:`bwd-connect`},options:{handleResumeOptions:{suspendWhenHidden:!n}},children:(0,C.jsx)(z_,{})})]})})})},V_=null,H_=`
   :host {
     display: block;
     position: relative;

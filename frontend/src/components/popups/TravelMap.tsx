@@ -22,6 +22,15 @@ const StyledMap = styled.div`
   overflow: hidden;
   background: #1d2126;
 
+  /* Nothing of Google's on top of the map: not the logo, not the
+     attribution and terms bar. The owner's decision for a private wall
+     tablet -- Google's terms ask for both. */
+  .gm-style-cc,
+  .gm-style a[href*='maps.google.com'],
+  .gm-style a[href*='google.com/maps'] {
+    display: none !important;
+  }
+
   /* The one part that gives way on a short screen, so the routes and the
      graph below always fit without the popup scrolling. */
   && {
