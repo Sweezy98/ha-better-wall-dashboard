@@ -68,7 +68,7 @@ const StyledFacts = styled.div`
   /* Two rows high: the reading on top as in every fact, the dial under it. */
   > .barometer {
     grid-row: span 2;
-    grid-template-rows: auto auto auto minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
     align-items: start;
   }
 

@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { u } from '../../themes/default.theme';
 import Icon from '../base/icon/Icon';
 import { useLanguage, useT } from '../../hooks/useHa';
@@ -15,20 +15,6 @@ const CY = 62;
 const RADIUS = 40;
 const TRACK = 5;
 
-const StyledRange = styled.span`
-  grid-column: 2;
-  display: flex;
-  align-items: center;
-  gap: ${u(0.6)};
-  font-size: ${u(0.85)};
-  color: ${({ theme }) => theme.text.secondary};
-
-  span {
-    display: inline-flex;
-    align-items: center;
-  }
-`;
-
 const StyledDial = styled.div`
   grid-column: 1 / -1;
   position: relative;
@@ -36,7 +22,7 @@ const StyledDial = styled.div`
   width: 100%;
   max-width: ${u(11)};
   aspect-ratio: ${WIDTH} / ${HEIGHT};
-  margin-top: ${u(0.3)};
+  margin-top: ${u(0.7)};
   color: ${({ theme }) => theme.text.secondary};
 
   svg {
@@ -64,6 +50,12 @@ const arc = (from: number, to: number) => {
   return `M ${start.x} ${start.y} A ${RADIUS} ${RADIUS} 0 0 1 ${end.x} ${end.y}`;
 };
 
+/** A small wedge on the track pointing at the centre: where the days' low or high was. */
+const marker = (fraction: number) =>
+  [point(fraction, RADIUS - TRACK / 2), point(fraction - 0.035, RADIUS + TRACK / 2 + 3), point(fraction + 0.035, RADIUS + TRACK / 2 + 3)]
+    .map(({ x, y }) => `${x},${y}`)
+    .join(' ');
+
 /** What the weather does along the dial: rain low, changeable in the middle, sun high. */
 const GLYPHS = [
   { fraction: 0.14, icon: 'mdi:weather-pouring' },
@@ -73,12 +65,13 @@ const GLYPHS = [
 
 /**
  * The air pressure as one of the weather facts, two rows high: the reading,
- * the last three days' low and high, and a flat half dial from storm to
- * settled -- the days' range a lighter stretch of the track, now a white dot.
+ * and a flat half dial from storm to settled: now as a white dot, the last
+ * three days' low and high as a blue and a red wedge on the track.
  */
 const Barometer: React.FC<{ entityId: string; value: number; unit: string | undefined }> = ({ entityId, value, unit }) => {
   const t = useT();
   const language = useLanguage();
+  const theme = useTheme();
   const range = useAttributeRange(entityId, 'pressure', 72);
   const toDial = (reading: number) => barometerFraction(pressureToHpa(reading, unit));
   const digits = unit === 'inHg' || unit === 'kPa' ? 2 : 0;
@@ -92,29 +85,18 @@ const Barometer: React.FC<{ entityId: string; value: number; unit: string | unde
       <span className='value'>
         {formatNumber(value, language, digits)} {unit ?? 'hPa'}
       </span>
-      {shownRange && (
-        <StyledRange title={t('pressure_range')}>
-          <span>
-            <Icon icon='mdi:arrow-down-thin' />
-            {formatNumber(shownRange.min, language, digits)}
-          </span>
-          <span>
-            <Icon icon='mdi:arrow-up-thin' />
-            {formatNumber(shownRange.max, language, digits)}
-          </span>
-        </StyledRange>
-      )}
       <StyledDial>
         <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} aria-hidden='true'>
           <path d={arc(0, 1)} fill='none' stroke='rgba(255, 255, 255, 0.08)' strokeWidth={TRACK} strokeLinecap='round' />
           {shownRange && (
-            <path
-              d={arc(toDial(shownRange.min), toDial(shownRange.max))}
-              fill='none'
-              stroke='rgba(255, 255, 255, 0.3)'
-              strokeWidth={TRACK}
-              strokeLinecap='round'
-            />
+            <>
+              <polygon points={marker(toDial(shownRange.min))} fill={theme.colors.temperature}>
+                <title>{`${t('pressure_low')}: ${formatNumber(shownRange.min, language, digits)}`}</title>
+              </polygon>
+              <polygon points={marker(toDial(shownRange.max))} fill={theme.colors.alert}>
+                <title>{`${t('pressure_high')}: ${formatNumber(shownRange.max, language, digits)}`}</title>
+              </polygon>
+            </>
           )}
           <circle cx={now.x} cy={now.y} r={4.6} fill='#fff' stroke='#1c1c20' strokeWidth={2} />
         </svg>
