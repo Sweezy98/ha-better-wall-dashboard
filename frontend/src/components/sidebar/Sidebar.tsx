@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import { useDashboard } from '../../config/DashboardProvider';
 import { StyledArea, StyledBody, StyledColumn, StyledSidebarContainer } from './Sidebar.styled';
 import SidebarHeader from './header/SidebarHeader';
@@ -9,7 +8,6 @@ import TravelTime from './travel/TravelTime';
 import QuickActions from './quickActions/QuickActions';
 import CalendarAgenda from './calendar/CalendarAgenda';
 import SidebarFooter from './footer/SidebarFooter';
-import { useDragScroll } from '../../hooks/useDragScroll';
 
 /**
  * The left column. Each block draws nothing when it is not configured, so a
@@ -18,14 +16,12 @@ import { useDragScroll } from '../../hooks/useDragScroll';
  */
 const Sidebar: React.FC = () => {
   const { sidebar } = useDashboard();
-  const body = useRef<HTMLDivElement>(null);
-  useDragScroll(body);
   return (
     <StyledSidebarContainer as='aside'>
       <StyledArea $area='header' data-area='header'>
         <SidebarHeader config={sidebar} />
       </StyledArea>
-      <StyledBody ref={body}>
+      <StyledBody>
         <StyledColumn $side='left'>
           <StyledArea $area='climate' data-area='climate'>
             <RoomClimate config={sidebar.climate} />

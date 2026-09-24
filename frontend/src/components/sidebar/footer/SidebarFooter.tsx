@@ -4,6 +4,7 @@ import { u } from '../../../themes/default.theme';
 import { pressable } from '../../../themes/interaction';
 import type { SidebarConfig } from '../../../config/types';
 import IconButton from '../../base/iconButton/IconButton';
+import Icon from '../../base/icon/Icon';
 import WeatherIcon from '../../base/weatherIcon/WeatherIcon';
 import WeatherPopup from '../../popups/WeatherPopup';
 import NotificationsPopup from '../../popups/NotificationsPopup';
@@ -27,7 +28,7 @@ const StyledFooter = styled.div`
 const StyledWeather = styled.button`
   flex: 1 1 auto;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto auto minmax(0, 1fr);
   grid-template-rows: auto auto;
   column-gap: ${u(1)};
   align-items: center;
@@ -56,16 +57,25 @@ const StyledWeather = styled.button`
     text-overflow: ellipsis;
   }
 
+  /* Right beside now, not pushed to the far end of the button. */
   .range {
     grid-column: 3;
     grid-row: 1 / 3;
-    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: ${u(0.15)};
     font-size: ${u(1.05)};
-    line-height: 1.45;
     white-space: nowrap;
   }
 
   .range span {
+    display: flex;
+    align-items: center;
+    gap: ${u(0.1)};
+  }
+
+  .range .icon {
+    font-size: ${u(1.3)};
     color: ${({ theme }) => theme.text.secondary};
   }
 `;
@@ -104,9 +114,14 @@ const Weather: React.FC<{ config: SidebarConfig['weather'] }> = ({ config }) => 
         <span className='condition'>{conditionLabel(weather?.state, language)}</span>
         {today && (
           <span className='range'>
-            <span>{t('high_short')}</span> {degrees(today.temperature)}
-            <br />
-            <span>{t('low_short')}</span> {degrees(today.templow)}
+            <span title={t('high_short')}>
+              <Icon className='icon' icon='mdi:arrow-up-thin' />
+              {degrees(today.temperature)}
+            </span>
+            <span title={t('low_short')}>
+              <Icon className='icon' icon='mdi:arrow-down-thin' />
+              {degrees(today.templow)}
+            </span>
           </span>
         )}
       </StyledWeather>

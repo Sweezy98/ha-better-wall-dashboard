@@ -14,10 +14,10 @@ const StyledAgenda = styled.div`
      bottom edge fades so a cut-off day reads as "more below", and the extra
      padding lets the last one scroll clear of the fade. A tap opens the
      calendar; a scroll gesture does not, because it never becomes a click. */
-  display: block;
+  flex: 1 1 0;
+  min-height: 0;
   box-sizing: border-box;
   width: 100%;
-  height: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: none;

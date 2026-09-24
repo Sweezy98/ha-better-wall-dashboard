@@ -13,7 +13,7 @@ import { useEntity, useIsNight, useLanguage, useT } from '../../hooks/useHa';
 import { useForecast, type ForecastEntry } from '../../hooks/useForecast';
 import { useTick } from '../../hooks/useNow';
 import { formatNumber, formatTime, formatWeekday } from '../../lib/format';
-import { compassPoint, conditionLabel, rangeBar } from '../../lib/weather';
+import { compassPoint, conditionLabel } from '../../lib/weather';
 import { smoothPath } from '../../lib/graph';
 
 const StyledNow = styled.div`
@@ -132,70 +132,46 @@ const StyledHours = styled.div`
   }
 `;
 
+/** The week in columns: day, sky, high over low -- one glance, no scrolling. */
 const StyledDays = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${u(0.35)};
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  padding: ${u(0.8)} ${u(0.4)};
+  border-radius: ${u(1.2)};
+  background: ${({ theme }) => theme.bubble.inset};
 
   > div {
-    display: grid;
-    grid-template-columns: ${u(4.4)} ${u(2.8)} ${u(3.8)} ${u(2.8)} minmax(${u(6)}, 1fr) ${u(2.8)};
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: ${u(0.9)};
-    padding: ${u(0.35)} ${u(0.9)};
-    border-radius: ${u(1)};
-    background: ${({ theme }) => theme.bubble.background};
-    font-size: ${u(1.1)};
+    gap: ${u(0.3)};
+    min-width: 0;
   }
 
   .day {
-    font-weight: 600;
-  }
-
-  .rain {
-    font-size: ${u(0.9)};
-    color: ${({ theme }) => theme.colors.temperature};
-    display: flex;
-    align-items: center;
-    gap: ${u(0.2)};
-  }
-
-  .low {
+    font-size: ${u(1)};
     color: ${({ theme }) => theme.text.secondary};
-    text-align: right;
   }
 
   .high {
+    font-size: ${u(1.25)};
     font-weight: 600;
+    margin-top: ${u(0.2)};
   }
 
-  .track {
-    position: relative;
-    height: ${u(0.5)};
-    border-radius: ${u(0.25)};
-    background: rgba(255, 255, 255, 0.08);
+  .low {
+    font-size: ${u(1.1)};
+    color: ${({ theme }) => theme.text.secondary};
   }
 
-  /* Coloured by the temperatures it covers, not by its own length: the
-     gradient spans the week's whole scale and each bar shows its slice. */
-  .bar {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    border-radius: inherit;
-    background-image: linear-gradient(90deg, #4aa8e0, #7fd2c4 35%, #ffd27a 65%, #ff8a3c);
-    background-repeat: no-repeat;
-  }
-
-  .now {
-    position: absolute;
-    top: 50%;
-    width: ${u(0.9)};
-    height: ${u(0.9)};
-    border-radius: 50%;
-    background: #fff;
-    border: ${u(0.2)} solid #1c1c20;
-    transform: translate(-50%, -50%);
+  .rain {
+    display: flex;
+    align-items: center;
+    gap: ${u(0.1)};
+    min-height: 1.3em;
+    font-size: ${u(0.85)};
+    color: ${({ theme }) => theme.colors.temperature};
   }
 `;
 
@@ -274,48 +250,29 @@ const Hours: React.FC<{ hours: ForecastEntry[] }> = ({ hours }) => {
   );
 };
 
-/** The week: every day's low-to-high bar on one shared scale. */
-const Days: React.FC<{ days: ForecastEntry[]; current: number | null }> = ({ days, current }) => {
+/** The week: a column a day. */
+const Days: React.FC<{ days: ForecastEntry[] }> = ({ days }) => {
   const language = useLanguage();
   const t = useT();
-  const lows = days.map(entry => entry.templow ?? entry.temperature ?? 0);
-  const highs = days.map(entry => entry.temperature ?? 0);
-  const extra = current !== null ? [current] : [];
-  const min = Math.min(...lows, ...extra);
-  const max = Math.max(...highs, ...extra);
-  const span = max - min || 1;
   return (
     <StyledDays>
-      {days.map((entry, index) => {
-        const bar = rangeBar(lows[index], highs[index], min, max);
-        return (
-          <div key={entry.datetime}>
-            <span className='day'>{index === 0 ? t('today') : formatWeekday(new Date(entry.datetime), language)}</span>
-            <WeatherIcon condition={entry.condition} size={u(2.6)} />
-            <span className='rain'>
-              {entry.precipitation_probability ? (
-                <>
-                  <Icon icon='mdi:water' /> {entry.precipitation_probability} %
-                </>
-              ) : null}
-            </span>
-            <span className='low'>{degrees(lows[index], language)}</span>
-            <span className='track'>
-              <span
-                className='bar'
-                style={{
-                  left: `${bar.left}%`,
-                  width: `${bar.width}%`,
-                  backgroundSize: `${(100 / bar.width) * 100}% 100%`,
-                  backgroundPosition: `${bar.width >= 100 ? 0 : (bar.left / (100 - bar.width)) * 100}% 0`,
-                }}
-              />
-              {index === 0 && current !== null && <span className='now' style={{ left: `${((current - min) / span) * 100}%` }} />}
-            </span>
-            <span className='high'>{degrees(highs[index], language)}</span>
-          </div>
-        );
-      })}
+      {days.map((entry, index) => (
+        <div key={entry.datetime}>
+          <span className='day'>{index === 0 ? t('today') : formatWeekday(new Date(entry.datetime), language)}</span>
+          <WeatherIcon condition={entry.condition} size={u(3)} />
+          <span className='high'>{degrees(entry.temperature, language)}</span>
+          <span className='low'>{degrees(entry.templow, language)}</span>
+          {/* Only when there is a chance of it, so a dry week reads as dry. */}
+          <span className='rain'>
+            {entry.precipitation_probability ? (
+              <>
+                <Icon icon='mdi:water' />
+                {entry.precipitation_probability} %
+              </>
+            ) : null}
+          </span>
+        </div>
+      ))}
     </StyledDays>
   );
 };
@@ -335,7 +292,6 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
   const hours = (hourly.forecast ?? []).filter(entry => new Date(entry.datetime).getTime() > now - 3_600_000).slice(0, 24);
   const days = (daily.forecast ?? []).slice(0, 7);
   const today = days[0];
-  const current = typeof a.temperature === 'number' ? a.temperature : null;
   const rainChance = today?.precipitation_probability ?? hours[0]?.precipitation_probability;
   const rainAmount = today?.precipitation;
   const time = (value: unknown) => (typeof value === 'string' ? formatTime(new Date(value), language) : undefined);
@@ -429,7 +385,7 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
         <>
           <StyledHeading>{t('forecast_daily')}</StyledHeading>
           <PopupScroll>
-            <Days days={days} current={current} />
+            <Days days={days} />
           </PopupScroll>
         </>
       )}

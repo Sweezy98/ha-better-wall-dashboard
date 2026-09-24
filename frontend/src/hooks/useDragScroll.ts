@@ -12,8 +12,8 @@ const claimed = new WeakSet<Event>();
  * click: once the pointer has moved, the click the release produces is
  * swallowed, so letting go over the list does not open its popup.
  *
- * Scrollers nest -- the calendar inside the sidebar's body -- and a drag moves
- * only the innermost one that can scroll. `active` re-arms it for an element
+ * Scrollers may nest, and a drag moves only the innermost one that can
+ * scroll. `active` re-arms it for an element
  * that is rendered only some of the time.
  */
 export function useDragScroll(ref: RefObject<HTMLElement | null>, active = true): void {

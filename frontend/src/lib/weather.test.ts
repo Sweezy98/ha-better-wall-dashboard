@@ -6,7 +6,6 @@ import {
   compassPoint,
   pressureToHpa,
   conditionLabel,
-  rangeBar,
   weatherIconName,
   weatherIconUrl,
 } from './weather';
@@ -38,16 +37,6 @@ describe('condition labels', () => {
     expect(conditionLabel('sunny', 'de-AT')).toBe('Sonnig');
     expect(conditionLabel('sunny', 'xx')).toBe('Sunny');
     expect(conditionLabel('meteor', 'en')).toBe('meteor');
-  });
-});
-
-describe('rangeBar', () => {
-  it('places a day on the week-wide scale', () => {
-    expect(rangeBar(10, 20, 0, 40)).toEqual({ left: 25, width: 25 });
-  });
-
-  it('keeps a bar visible for a day with no range at all', () => {
-    expect(rangeBar(15, 15, 0, 30).width).toBe(2);
   });
 });
 
