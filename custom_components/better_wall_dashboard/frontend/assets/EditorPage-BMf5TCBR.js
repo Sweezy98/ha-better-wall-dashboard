@@ -1,4 +1,4 @@
-import{_ as e,a as t,c as n,d as r,f as i,g as a,h as o,i as s,l as c,m as l,n as u,o as d,p as f,r as p,s as m,t as ee,u as h}from"./boot-BSx46D4R.js";var g=e(a(),1),_={pages:10,quickActions:6,buttons:5,sectionStatus:2,system:8,sectionCells:12,tiles:64,calendarDays:14},v=f.label`
+import{_ as e,a as t,c as n,d as r,f as i,g as a,h as o,i as s,l as c,m as l,n as u,o as d,p as f,r as p,s as m,t as ee,u as h}from"./boot-ChkKSA8F.js";var g=e(a(),1),_={pages:10,quickActions:6,buttons:5,sectionStatus:2,system:8,sectionCells:12,tiles:64,calendarDays:14},v=f.label`
   display: flex;
   flex-direction: column;
   gap: ${i(.25)};

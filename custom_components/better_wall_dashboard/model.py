@@ -383,22 +383,14 @@ def default_dashboard() -> dict[str, Any]:
     """The dashboard a fresh install starts with.
 
     Laid out like the reference design -- four sections per page, a 75/25
-    split -- with no entities chosen, because none of them can be guessed.
-    Everything it shows until then is an empty glass tile, which is also what
-    tells the admin where things go.
+    split -- with no tiles and no entities, because none of them can be
+    guessed. The admin fills it from the editor.
     """
 
-    def section(name: str, icon: str, columns: int, tiles: list[dict]) -> dict:
-        return {
-            "name": name,
-            "icon": icon,
-            "columns": columns,
-            "rows": 2,
-            "tiles": tiles,
-        }
-
-    def blanks(count: int) -> list[dict]:
-        return [{"type": "placeholder"} for _ in range(count)]
+    def section(name: str, icon: str, columns: int) -> dict:
+        # No tiles: an unused cell is simply empty space, and the admin adds
+        # tiles from the library where they belong.
+        return {"name": name, "icon": icon, "columns": columns, "rows": 2}
 
     return normalize_dashboard(
         {
@@ -409,19 +401,10 @@ def default_dashboard() -> dict[str, Any]:
                     "columns": [72, 28],
                     "rows": [50, 50],
                     "sections": [
-                        section("Living room", "mdi:sofa-single", 5, blanks(10)),
-                        section("Bedroom", "mdi:bed-king", 2, blanks(4)),
-                        section(
-                            "Media",
-                            "mdi:television",
-                            5,
-                            [
-                                {"type": "placeholder", "w": 2, "h": 2},
-                                {"type": "placeholder", "w": 2, "h": 2},
-                                *blanks(2),
-                            ],
-                        ),
-                        section("Devices", "mdi:washing-machine", 2, blanks(4)),
+                        section("Living room", "mdi:sofa-single", 5),
+                        section("Bedroom", "mdi:bed-king", 2),
+                        section("Media", "mdi:television", 5),
+                        section("Devices", "mdi:washing-machine", 2),
                     ],
                 },
                 {

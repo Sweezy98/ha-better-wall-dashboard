@@ -1,14 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { countOpen, isOpen } from './openings';
 import { mapEmbedUrl } from './travel';
-import { freeCells } from './grid';
 import { uniformCell } from './cell';
 import { swipeTarget } from './swipe';
 import { isStaleCandidate } from './reload';
 import { move } from './editing';
 import { groupByDay, type CalendarEvent } from './calendar';
 import { unitFor } from './unit';
-import type { Tile } from '../config/types';
 
 describe('openings', () => {
   it('reads each domain its own way', () => {
@@ -55,16 +53,6 @@ describe('mapEmbedUrl', () => {
 
   it('has nothing to show without either', () => {
     expect(mapEmbedUrl(none, 'A', 'B', 'de')).toBeNull();
-  });
-});
-
-describe('freeCells', () => {
-  const tile = (w: number, h: number): Tile => ({ id: `${w}${h}`, type: 'placeholder', entity: '', name: '', icon: '', w, h, options: {} });
-
-  it('counts what the tiles leave of the grid', () => {
-    // The reference Media section: two 2x2 tiles in a 5x2 grid.
-    expect(freeCells([tile(2, 2), tile(2, 2)], 5, 2)).toBe(2);
-    expect(freeCells([tile(9, 9)], 2, 2)).toBe(0);
   });
 });
 
@@ -119,18 +107,16 @@ describe('unitFor', () => {
 });
 
 describe('uniformCell', () => {
-  it('is one size every section can hold, in whole pixels', () => {
+  it('is one square every section can hold, in whole pixels', () => {
     // The reference page 1 at 1280x800: Living room 5x2 and Bedroom 2x2.
     const living = { width: 673, height: 329, columns: 5, rows: 2, gap: 5.5 };
     const bedroom = { width: 262, height: 329, columns: 2, rows: 2, gap: 5.5 };
-    expect(uniformCell([living, bedroom])).toEqual({ width: 128, height: 161 });
+    expect(uniformCell([living, bedroom])).toEqual({ width: 128, height: 128 });
   });
 
-  it('fills the space, but never beyond 3:2', () => {
-    // Plenty of height: the cell grows taller, stops at 3:2.
-    expect(uniformCell([{ width: 500, height: 2000, columns: 5, rows: 2, gap: 0 }])).toEqual({ width: 100, height: 150 });
-    // Plenty of width: the cell grows wider, stops at 3:2.
-    expect(uniformCell([{ width: 2000, height: 300, columns: 5, rows: 2, gap: 10 }])).toEqual({ width: 217, height: 145 });
+  it('stays square however much room one direction has', () => {
+    expect(uniformCell([{ width: 500, height: 2000, columns: 5, rows: 2, gap: 0 }])).toEqual({ width: 100, height: 100 });
+    expect(uniformCell([{ width: 2000, height: 300, columns: 5, rows: 2, gap: 10 }])).toEqual({ width: 145, height: 145 });
   });
 
   it('ignores sections that have no size yet', () => {

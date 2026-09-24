@@ -6,10 +6,10 @@ import Bubble from '../../base/bubble/Bubble';
 import { StyledSidebarTitle } from '../Sidebar.styled';
 import { domainIcon, toggleService, useCallService, useEntity, useT } from '../../../hooks/useHa';
 
-/** Two to a row: four actions make two rows, six make three. */
-const StyledGrid = styled.div`
+/** One per row up to three; from four on, two to a row. */
+const StyledGrid = styled.div<{ $columns: number }>`
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(${({ $columns }) => $columns}, minmax(0, 1fr));
   gap: ${u(0.6)};
 `;
 
@@ -46,7 +46,7 @@ const QuickActions: React.FC<{ actions: NamedEntity[] }> = ({ actions }) => {
   return (
     <div>
       <StyledSidebarTitle>{t('quick_actions')}</StyledSidebarTitle>
-      <StyledGrid>
+      <StyledGrid $columns={configured.length > 3 ? 2 : 1}>
         {configured.map(action => (
           <QuickAction key={action.id} action={action} />
         ))}

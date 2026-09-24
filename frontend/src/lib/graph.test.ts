@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bucket, buildGraph, extrema, type Sample } from './graph';
+import { bucket, buildGraph, extrema, smoothPath, type Sample } from './graph';
 
 const HOUR = 3_600_000;
 const NOW = Date.UTC(2026, 8, 24, 12);
@@ -69,5 +69,16 @@ describe('extrema', () => {
     ])!;
     expect(result.min).toEqual({ t: 2, v: -1 });
     expect(result.max).toEqual({ t: 3, v: 9 });
+  });
+});
+
+describe('smoothPath', () => {
+  it('curves through midpoints and ends on the last point', () => {
+    const path = smoothPath([
+      { x: 0, y: 10 },
+      { x: 10, y: 0 },
+      { x: 20, y: 10 },
+    ]);
+    expect(path).toBe('M0,10 Q 0,10 5,5 Q 10,0 15,5 L 20,10');
   });
 });

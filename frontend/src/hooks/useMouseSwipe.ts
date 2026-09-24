@@ -47,6 +47,8 @@ export function useMouseSwipe(ref: RefObject<HTMLElement | null>, count: number)
         element.setPointerCapture(drag.id);
         element.style.scrollSnapType = 'none';
         element.style.cursor = 'grabbing';
+        element.dataset.moving = '';
+        element.dataset.dragging = '';
       }
       const dt = event.timeStamp - drag.lastT;
       if (dt > 0) drag.velocity = (event.clientX - drag.lastX) / dt;
@@ -59,6 +61,7 @@ export function useMouseSwipe(ref: RefObject<HTMLElement | null>, count: number)
       if (!drag || event.pointerId !== drag.id) return;
       const finished = drag;
       drag = null;
+      delete element.dataset.dragging;
       if (!finished.moved) return;
       element.style.cursor = '';
       element.addEventListener('click', swallowClick, { capture: true, once: true });

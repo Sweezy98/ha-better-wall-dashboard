@@ -17,14 +17,17 @@ const StyledHeader = styled.div`
   align-items: flex-start;
   justify-content: space-between;
   gap: ${u(0.5)};
-  padding: ${u(0.3)} 0 ${u(0.5)} ${u(0.3)};
+  padding: 0 0 ${u(0.5)} ${u(0.3)};
 `;
 
 const StyledStatus = styled.div`
   display: flex;
   align-items: center;
   gap: ${u(0.1)};
-  margin-top: ${u(0.6)};
+  /* Level with the top of the clock's digits, not with its line box: the
+     digits sit well below the top of a 6-unit line. */
+  margin-top: ${u(-0.2)};
+  margin-right: ${u(-0.5)};
   flex-wrap: wrap;
   justify-content: flex-end;
 `;

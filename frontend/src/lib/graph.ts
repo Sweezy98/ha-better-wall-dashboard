@@ -144,3 +144,21 @@ export function extrema(samples: Sample[]): { min: Sample; max: Sample } | null 
   }
   return { min, max };
 }
+
+/**
+ * A smooth line through points, the way the graphs above draw one: a
+ * quadratic curve through the midpoint of every pair, so a forecast curve
+ * looks like the sidebar's history curves.
+ */
+export function smoothPath(points: { x: number; y: number }[]): string {
+  if (!points.length) return '';
+  const fmt = (n: number) => Math.round(n * 100) / 100;
+  let path = `M${fmt(points[0].x)},${fmt(points[0].y)}`;
+  for (let i = 1; i < points.length; i += 1) {
+    const previous = points[i - 1];
+    const point = points[i];
+    path += ` Q ${fmt(previous.x)},${fmt(previous.y)} ${fmt((previous.x + point.x) / 2)},${fmt((previous.y + point.y) / 2)}`;
+  }
+  const last = points[points.length - 1];
+  return `${path} L ${fmt(last.x)},${fmt(last.y)}`;
+}

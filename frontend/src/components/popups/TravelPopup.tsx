@@ -23,22 +23,6 @@ const StyledMap = styled.div`
   }
 `;
 
-const StyledFacts = styled.dl`
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: ${u(0.35)} ${u(1)};
-  margin: 0;
-  font-size: ${u(1.08)};
-
-  dt {
-    color: ${({ theme }) => theme.text.secondary};
-  }
-
-  dd {
-    margin: 0;
-  }
-`;
-
 const StyledGraph = styled.div`
   height: ${u(6)};
   border-radius: ${u(1.2)};
@@ -79,10 +63,11 @@ const TravelContent: React.FC<{ config: SidebarConfig['travel'] }> = ({ config }
   const entity = useEntity(config.entity || undefined);
   const samples = useHistory(config.entity || undefined, 24);
   const attributes = entity?.attributes ?? {};
+  // Only for drawing the route from an API key. Not shown: everybody at
+  // home knows where home and work are.
   const origin = attributes.origin as string | undefined;
   const destination = attributes.destination as string | undefined;
   const src = mapEmbedUrl(config, origin, destination, language);
-  const distance = attributes.distance as string | number | undefined;
 
   return (
     <>
@@ -93,26 +78,6 @@ const TravelContent: React.FC<{ config: SidebarConfig['travel'] }> = ({ config }
           <StyledHint>{t('no_map')}</StyledHint>
         )}
       </StyledMap>
-      <StyledFacts>
-        {origin && (
-          <>
-            <dt>{t('from')}</dt>
-            <dd>{origin}</dd>
-          </>
-        )}
-        {destination && (
-          <>
-            <dt>{t('to')}</dt>
-            <dd>{destination}</dd>
-          </>
-        )}
-        {distance !== undefined && (
-          <>
-            <dt>{t('distance')}</dt>
-            <dd>{String(distance)}</dd>
-          </>
-        )}
-      </StyledFacts>
       <StyledGraph>
         <MiniGraph
           samples={samples}

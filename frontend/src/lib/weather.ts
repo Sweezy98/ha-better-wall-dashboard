@@ -104,3 +104,27 @@ export function conditionLabel(condition: string | undefined, language: string):
   const table = CONDITION_LABELS[language.split('-')[0]] ?? CONDITION_LABELS.en;
   return (table as Record<string, string>)[condition] ?? condition;
 }
+
+/**
+ * Where a day's low-to-high bar sits on the week's scale, in percent.
+ *
+ * Every day shares the scale of the whole week, so a cold day's bar sits to
+ * the left of a warm one's and the bars can be compared at a glance.
+ */
+export function rangeBar(low: number, high: number, min: number, max: number): { left: number; width: number } {
+  const span = max - min || 1;
+  const left = ((Math.min(low, high) - min) / span) * 100;
+  const right = ((Math.max(low, high) - min) / span) * 100;
+  return { left: Math.max(0, left), width: Math.max(2, Math.min(100, right) - Math.max(0, left)) };
+}
+
+const COMPASS: Record<string, string[]> = {
+  en: ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'],
+  de: ['N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW'],
+};
+
+/** "NO" for a wind from 45°, in the reader's language. */
+export function compassPoint(bearing: number, language: string): string {
+  const points = COMPASS[language.split('-')[0]] ?? COMPASS.en;
+  return points[Math.round((((bearing % 360) + 360) % 360) / 45) % 8];
+}

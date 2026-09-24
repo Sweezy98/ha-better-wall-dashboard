@@ -18,6 +18,7 @@ const StyledFooter = styled.div`
   justify-content: space-between;
   gap: ${u(0.5)};
   padding-top: ${u(0.4)};
+  margin: 0 ${u(-0.4)} ${u(-0.3)};
 `;
 
 const StyledWeather = styled.button`

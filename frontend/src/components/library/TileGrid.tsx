@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { u } from '../../themes/default.theme';
 import type { Tile as TileConfig } from '../../config/types';
 import Tile from './Tile';
-import { freeCells } from '../../lib/grid';
 
 /**
  * The size container. Its own box is what the grid inside it measures
@@ -59,20 +58,18 @@ interface TileGridProps {
   columns: number;
   rows: number;
   square: boolean;
-  /** Draw an empty tile in every cell nothing occupies, as the reference design does. */
-  fillEmpty?: boolean;
 }
 
-const TileGrid: React.FC<TileGridProps> = ({ tiles, columns, rows, square, fillEmpty = false }) => {
-  const blanks = fillEmpty ? freeCells(tiles, columns, rows) : 0;
+/**
+ * A section's tiles on its grid. Cells nothing occupies stay empty -- no
+ * glass placeholder -- so the dashboard shows only what it controls.
+ */
+const TileGrid: React.FC<TileGridProps> = ({ tiles, columns, rows, square }) => {
   return (
     <StyledBody data-cell-grid={square ? '' : undefined} data-columns={columns} data-rows={rows}>
       <StyledGrid $columns={columns} $rows={rows} $square={square}>
         {tiles.map(tile => (
           <Tile key={tile.id} tile={tile} />
-        ))}
-        {Array.from({ length: blanks }, (_, index) => (
-          <Tile key={`blank-${index}`} tile={null} />
         ))}
       </StyledGrid>
     </StyledBody>

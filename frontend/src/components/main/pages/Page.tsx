@@ -18,7 +18,8 @@ const StyledPage = styled.div<{ $columns: string; $rows: string }>`
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  padding: 0 ${u(0.1)};
+  /* Back in from the swiper's faded edge; see PageSwiper. */
+  padding: 0 ${u(1.1)};
 `;
 
 const tracks = (split: number[]) => split.map(value => `minmax(0, ${value}fr)`).join(' ');

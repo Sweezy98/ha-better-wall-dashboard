@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CONDITION_LABELS, CONDITIONS, conditionLabel, weatherIconName, weatherIconUrl } from './weather';
+import { CONDITION_LABELS, CONDITIONS, compassPoint, conditionLabel, rangeBar, weatherIconName, weatherIconUrl } from './weather';
 
 describe('weatherIconName', () => {
   it('turns the sun into the moon after dark', () => {
@@ -28,5 +28,24 @@ describe('condition labels', () => {
     expect(conditionLabel('sunny', 'de-AT')).toBe('Sonnig');
     expect(conditionLabel('sunny', 'xx')).toBe('Sunny');
     expect(conditionLabel('meteor', 'en')).toBe('meteor');
+  });
+});
+
+describe('rangeBar', () => {
+  it('places a day on the week-wide scale', () => {
+    expect(rangeBar(10, 20, 0, 40)).toEqual({ left: 25, width: 25 });
+  });
+
+  it('keeps a bar visible for a day with no range at all', () => {
+    expect(rangeBar(15, 15, 0, 30).width).toBe(2);
+  });
+});
+
+describe('compassPoint', () => {
+  it('names the direction in the reader language', () => {
+    expect(compassPoint(45, 'de')).toBe('NO');
+    expect(compassPoint(45, 'en')).toBe('NE');
+    expect(compassPoint(350, 'en')).toBe('N');
+    expect(compassPoint(-90, 'en')).toBe('W');
   });
 });

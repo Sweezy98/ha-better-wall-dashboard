@@ -1,5 +1,5 @@
 import { useDashboard } from '../../config/DashboardProvider';
-import { StyledArea, StyledSidebarContainer } from './Sidebar.styled';
+import { StyledArea, StyledColumn, StyledSidebarContainer } from './Sidebar.styled';
 import SidebarHeader from './header/SidebarHeader';
 import RoomClimate from './climate/RoomClimate';
 import Persons from './persons/Persons';
@@ -18,30 +18,34 @@ const Sidebar: React.FC = () => {
   const { sidebar } = useDashboard();
   return (
     <StyledSidebarContainer as='aside'>
-      <StyledArea $area='header'>
-        <SidebarHeader config={sidebar} />
-      </StyledArea>
-      <StyledArea $area='climate'>
-        <RoomClimate config={sidebar.climate} />
-      </StyledArea>
-      <StyledArea $area='persons'>
-        <Persons entities={sidebar.persons} />
-      </StyledArea>
-      <StyledArea $area='openings'>
-        <Openings entities={sidebar.openings} />
-      </StyledArea>
-      <StyledArea $area='travel'>
-        <TravelTime config={sidebar.travel} />
-      </StyledArea>
-      <StyledArea $area='quick'>
-        <QuickActions actions={sidebar.quick_actions} />
-      </StyledArea>
-      <StyledArea $area='calendar'>
-        <CalendarAgenda config={sidebar.calendar} />
-      </StyledArea>
-      <StyledArea $area='footer'>
-        <SidebarFooter config={sidebar} />
-      </StyledArea>
+      <StyledColumn $side='left'>
+        <StyledArea $area='header' data-area='header'>
+          <SidebarHeader config={sidebar} />
+        </StyledArea>
+        <StyledArea $area='climate' data-area='climate'>
+          <RoomClimate config={sidebar.climate} />
+        </StyledArea>
+        <StyledArea $area='persons' data-area='persons'>
+          <Persons entities={sidebar.persons} />
+        </StyledArea>
+        <StyledArea $area='openings' data-area='openings'>
+          <Openings entities={sidebar.openings} />
+        </StyledArea>
+        <StyledArea $area='travel' data-area='travel'>
+          <TravelTime config={sidebar.travel} />
+        </StyledArea>
+      </StyledColumn>
+      <StyledColumn $side='right'>
+        <StyledArea $area='quick' data-area='quick'>
+          <QuickActions actions={sidebar.quick_actions} />
+        </StyledArea>
+        <StyledArea $area='calendar' data-area='calendar'>
+          <CalendarAgenda config={sidebar.calendar} />
+        </StyledArea>
+        <StyledArea $area='footer' data-area='footer'>
+          <SidebarFooter config={sidebar} />
+        </StyledArea>
+      </StyledColumn>
     </StyledSidebarContainer>
   );
 };

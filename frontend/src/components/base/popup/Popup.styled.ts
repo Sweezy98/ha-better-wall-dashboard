@@ -104,4 +104,11 @@ export const StyledPopupBody = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${u(0.7)};
+
+  /* Sections keep their size and the body scrolls. A child with its own
+     overflow -- the hourly forecast strip -- would otherwise be allowed to
+     shrink below its content, and did, to a sliver. */
+  > * {
+    flex-shrink: 0;
+  }
 `;

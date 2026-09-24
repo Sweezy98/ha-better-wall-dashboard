@@ -1,21 +1,18 @@
 /**
- * The one cell size every section can hold.
+ * The one square cell every section can hold.
  *
- * Width and height are found separately: the narrowest column any section
- * can give and the shortest row any section can give. Every 1x1 tile on the
- * dashboard is then exactly that size and every bigger tile a whole multiple,
- * so everything lines up across sections.
- *
- * Strictly square cells left bands of empty space on screens that are short
- * for their width -- the rows stopped where the columns ran out. So the cell
- * may take the shape the space has, but only so far: neither side more than
- * half as long again as the other (3:2), which is still a tile on a 4:3 tablet
- * and never a strip.
+ * The narrowest column any section can give and the shortest row any section
+ * can give; the smaller of the two is the cell. Every 1x1 tile on the
+ * dashboard is exactly that square and every bigger tile a whole multiple of
+ * it, so everything lines up across sections, on every screen. Space a
+ * section cannot fill with whole squares stays empty rather than stretching
+ * a tile out of shape.
  *
  * Floored to whole pixels: a fractional track is laid out at the pixel below
  * while its contents keep the fraction (CLAUDE.md, section 8).
  */
-export const MAX_CELL_RATIO = 3 / 2;
+/** Width over height of a cell. Square, by design; see above. */
+export const MAX_CELL_RATIO = 1;
 
 export interface GridBox {
   width: number;

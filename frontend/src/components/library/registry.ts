@@ -34,7 +34,7 @@ export const LIBRARY: LibraryEntry[] = [
   {
     type: 'placeholder',
     label: 'tile_placeholder',
-    icon: 'mdi:square-rounded-outline',
+    icon: 'mdi:border-none-variant',
     component: PlaceholderTile,
     needsEntity: false,
     domains: [],

@@ -90,7 +90,7 @@ const Section: React.FC<{ section: SectionConfig }> = ({ section }) => {
           ))}
         </StyledHeader>
       )}
-      <TileGrid tiles={section.tiles} columns={section.columns} rows={section.rows} square={section.square} fillEmpty />
+      <TileGrid tiles={section.tiles} columns={section.columns} rows={section.rows} square={section.square} />
     </StyledSection>
   );
 };

@@ -7,22 +7,25 @@ import Popup from '../../base/popup/Popup';
 import { useGroupedEvents } from '../../../hooks/useCalendarEvents';
 import { useT } from '../../../hooks/useHa';
 
-const StyledAgenda = styled.button`
-  /* Whole days only. How many fit depends on the tablet, and a day cut
-     through the middle reads as a rendering fault. In a wrapping column a day
-     that does not fit moves to a second column, which lies outside the box
-     and is clipped away -- no measuring, no re-render on resize. */
+const StyledAgenda = styled.div`
+  /* Scrolls when the days do not fit: how many do depends on the tablet. The
+     bottom edge fades so a cut-off day reads as "more below", and the extra
+     padding lets the last one scroll clear of the fade. A tap opens the
+     calendar; a scroll gesture does not, because it never becomes a click. */
   display: flex;
   flex-direction: column;
-  flex-wrap: wrap;
-  align-content: flex-start;
   width: 100%;
   height: 100%;
-  overflow: hidden;
-  padding-top: ${u(0.6)};
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  padding: ${u(0.6)} 0 ${u(1.4)};
+  cursor: pointer;
+  mask-image: linear-gradient(to bottom, black calc(100% - ${u(1.4)}), transparent);
+  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - ${u(1.4)}), transparent);
 
-  > * {
-    width: 100%;
+  &::-webkit-scrollbar {
+    display: none;
   }
 `;
 
@@ -34,7 +37,13 @@ const CalendarAgenda: React.FC<{ config: SidebarConfig['calendar'] }> = ({ confi
   if (!config.entities.length) return null;
   return (
     <>
-      <StyledAgenda type='button' onClick={() => setOpen(true)} aria-label={t('calendar')}>
+      <StyledAgenda
+        role='button'
+        tabIndex={0}
+        onClick={() => setOpen(true)}
+        onKeyDown={event => (event.key === 'Enter' || event.key === ' ') && setOpen(true)}
+        aria-label={t('calendar')}
+      >
         {days?.map(({ day, events }) => (
           <AgendaDay key={day.getTime()} day={day} events={events} />
         ))}
