@@ -186,3 +186,31 @@ def test_the_pin_stays_on_the_server() -> None:
     assert model.pin_matches(dashboard, "0815")
     assert not model.pin_matches(dashboard, "0816")
     assert model.pin_matches(model.normalize_dashboard({}), "anything")
+
+
+def test_status_icons_come_from_the_old_mode_keys_until_saved_as_a_list() -> None:
+    old = model.normalize_dashboard(
+        {
+            "sidebar": {
+                "status": {"night": "input_boolean.night", "guest": "switch.guests"}
+            }
+        }
+    )
+    icons = old["sidebar"]["status"]["icons"]
+    assert [(icon["entity"], icon["icon"]) for icon in icons] == [
+        ("switch.guests", "mdi:account-multiple"),
+        ("input_boolean.night", "mdi:weather-night"),
+    ]
+    # The old keys are stored as they were.
+    assert old["sidebar"]["status"]["night"] == "input_boolean.night"
+
+    emptied = model.normalize_dashboard(
+        {"sidebar": {"status": {"night": "input_boolean.night", "icons": []}}}
+    )
+    assert emptied["sidebar"]["status"]["icons"] == []
+
+
+def test_status_icons_are_limited() -> None:
+    icons = [{"entity": f"input_boolean.m{i}", "icon": "mdi:star"} for i in range(9)]
+    dashboard = model.normalize_dashboard({"sidebar": {"status": {"icons": icons}}})
+    assert len(dashboard["sidebar"]["status"]["icons"]) == model.MAX_STATUS_ICONS

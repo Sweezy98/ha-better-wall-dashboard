@@ -1,5 +1,5 @@
 import { useT } from '../../../hooks/useHa';
-import { RangeField, TextField } from '../fields';
+import { MediaField, RangeField, TextField } from '../fields';
 import { StyledRow } from '../fields.styled';
 import { StyledFieldset } from '../editor.styled';
 import { ScreenTitle, type ScreenProps } from './common';
@@ -16,10 +16,19 @@ const GeneralScreen: React.FC<ScreenProps> = ({ draft, update }) => {
       </StyledFieldset>
       <StyledFieldset>
         <h3>{t('background')}</h3>
+        <MediaField
+          label={t('background_media')}
+          hint={t('background_media_hint')}
+          accept={['image/*']}
+          value={draft.background.image}
+          onChange={image => background({ image })}
+        />
+        {/* Or an address of its own; a picture from the library is not one. */}
         <TextField
           label={t('background_image')}
           hint={t('background_image_hint')}
-          value={draft.background.image}
+          type='url'
+          value={draft.background.image.startsWith('media-source://') ? '' : draft.background.image}
           onChange={image => background({ image })}
         />
         <StyledRow>

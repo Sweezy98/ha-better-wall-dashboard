@@ -1,14 +1,14 @@
 import { memo, useCallback, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
-import type { SidebarConfig } from '../../../config/types';
+import type { NamedEntity, SidebarConfig } from '../../../config/types';
 import Clock from '../../base/clock/Clock';
 import Icon from '../../base/icon/Icon';
 import IconButton from '../../base/iconButton/IconButton';
 import WifiPopup from '../../popups/WifiPopup';
 import PinPopup from '../../popups/PinPopup';
 import { useDashboardContext } from '../../../config/DashboardProvider';
-import { useEntity, useT } from '../../../hooks/useHa';
+import { domainIcon, useEntity, useT } from '../../../hooks/useHa';
 import { useLongPress } from '../../../hooks/useLongPress';
 import { openHomeAssistantSidebar } from '../../../panel/kiosk';
 import { signalIcon, signalLevel } from '../../../lib/wifi';
@@ -58,14 +58,15 @@ const StyledStatusIcon = styled.span`
 /** Whether a mode helper counts as "on" -- an input_boolean, a switch, a template binary sensor. */
 const isOn = (state: string | undefined) => state === 'on' || state === 'true';
 
-const ModeIcon: React.FC<{ entityId: string; icon: string; label: string }> = ({ entityId, icon, label }) => {
-  const entity = useEntity(entityId);
+const ModeIcon: React.FC<{ item: NamedEntity }> = ({ item }) => {
+  const entity = useEntity(item.entity || undefined);
   // Shown only while the mode is on: a row of icons that are always there
   // stops being read at all.
   if (!isOn(entity?.state)) return null;
+  const label = item.name || (entity?.attributes.friendly_name as string | undefined) || item.entity;
   return (
     <StyledStatusIcon title={label} aria-label={label}>
-      <Icon icon={icon} />
+      <Icon icon={item.icon || (entity?.attributes.icon as string | undefined) || domainIcon(item.entity)} />
     </StyledStatusIcon>
   );
 };
@@ -113,7 +114,6 @@ function useSidebarUnlock() {
 }
 
 const SidebarHeader: React.FC<{ config: SidebarConfig }> = ({ config }) => {
-  const t = useT();
   const { longPress, popup } = useSidebarUnlock();
   return (
     <StyledHeader>
@@ -122,9 +122,12 @@ const SidebarHeader: React.FC<{ config: SidebarConfig }> = ({ config }) => {
       <StyledStatus>
         {/* Right to left: Wi-Fi first, so it always holds the corner. */}
         <WifiButton config={config} />
-        {config.status.night && <ModeIcon entityId={config.status.night} icon='mdi:weather-night' label={t('night_mode')} />}
-        {config.status.guest && <ModeIcon entityId={config.status.guest} icon='mdi:account-multiple' label={t('guest_mode')} />}
-        {config.status.absence && <ModeIcon entityId={config.status.absence} icon='mdi:account-off' label={t('absence_mode')} />}
+        {/* The list reads left to right; the row fills from the right. */}
+        {/* Missing from a backend older than this page -- installed, not
+            yet restarted into -- rather than a crash. */}
+        {[...(config.status.icons ?? [])].reverse().map(item => (
+          <ModeIcon key={item.id} item={item} />
+        ))}
       </StyledStatus>
     </StyledHeader>
   );

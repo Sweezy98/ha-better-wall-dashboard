@@ -5,8 +5,8 @@ import Splash from '../base/splash/Splash';
 import { StyledBackground, StyledDashboardContainer, StyledDashboardGrid } from './Dashboard.styled';
 import { useDashboardContext } from '../../config/DashboardProvider';
 import { useUnit } from '../../hooks/useUnit';
-import { useHassUrl, useT } from '../../hooks/useHa';
-import defaultBackground from '../../assets/background.jpg';
+import { useT } from '../../hooks/useHa';
+import { useBackgroundImage } from '../../hooks/useBackgroundImage';
 
 const Dashboard: React.FC = () => {
   const { view, error } = useDashboardContext();
@@ -20,15 +20,8 @@ export const DashboardLayout: React.FC = () => {
   const ref = useRef<HTMLDivElement>(null);
   const { view } = useDashboardContext();
   useUnit(ref);
-  const joinHassUrl = useHassUrl();
   const background = view!.dashboard.background;
-  // "/local/wall.jpg" is a path on Home Assistant. Inside Home Assistant that
-  // is this page's origin anyway; on the dev server it is not.
-  const image = background.image
-    ? background.image.startsWith('/')
-      ? joinHassUrl(background.image)
-      : background.image
-    : defaultBackground;
+  const image = useBackgroundImage(background.image);
 
   return (
     <StyledDashboardContainer ref={ref}>

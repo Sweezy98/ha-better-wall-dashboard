@@ -65,7 +65,15 @@ export interface BarButton {
 export type WifiSecurity = 'WPA' | 'WEP' | 'nopass';
 
 export interface SidebarConfig {
-  status: { absence: EntityId; guest: EntityId; night: EntityId; wifi_signal: EntityId };
+  status: {
+    /** The modes shown at the top, left to right, each only while it is on. Wi-Fi is fixed and not one of them. */
+    icons?: NamedEntity[];
+    wifi_signal: EntityId;
+    /** Before `icons`: read by the backend into it, never by the frontend. */
+    absence: EntityId;
+    guest: EntityId;
+    night: EntityId;
+  };
   guest_wifi: { qr_image: EntityId; ssid: string; password: string; security: WifiSecurity; hidden: boolean };
   climate: { temperature: EntityId; humidity: EntityId; hours: number };
   persons: EntityId[];
@@ -119,6 +127,7 @@ export interface DashboardUser {
 export const LIMITS = {
   pages: 10,
   quickActions: 6,
+  statusIcons: 6,
   buttons: 5,
   sectionStatus: 2,
   system: 8,

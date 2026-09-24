@@ -2,13 +2,16 @@ import { css } from 'styled-components';
 
 /**
  * Frosted glass, the one surface every card, tile and popup is made of: what
- * is behind it blurred and a little brighter, a sheen falling from the top
- * left, a hairline edge and a highlight along the top. `base` is the tint --
+ * is behind it blurred and a little brighter, a sheen in the top left
+ * corner, a hairline edge and a highlight along the top. `base` is the tint --
  * popups take a darker one, for text read at arm's length.
  */
 export const glass = (base: string, blur = 16) => css`
   background-color: ${base};
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.015) 55%);
+  /* The sheen is a fixed size from the top left corner, not a share of the
+     surface: stretched over the tall sidebar, a proportional one made it
+     lighter than the tiles beside it. */
+  background-image: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0) 190px);
   backdrop-filter: blur(${blur}px) saturate(140%);
   -webkit-backdrop-filter: blur(${blur}px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -17,3 +20,6 @@ export const glass = (base: string, blur = 16) => css`
     0 4px 16px rgba(0, 0, 0, 0.28);
   box-sizing: border-box;
 `;
+
+/** The dashboard's own glass: the sidebar, every tile and every bottom button alike. */
+export const surfaceGlass = glass('rgba(255, 255, 255, 0.035)', 16);

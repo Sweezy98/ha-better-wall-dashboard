@@ -209,6 +209,32 @@ export const IconField: React.FC<Base<string>> = ({ label, hint, value, onChange
   );
 };
 
+/**
+ * A picture from Home Assistant's media library, stored as its
+ * `media-source://` id -- which is all a dashboard keeps of it; the tablet
+ * asks Home Assistant for an address to draw it from. Without Home
+ * Assistant's picker, the id or an address can be typed.
+ */
+export const MediaField: React.FC<Base<string> & { accept: string[] }> = ({ label, hint, value, onChange, accept }) => {
+  const ha = useHaControls();
+  const picked = useMemo(
+    () => (value.startsWith('media-source://') ? { media_content_id: value, media_content_type: accept[0] } : undefined),
+    [value, accept]
+  );
+  if (ha) {
+    return (
+      <HaSelector
+        selector={{ media: { accept } }}
+        value={picked}
+        label={label}
+        helper={hint}
+        onChange={next => onChange((next as { media_content_id?: string } | null)?.media_content_id ?? '')}
+      />
+    );
+  }
+  return <TextField label={label} hint={hint} value={value} onChange={onChange} />;
+};
+
 // --- entities -------------------------------------------------------------
 
 interface CatalogEntry {

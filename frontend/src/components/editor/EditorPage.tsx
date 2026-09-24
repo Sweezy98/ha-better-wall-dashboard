@@ -9,6 +9,8 @@ import HaButton from './ha/HaButton';
 import EditorNav from './EditorNav';
 import EditorPreview from './EditorPreview';
 import UsersForm from './UsersForm';
+import AboutDialog from './AboutDialog';
+import { useConfirm } from './useConfirm';
 import GeneralScreen from './screens/GeneralScreen';
 import SidebarScreen from './screens/SidebarScreen';
 import JsonScreen from './screens/JsonScreen';
@@ -81,6 +83,7 @@ const EditorPage: React.FC = () => {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const [drawer, setDrawer] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [about, setAbout] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [deviceId, setDeviceId] = useState<string>(DEVICES[0].id);
   const [portrait, setPortrait] = useState(false);
@@ -133,7 +136,9 @@ const EditorPage: React.FC = () => {
     });
   }, []);
 
-  const confirmDiscard = () => !dirty || window.confirm(`${t('discard')}?`);
+  const { confirm, dialog } = useConfirm();
+  const confirmDiscard = async () =>
+    !dirty || confirm({ title: t('discard_title'), text: t('discard_text'), confirm: t('discard'), danger: true });
 
   const save = async () => {
     if (!connection || !draft) return;
@@ -154,22 +159,23 @@ const EditorPage: React.FC = () => {
     }
   };
 
-  const discard = () => {
-    if (!document || !draft || !confirmDiscard()) return;
+  const discard = async () => {
+    if (!document || !draft || !(await confirmDiscard())) return;
     const stored = document.dashboards[draft.id];
     if (stored) load(document, draft.id);
     else load(document, 'default');
     setStatus('');
   };
 
-  const switchTo = (id: string) => {
-    if (!document || !confirmDiscard()) return;
+  const switchTo = async (id: string) => {
+    if (!document || !(await confirmDiscard())) return;
     load(document, id);
     open({ kind: 'general' });
   };
 
-  const create = (from?: Dashboard) => {
-    if (!document || !confirmDiscard()) return;
+  const create = async (from?: Dashboard) => {
+    setMenu(false);
+    if (!document || !(await confirmDiscard())) return;
     const base = copyOf(from ?? document.dashboards.default);
     setDraft({ ...base, id: newId(), name: from ? `${from.name} (2)` : t('new_dashboard') });
     setDirty(true);
@@ -179,7 +185,13 @@ const EditorPage: React.FC = () => {
   const remove = async () => {
     setMenu(false);
     if (!connection || !draft || !document || draft.id === 'default') return;
-    if (!window.confirm(t('confirm_delete', { name: draft.name }))) return;
+    const ok = await confirm({
+      title: t('delete_title', { name: draft.name }),
+      text: t('confirm_delete', { name: draft.name }),
+      confirm: t('delete'),
+      danger: true,
+    });
+    if (!ok) return;
     if (document.dashboards[draft.id]) {
       await connection.sendMessagePromise({ type: 'better_wall_dashboard/delete_dashboard', dashboard_id: draft.id });
     }
@@ -270,18 +282,28 @@ const EditorPage: React.FC = () => {
             </StyledHeaderButton>
             {menu && (
               <div className='menu' role='menu'>
-                <button type='button' role='menuitem' onClick={() => create()}>
+                <button type='button' role='menuitem' onClick={() => void create()}>
                   <Icon icon='mdi:plus' /> {t('new_dashboard')}
                 </button>
-                <button type='button' role='menuitem' onClick={() => create(draft)}>
+                <button type='button' role='menuitem' onClick={() => void create(draft)}>
                   <Icon icon='mdi:content-copy' /> {t('duplicate')}
                 </button>
                 <button type='button' role='menuitem' onClick={() => open({ kind: 'json' })}>
                   <Icon icon='mdi:code-json' /> {t('edit_json')}
                 </button>
-                <hr />
-                <button type='button' role='menuitem' className='danger' disabled={draft.id === 'default'} onClick={remove}>
+                <button type='button' role='menuitem' className='danger' disabled={draft.id === 'default'} onClick={() => void remove()}>
                   <Icon icon='mdi:delete-outline' /> {t('delete_dashboard')}
+                </button>
+                <hr />
+                <button
+                  type='button'
+                  role='menuitem'
+                  onClick={() => {
+                    setMenu(false);
+                    setAbout(true);
+                  }}
+                >
+                  <Icon icon='mdi:information-outline' /> {t('about')}
                 </button>
               </div>
             )}
@@ -298,8 +320,8 @@ const EditorPage: React.FC = () => {
             open={drawer}
             onToggle={toggle}
             onOpen={open}
-            onSwitch={switchTo}
-            onNewDashboard={() => create()}
+            onSwitch={id => void switchTo(id)}
+            onNewDashboard={() => void create()}
           />
 
           <StyledScreen $hidden={showPreview}>
@@ -310,7 +332,7 @@ const EditorPage: React.FC = () => {
               <div className='screen-foot'>
                 <span className='status'>{dirty ? t('unsaved') : status}</span>
                 <span className='end'>
-                  <HaButton appearance='plain' disabled={!dirty} onClick={discard}>
+                  <HaButton appearance='plain' disabled={!dirty} onClick={() => void discard()}>
                     {t('discard')}
                   </HaButton>
                   <HaButton appearance='accent' icon='mdi:content-save-outline' disabled={!dirty} onClick={save}>
@@ -345,6 +367,8 @@ const EditorPage: React.FC = () => {
             </div>
           </StyledPreviewCard>
         </StyledBody>
+        <AboutDialog open={about} onClose={() => setAbout(false)} />
+        {dialog}
       </StyledEditor>
     </EntityCatalog>
   );

@@ -38,6 +38,7 @@ MAX_PAGE_TRACKS: Final = 3
 MAX_SECTION_CELLS: Final = 12
 MAX_TILES: Final = 64
 MAX_QUICK_ACTIONS: Final = 6
+MAX_STATUS_ICONS: Final = 6
 MAX_BUTTONS: Final = 5
 MAX_SECTION_STATUS: Final = 2
 MAX_SYSTEM_STATS: Final = 8
@@ -240,6 +241,31 @@ def _button(raw: Any, assign: Callable[[Any], str]) -> dict:
     }
 
 
+# The three modes the status row had before it became a list, with the icon
+# each was drawn with -- left to right as they appeared.
+_LEGACY_STATUS = (
+    ("absence", "mdi:account-off"),
+    ("guest", "mdi:account-multiple"),
+    ("night", "mdi:weather-night"),
+)
+
+
+def _status_icons(status: dict[str, Any], assign: Callable[[Any], str]) -> list:
+    """The status row's icons, left to right; Wi-Fi is not one of them.
+
+    A dashboard saved before the row was a list has none stored, and gets the
+    modes it had, from the keys they were stored under -- which stay as they
+    are. Once the list is saved, even empty, it is what counts.
+    """
+    if "icons" in status:
+        return _named_entities(status.get("icons"), assign, MAX_STATUS_ICONS)
+    return [
+        _named_entity({"entity": status.get(key), "icon": icon}, assign)
+        for key, icon in _LEGACY_STATUS
+        if _entity(status.get(key))
+    ]
+
+
 def _sidebar(raw: Any, assign: Callable[[Any], str]) -> dict:
     raw = _dict(raw)
     status = _dict(raw.get("status"))
@@ -254,6 +280,7 @@ def _sidebar(raw: Any, assign: Callable[[Any], str]) -> dict:
             "absence": _entity(status.get("absence")),
             "guest": _entity(status.get("guest")),
             "night": _entity(status.get("night")),
+            "icons": _status_icons(status, assign),
             # The tablet's own signal, as the companion app reports it. Per
             # dashboard because it is per tablet.
             "wifi_signal": _entity(status.get("wifi_signal")),

@@ -84,6 +84,11 @@ export const StyledArea = styled.div<{ $area: string }>`
     flex-direction: column;
   }
 
+  /* Its own block, set apart from the quick actions above it. */
+  &[data-area='calendar']:not(:empty) {
+    margin-top: ${u(0.6)};
+  }
+
   /* The last block sits on the card's own padding, not on its own too. */
   &[data-area='footer'] {
     padding-bottom: 0;

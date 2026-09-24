@@ -39,7 +39,7 @@ const theme: DefaultTheme = {
     calendar: '#03a9f4',
   },
   popup: {
-    backdrop: 'rgba(0, 0, 0, 0.45)',
+    backdrop: 'rgba(0, 0, 0, 0.62)',
   },
 };
 

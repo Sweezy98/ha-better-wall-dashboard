@@ -1,6 +1,6 @@
 import styled, { css } from 'styled-components';
 import { pressable } from '../../../themes/interaction';
-import { glass } from '../../../themes/glass';
+import { surfaceGlass } from '../../../themes/glass';
 import { u } from '../../../themes/default.theme';
 
 /**
@@ -10,7 +10,7 @@ import { u } from '../../../themes/default.theme';
  */
 export const tileSurface = css`
   border-radius: ${u(1.1)};
-  ${glass('rgba(255, 255, 255, 0.035)')}
+  ${surfaceGlass}
 `;
 
 /** The same glass, pressed and hovered alike wherever it is a button. */

@@ -667,3 +667,52 @@ export const StyledPreviewCard = styled(StyledCard)<{ $shown: boolean }>`
     display: ${({ $shown }) => ($shown ? 'grid' : 'none')};
   }
 `;
+
+/**
+ * The editor's own dialogs -- asking before something is lost, and About --
+ * in the shape of Home Assistant's: a card over a dimmed page, rather than
+ * the browser's grey box, which says "a web page" instead of "Home Assistant".
+ */
+export const StyledModal = styled.dialog`
+  width: min(440px, calc(100vw - 32px));
+  padding: 24px;
+  border: none;
+  border-radius: var(--ha-dialog-border-radius, 24px);
+  background: var(--card-background-color, #1c1c1c);
+  color: var(--primary-text-color, #e1e1e1);
+  font-family: var(--ha-font-family-body, Roboto, Noto, sans-serif);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+
+  &::backdrop {
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  > * {
+    margin: 0 0 14px;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 400;
+  }
+
+  .muted {
+    color: var(--secondary-text-color, #9b9b9b);
+  }
+
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 24px;
+  }
+`;

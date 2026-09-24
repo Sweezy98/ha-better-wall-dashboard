@@ -29,24 +29,16 @@ const SidebarScreen: React.FC<ScreenProps & { part: SidebarPart }> = ({ draft, u
           <StyledFieldset>
             <h3>{t('status_icons')}</h3>
             <p>{t('status_icons_hint')}</p>
-            <EntityField
-              label={t('absence_mode')}
-              value={value.status.absence}
+            <NamedEntityList
+              items={value.status.icons ?? []}
+              max={LIMITS.statusIcons}
               domains={MODE_DOMAINS}
-              onChange={absence => set('status', { absence })}
+              addLabel={t('add_status_icon')}
+              onChange={icons => set('status', { icons })}
             />
-            <EntityField
-              label={t('guest_mode')}
-              value={value.status.guest}
-              domains={MODE_DOMAINS}
-              onChange={guest => set('status', { guest })}
-            />
-            <EntityField
-              label={t('night_mode')}
-              value={value.status.night}
-              domains={MODE_DOMAINS}
-              onChange={night => set('status', { night })}
-            />
+          </StyledFieldset>
+          <StyledFieldset>
+            <h3>{t('wifi_heading')}</h3>
             <EntityField
               label={t('wifi_signal')}
               hint={t('wifi_signal_hint')}
