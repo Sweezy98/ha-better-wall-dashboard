@@ -1,0 +1,23 @@
+{
+  "domain": "better_wall_dashboard",
+  "name": "Better Wall Dashboard",
+  "after_dependencies": [
+    "frontend",
+    "panel_custom"
+  ],
+  "codeowners": [
+    "@Sweezy98"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "http",
+    "websocket_api"
+  ],
+  "documentation": "https://github.com/Sweezy98/ha-better-wall-dashboard",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/Sweezy98/ha-better-wall-dashboard/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "0.1.0"
+}

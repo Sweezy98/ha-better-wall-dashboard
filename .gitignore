@@ -1,0 +1,35 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Frontend tooling (the build itself, in custom_components/*/frontend, IS committed)
+frontend/node_modules/
+
+# Private: never commit anything that identifies an instance.
+# Reference material, which contains a real access token, entity ids and
+# addresses from a live Home Assistant.
+ref_projects/
+# Dev credentials and URLs. Only the *.example files are tracked.
+.env
+.env.*
+!.env.example
+!.env.development.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+!frontend/.env.development.example
+# Generated from one particular Home Assistant by `npm run sync`.
+frontend/supported-types.d.ts
+# A local Home Assistant config for trying the integration.
+config/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

@@ -1,0 +1,27 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { background: transparent; overflow: hidden; }
+  /* Drawn at the @2x size, 1560 x 320; the 1x file is the same page at half
+     the device scale. */
+  body { width: 1560px; height: 320px; display: flex; align-items: center;
+         gap: 40px; padding: 0 8px; font-family: Inter, system-ui, sans-serif; }
+  .mark { flex: 0 0 auto; width: 280px; height: 280px; }
+  .mark iframe { width: 280px; height: 280px; border: 0; background: transparent; }
+  .name { font-size: 112px; font-weight: 800; letter-spacing: -.022em;
+          line-height: 1; white-space: nowrap; color: #10202c; }
+  .name .warm { color: #e08a12; }
+  /* dark_logo: for dark backgrounds. */
+  body.dark .name { color: #e9f2f8; }
+  body.dark .name .warm { color: #ffb43c; }
+</style></head>
+<body>
+  <!-- The icon itself, not a copy of it, so the two cannot drift apart. -->
+  <div class="mark"><iframe src="icon.html" title="" scrolling="no"></iframe></div>
+  <div class="name">Better <span class="warm">Wall Dashboard</span></div>
+<script>
+  if (location.search.includes("dark")) document.body.classList.add("dark");
+</script>
+</body></html>

@@ -1,0 +1,23 @@
+[project]
+name = "better-wall-dashboard"
+version = "0.1.0"
+description = "A full-screen Home Assistant dashboard for wall tablets, served by its own integration"
+# Home Assistant 2026.3 -- the oldest release this integration supports, the
+# first to read brand images from the component -- runs on Python 3.13.
+requires-python = ">=3.13"
+
+[tool.ruff]
+# Must match the oldest Python a supported Home Assistant runs on, or ruff
+# will rewrite code into syntax that release cannot parse (it has: PEP 758
+# unparenthesized except groups are 3.14-only).
+target-version = "py313"
+line-length = 88
+extend-exclude = ["frontend", "ref_projects"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP", "B", "C4", "SIM", "RUF"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

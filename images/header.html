@@ -1,0 +1,260 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* Better Lighting's header, element for element: the same grid, glows,
+     badge, title, chips and bottom strip. What changes is what is drawn --
+     a wall tablet instead of a room -- and nothing on it is data: no time,
+     no date, no names. */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+  body {
+    background: #060b10;
+    font-family: Inter, system-ui, sans-serif;
+    color: #e9f2f8;
+    position: relative;
+  }
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(120,190,230,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(120,190,230,.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .glow { position: absolute; border-radius: 50%; filter: blur(90px); }
+  .glow.warm { width: 620px; height: 620px; right: -120px; top: -80px;
+               background: radial-gradient(circle, rgba(255,176,60,.30), transparent 65%); }
+  .glow.cool { width: 560px; height: 560px; left: -160px; bottom: -200px;
+               background: radial-gradient(circle, rgba(60,170,255,.20), transparent 65%); }
+
+  .left { position: absolute; left: 64px; top: 44px; width: 620px; }
+  .badge { display: flex; align-items: center; gap: 14px; margin-bottom: 26px; }
+  .mark {
+    width: 54px; height: 54px; border-radius: 16px;
+    border: 1.5px solid rgba(120,200,255,.45);
+    background: rgba(20,40,58,.7);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 26px rgba(80,180,255,.28);
+  }
+  .kicker {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: .22em;
+    color: #8fb6cc; text-transform: uppercase; display: flex; align-items: center; gap: 10px;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #54c8ff; box-shadow: 0 0 10px #54c8ff; }
+
+  h1 { font-size: 60px; font-weight: 800; letter-spacing: -.022em; line-height: 1.03; }
+  h1 .warm { color: #ffb43c; }
+  .tag { margin-top: 16px; font-family: 'JetBrains Mono', monospace; font-size: 20px; color: #cfe3ef; letter-spacing: .01em; }
+  .sub { margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #7f9fb2; letter-spacing: .04em; }
+  .chips { margin-top: 22px; display: flex; gap: 12px; }
+  .chip {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    padding: 8px 18px; border-radius: 999px;
+    border: 1px solid rgba(120,200,255,.32); color: #9fd2ef;
+  }
+  .chip.amber { border-color: rgba(255,180,60,.4); color: #ffc775; }
+
+  .devices { position: absolute; left: 64px; bottom: 44px; width: 600px; }
+  .devices .label {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: .2em;
+    color: #7f9fb2; text-transform: uppercase; margin-bottom: 14px;
+    display: flex; justify-content: space-between;
+  }
+  .row { display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; }
+  .tile {
+    aspect-ratio: 1; border-radius: 16px; position: relative;
+    background: rgba(20,40,58,.55); border: 1px solid rgba(120,200,255,.22);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tile svg { width: 30px; height: 30px; fill: #7fb8d8; }
+  .tile.on { background: rgba(255,180,60,.16); border-color: rgba(255,180,60,.5);
+             box-shadow: 0 0 22px rgba(255,180,60,.22); }
+  .tile.on svg { fill: #ffc775; }
+  .tile .bar { position: absolute; left: 10px; right: 10px; bottom: 8px; height: 3px;
+               border-radius: 2px; background: rgba(120,200,255,.18); overflow: hidden; }
+  .tile .bar::after { content: ''; position: absolute; inset: 0 40% 0 0; background: #ffc775; border-radius: 2px; }
+</style>
+</head>
+<body>
+  <div class="grid"></div>
+  <div class="glow warm"></div>
+  <div class="glow cool"></div>
+
+  <div class="left">
+    <div class="badge">
+      <div class="mark">
+        <!-- The integration's own mark, the same paths as images/icon.html
+             without its plate: the badge around it already is one. -->
+        <svg width="36" height="36" viewBox="76 130 360 252" fill="none">
+          <defs>
+            <linearGradient id="markday" gradientUnits="userSpaceOnUse" x1="96" y1="362" x2="416" y2="150">
+              <stop offset="0" stop-color="#4aa8e0"/>
+              <stop offset="0.5" stop-color="#ffd27a"/>
+              <stop offset="1" stop-color="#ffb43c"/>
+            </linearGradient>
+          </defs>
+          <rect x="86" y="140" width="340" height="232" rx="36" fill="#0b141d" fill-opacity=".6" stroke="url(#markday)" stroke-width="20"/>
+          <rect x="120" y="172" width="92" height="168" rx="16" fill="#16283a"/>
+          <path d="M124 298 C 138 300, 144 272, 160 272 C 176 272, 182 296, 208 285" stroke="#4aa8e0" stroke-width="12" stroke-linecap="round"/>
+          <rect x="232" y="172" width="74" height="76" rx="16" fill="#16283a" stroke="#7fd2ff" stroke-opacity=".5" stroke-width="6"/>
+          <rect x="320" y="172" width="74" height="76" rx="16" fill="#ffb43c"/>
+          <rect x="232" y="264" width="74" height="76" rx="16" fill="#16283a" stroke="#7fd2ff" stroke-opacity=".5" stroke-width="6"/>
+          <rect x="320" y="264" width="74" height="76" rx="16" fill="#16283a" stroke="#7fd2ff" stroke-opacity=".5" stroke-width="6"/>
+        </svg>
+      </div>
+      <div class="kicker"><span class="dot"></span>Home&nbsp;Assistant &nbsp;·&nbsp; Custom&nbsp;Integration</div>
+    </div>
+
+    <h1>Better<br><span class="warm">Wall Dashboard</span></h1>
+    <div class="tag">Full screen, for the tablet on the wall.</div>
+    <div class="sub">lights · shading · climate · media · appliances · one panel</div>
+
+    <div class="chips">
+      <div class="chip">HACS</div>
+      <div class="chip">React</div>
+      <div class="chip amber">Own Panel</div>
+    </div>
+  </div>
+
+  <!-- What the panel is for: every kind of device in the house, as the
+       tiles it will draw them -- where Better Lighting draws its adaptive
+       curve. Two are on; the washing machine is part-way through. -->
+  <div class="devices">
+    <div class="label"><span>One panel, the whole house</span><span>lights → vacuum</span></div>
+    <div class="row">
+      <div class="tile on"><svg viewBox="0 0 24 24"><path d="M12,2A7,7 0 0,1 19,9C19,11.38 17.81,13.47 16,14.74V17A1,1 0 0,1 15,18H9A1,1 0 0,1 8,17V14.74C6.19,13.47 5,11.38 5,9A7,7 0 0,1 12,2M9,21V20H15V21A1,1 0 0,1 14,22H10A1,1 0 0,1 9,21M12,4A5,5 0 0,0 7,9C7,11.05 8.23,12.81 10,13.58V16H14V13.58C15.77,12.81 17,11.05 17,9A5,5 0 0,0 12,4Z"/></svg></div>
+      <div class="tile "><svg viewBox="0 0 24 24"><path d="M20 19V3H4V19H2V21H22V19H20M16 9H18V11H16V9M14 11H6V9H14V11M18 7H16V5H18V7M14 5V7H6V5H14M6 19V13H14V14.82C13.55 15.14 13.25 15.66 13.25 16.25C13.25 17.22 14.03 18 15 18S16.75 17.22 16.75 16.25C16.75 15.66 16.45 15.13 16 14.82V13H18V19H6Z"/></svg></div>
+      <div class="tile "><svg viewBox="0 0 24 24"><path d="M16.95,16.95L14.83,14.83C15.55,14.1 16,13.1 16,12C16,11.26 15.79,10.57 15.43,10L17.6,7.81C18.5,9 19,10.43 19,12C19,13.93 18.22,15.68 16.95,16.95M12,5C13.57,5 15,5.5 16.19,6.4L14,8.56C13.43,8.21 12.74,8 12,8A4,4 0 0,0 8,12C8,13.1 8.45,14.1 9.17,14.83L7.05,16.95C5.78,15.68 5,13.93 5,12A7,7 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"/></svg></div>
+      <div class="tile "><svg viewBox="0 0 24 24"><path d="M12,12A3,3 0 0,0 9,15A3,3 0 0,0 12,18A3,3 0 0,0 15,15A3,3 0 0,0 12,12M12,20A5,5 0 0,1 7,15A5,5 0 0,1 12,10A5,5 0 0,1 17,15A5,5 0 0,1 12,20M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8C10.89,8 10,7.1 10,6C10,4.89 10.89,4 12,4M17,2H7C5.89,2 5,2.89 5,4V20A2,2 0 0,0 7,22H17A2,2 0 0,0 19,20V4C19,2.89 18.1,2 17,2Z"/></svg></div>
+      <div class="tile "><svg viewBox="0 0 24 24"><path d="M18,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V4A2,2 0 0,0 18,2M10,4A1,1 0 0,1 11,5A1,1 0 0,1 10,6A1,1 0 0,1 9,5A1,1 0 0,1 10,4M7,4A1,1 0 0,1 8,5A1,1 0 0,1 7,6A1,1 0 0,1 6,5A1,1 0 0,1 7,4M18,20H6V8H18V20M14.67,15.33C14.69,16.03 14.41,16.71 13.91,17.21C12.86,18.26 11.15,18.27 10.09,17.21C9.59,16.71 9.31,16.03 9.33,15.33C9.4,14.62 9.63,13.94 10,13.33C10.37,12.5 10.81,11.73 11.33,11L12,10C13.79,12.59 14.67,14.36 14.67,15.33"/></svg></div>
+      <div class="tile on"><svg viewBox="0 0 24 24"><path d="M14.83,11.17C16.39,12.73 16.39,15.27 14.83,16.83C13.27,18.39 10.73,18.39 9.17,16.83L14.83,11.17M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M7,4A1,1 0 0,0 6,5A1,1 0 0,0 7,6A1,1 0 0,0 8,5A1,1 0 0,0 7,4M10,4A1,1 0 0,0 9,5A1,1 0 0,0 10,6A1,1 0 0,0 11,5A1,1 0 0,0 10,4M12,8A6,6 0 0,0 6,14A6,6 0 0,0 12,20A6,6 0 0,0 18,14A6,6 0 0,0 12,8Z"/></svg><span class=bar></span></div>
+      <div class="tile "><svg viewBox="0 0 24 24"><path d="M12,2C14.65,2 17.19,3.06 19.07,4.93L17.65,6.35C16.15,4.85 14.12,4 12,4C9.88,4 7.84,4.84 6.35,6.35L4.93,4.93C6.81,3.06 9.35,2 12,2M3.66,6.5L5.11,7.94C4.39,9.17 4,10.57 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12C20,10.57 19.61,9.17 18.88,7.94L20.34,6.5C21.42,8.12 22,10.04 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12C2,10.04 2.58,8.12 3.66,6.5M12,6A6,6 0 0,1 18,12C18,13.59 17.37,15.12 16.24,16.24L14.83,14.83C14.08,15.58 13.06,16 12,16C10.94,16 9.92,15.58 9.17,14.83L7.76,16.24C6.63,15.12 6,13.59 6,12A6,6 0 0,1 12,6M12,8A1,1 0 0,0 11,9A1,1 0 0,0 12,10A1,1 0 0,0 13,9A1,1 0 0,0 12,8Z"/></svg></div>
+      <div class="tile "><svg viewBox="0 0 24 24"><path d="M11 9.47V11H14.76L13 14.53V13H9.24L11 9.47M13 1L6 15H11V23L18 9H13V1Z"/></svg></div>
+    </div>
+  </div>
+
+  <!-- The tablet, drawn the way Better Lighting draws its room: abstract,
+       one warm light, and the dashboard's own rows in miniature below. -->
+  <svg class="room" style="position:absolute; right:56px; top:96px" width="430" height="452" viewBox="0 0 430 452" fill="none">
+    <defs>
+      <linearGradient id="frame" gradientUnits="userSpaceOnUse" x1="0" y1="290" x2="430" y2="30">
+        <stop offset="0" stop-color="#4aa8e0"/>
+        <stop offset="0.5" stop-color="#ffd27a"/>
+        <stop offset="1" stop-color="#ffb43c"/>
+      </linearGradient>
+      <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0e1a24" stop-opacity=".92"/>
+        <stop offset="1" stop-color="#0a141c" stop-opacity=".92"/>
+      </linearGradient>
+      <radialGradient id="lit" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stop-color="#ffc768" stop-opacity=".45"/>
+        <stop offset="1" stop-color="#ffc768" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8"/></filter>
+    </defs>
+
+    <text x="4" y="12" font-family="JetBrains Mono, monospace" font-size="12" letter-spacing="3.4" fill="#7f9fb2">WALL TABLET</text>
+    <path d="M1 22 v 14 M1 22 h 14" stroke="#24455c" stroke-width="1.5"/>
+    <path d="M429 22 v 14 M429 22 h -14" stroke="#24455c" stroke-width="1.5"/>
+
+    <!-- frame and screen -->
+    <rect x="12" y="44" width="406" height="236" rx="22" fill="#0b141d" stroke="url(#frame)" stroke-width="3"/>
+    <rect x="24" y="56" width="382" height="212" rx="12" fill="#0f1a24"/>
+
+    <!-- sidebar: a clock as bars, the two graphs, a few rows -->
+    <rect x="34" y="66" width="104" height="192" rx="10" fill="#132332"/>
+    <rect x="44" y="78" width="58" height="14" rx="4" fill="#e9f2f8" fill-opacity=".85"/>
+    <rect x="44" y="97" width="36" height="5" rx="2.5" fill="#7f9fb2"/>
+    <rect x="44" y="112" width="40" height="30" rx="6" fill="#18293a"/>
+    <path d="M44 132 C 52 132, 55 122, 62 122 C 70 122, 74 130, 84 127" stroke="#4aa8e0" stroke-width="2.2" stroke-linecap="round"/>
+    <rect x="88" y="112" width="40" height="30" rx="6" fill="#18293a"/>
+    <path d="M88 126 C 96 128, 100 136, 108 134 C 116 132, 120 124, 128 126" stroke="#3ddc84" stroke-width="2.2" stroke-linecap="round"/>
+    <g fill="#1b2e40">
+      <rect x="44" y="150" width="84" height="12" rx="6"/>
+      <rect x="44" y="168" width="84" height="12" rx="6"/>
+      <rect x="44" y="186" width="84" height="12" rx="6"/>
+    </g>
+    <circle cx="50" cy="156" r="3.5" fill="#7fd2ff" fill-opacity=".6"/>
+    <circle cx="50" cy="174" r="3.5" fill="#ff6b6b" fill-opacity=".8"/>
+    <circle cx="50" cy="192" r="3.5" fill="#7fd2ff" fill-opacity=".6"/>
+    <g fill="#1b2e40">
+      <rect x="44" y="208" width="26" height="12" rx="6"/>
+      <rect x="73" y="208" width="26" height="12" rx="6"/>
+      <rect x="102" y="208" width="26" height="12" rx="6"/>
+    </g>
+    <circle cx="52" cy="238" r="8" fill="none" stroke="#f59e0b" stroke-width="2"/>
+    <rect x="66" y="234" width="26" height="8" rx="4" fill="#7f9fb2" fill-opacity=".7"/>
+
+    <!-- pages: a header rule, square tiles, one of them lit -->
+    <g stroke="#24455c" stroke-width="3" stroke-linecap="round">
+      <path d="M150 72 h 170"/><path d="M334 72 h 62"/>
+    </g>
+    <g fill="#16283a" stroke="#7fd2ff" stroke-opacity=".32" stroke-width="1.2">
+      <rect x="150" y="82" width="38" height="38" rx="7"/>
+      <rect x="194" y="82" width="38" height="38" rx="7"/>
+      <rect x="282" y="82" width="38" height="38" rx="7"/>
+      <rect x="150" y="126" width="38" height="38" rx="7"/>
+      <rect x="194" y="126" width="38" height="38" rx="7"/>
+      <rect x="238" y="126" width="38" height="38" rx="7"/>
+      <rect x="282" y="126" width="38" height="38" rx="7"/>
+      <rect x="334" y="82" width="28" height="38" rx="7"/>
+      <rect x="368" y="82" width="28" height="38" rx="7"/>
+      <rect x="334" y="126" width="28" height="38" rx="7"/>
+      <rect x="368" y="126" width="28" height="38" rx="7"/>
+      <rect x="150" y="186" width="82" height="60" rx="8"/>
+      <rect x="238" y="186" width="82" height="60" rx="8"/>
+      <rect x="334" y="186" width="62" height="60" rx="8"/>
+    </g>
+    <!-- device glyphs: what the tiles will control -->
+    <path transform="translate(203.0 91.0) scale(0.8333333333333334)" d="M20 19V3H4V19H2V21H22V19H20M16 9H18V11H16V9M14 11H6V9H14V11M18 7H16V5H18V7M14 5V7H6V5H14M6 19V13H14V14.82C13.55 15.14 13.25 15.66 13.25 16.25C13.25 17.22 14.03 18 15 18S16.75 17.22 16.75 16.25C16.75 15.66 16.45 15.13 16 14.82V13H18V19H6Z" fill="#7fb8d8" fill-opacity=".8"/>
+    <path transform="translate(291.0 91.0) scale(0.8333333333333334)" d="M16.95,16.95L14.83,14.83C15.55,14.1 16,13.1 16,12C16,11.26 15.79,10.57 15.43,10L17.6,7.81C18.5,9 19,10.43 19,12C19,13.93 18.22,15.68 16.95,16.95M12,5C13.57,5 15,5.5 16.19,6.4L14,8.56C13.43,8.21 12.74,8 12,8A4,4 0 0,0 8,12C8,13.1 8.45,14.1 9.17,14.83L7.05,16.95C5.78,15.68 5,13.93 5,12A7,7 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z" fill="#7fb8d8" fill-opacity=".8"/>
+    <path transform="translate(159.0 135.0) scale(0.8333333333333334)" d="M12,12A3,3 0 0,0 9,15A3,3 0 0,0 12,18A3,3 0 0,0 15,15A3,3 0 0,0 12,12M12,20A5,5 0 0,1 7,15A5,5 0 0,1 12,10A5,5 0 0,1 17,15A5,5 0 0,1 12,20M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8C10.89,8 10,7.1 10,6C10,4.89 10.89,4 12,4M17,2H7C5.89,2 5,2.89 5,4V20A2,2 0 0,0 7,22H17A2,2 0 0,0 19,20V4C19,2.89 18.1,2 17,2Z" fill="#7fb8d8" fill-opacity=".8"/>
+    <path transform="translate(247.0 135.0) scale(0.8333333333333334)" d="M14.83,11.17C16.39,12.73 16.39,15.27 14.83,16.83C13.27,18.39 10.73,18.39 9.17,16.83L14.83,11.17M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M7,4A1,1 0 0,0 6,5A1,1 0 0,0 7,6A1,1 0 0,0 8,5A1,1 0 0,0 7,4M10,4A1,1 0 0,0 9,5A1,1 0 0,0 10,6A1,1 0 0,0 11,5A1,1 0 0,0 10,4M12,8A6,6 0 0,0 6,14A6,6 0 0,0 12,20A6,6 0 0,0 18,14A6,6 0 0,0 12,8Z" fill="#ffc775" fill-opacity=".8"/>
+    <path transform="translate(291.0 135.0) scale(0.8333333333333334)" d="M12,2C14.65,2 17.19,3.06 19.07,4.93L17.65,6.35C16.15,4.85 14.12,4 12,4C9.88,4 7.84,4.84 6.35,6.35L4.93,4.93C6.81,3.06 9.35,2 12,2M3.66,6.5L5.11,7.94C4.39,9.17 4,10.57 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12C20,10.57 19.61,9.17 18.88,7.94L20.34,6.5C21.42,8.12 22,10.04 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12C2,10.04 2.58,8.12 3.66,6.5M12,6A6,6 0 0,1 18,12C18,13.59 17.37,15.12 16.24,16.24L14.83,14.83C14.08,15.58 13.06,16 12,16C10.94,16 9.92,15.58 9.17,14.83L7.76,16.24C6.63,15.12 6,13.59 6,12A6,6 0 0,1 12,6M12,8A1,1 0 0,0 11,9A1,1 0 0,0 12,10A1,1 0 0,0 13,9A1,1 0 0,0 12,8Z" fill="#7fb8d8" fill-opacity=".8"/>
+    <path transform="translate(339.0 136.0) scale(0.75)" d="M18,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V4A2,2 0 0,0 18,2M10,4A1,1 0 0,1 11,5A1,1 0 0,1 10,6A1,1 0 0,1 9,5A1,1 0 0,1 10,4M7,4A1,1 0 0,1 8,5A1,1 0 0,1 7,6A1,1 0 0,1 6,5A1,1 0 0,1 7,4M18,20H6V8H18V20M14.67,15.33C14.69,16.03 14.41,16.71 13.91,17.21C12.86,18.26 11.15,18.27 10.09,17.21C9.59,16.71 9.31,16.03 9.33,15.33C9.4,14.62 9.63,13.94 10,13.33C10.37,12.5 10.81,11.73 11.33,11L12,10C13.79,12.59 14.67,14.36 14.67,15.33" fill="#7fb8d8" fill-opacity=".8"/>
+    <path transform="translate(373.0 92.0) scale(0.75)" d="M12,2A7,7 0 0,1 19,9C19,11.38 17.81,13.47 16,14.74V17A1,1 0 0,1 15,18H9A1,1 0 0,1 8,17V14.74C6.19,13.47 5,11.38 5,9A7,7 0 0,1 12,2M9,21V20H15V21A1,1 0 0,1 14,22H10A1,1 0 0,1 9,21M12,4A5,5 0 0,0 7,9C7,11.05 8.23,12.81 10,13.58V16H14V13.58C15.77,12.81 17,11.05 17,9A5,5 0 0,0 12,4Z" fill="#7fb8d8" fill-opacity=".8"/>
+    <path d="M150 178 h 170 M334 178 h 62" stroke="#24455c" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="257" cy="101" r="34" fill="url(#lit)" filter="url(#soft)"/>
+    <rect x="238" y="82" width="38" height="38" rx="7" fill="#ffc768" fill-opacity=".9"/>
+    <circle cx="257" cy="98" r="5" fill="#fff4d6"/>
+    <rect x="252" y="107" width="10" height="3" rx="1.5" fill="#fff4d6"/>
+    <g fill="#1b2e40">
+      <rect x="150" y="254" width="46" height="8" rx="4"/>
+      <rect x="200" y="254" width="46" height="8" rx="4"/>
+      <rect x="250" y="254" width="46" height="8" rx="4"/>
+      <rect x="300" y="254" width="46" height="8" rx="4"/>
+      <rect x="350" y="254" width="46" height="8" rx="4"/>
+    </g>
+
+    <!-- the sidebar's own row, in miniature -->
+    <g transform="translate(0,312)">
+      <rect x="0" y="0" width="430" height="128" rx="16" fill="url(#panel)" stroke="#1d3446"/>
+      <rect x="20" y="20" width="186" height="40" rx="20" fill="#152532"/>
+      <circle cx="40" cy="40" r="13" fill="#1d3446"/>
+      <path d="M40 33 v 9" stroke="#7fd2ff" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="40" cy="45" r="3.4" fill="none" stroke="#7fd2ff" stroke-width="2"/>
+      <rect x="62" y="30" width="74" height="7" rx="3.5" fill="#e9f2f8" fill-opacity=".8"/>
+      <rect x="62" y="44" width="44" height="6" rx="3" fill="#6d8a9c"/>
+      <rect x="224" y="20" width="186" height="40" rx="20" fill="#152532"/>
+      <circle cx="244" cy="40" r="13" fill="#1d3446"/>
+      <path d="M244 33 c -4 5 -6 8 -6 10 a 6 6 0 0 0 12 0 c 0 -2 -2 -5 -6 -10 z" fill="#3ddc84" fill-opacity=".85"/>
+      <rect x="266" y="30" width="74" height="7" rx="3.5" fill="#e9f2f8" fill-opacity=".8"/>
+      <rect x="266" y="44" width="36" height="6" rx="3" fill="#6d8a9c"/>
+
+      <g>
+        <rect x="20" y="74" width="122" height="34" rx="17" fill="#152532"/>
+        <rect x="154" y="74" width="122" height="34" rx="17" fill="rgba(255,180,60,.16)" stroke="rgba(255,180,60,.45)"/>
+        <rect x="288" y="74" width="122" height="34" rx="17" fill="#152532"/>
+        <circle cx="38" cy="91" r="9" fill="#1d3446"/>
+        <circle cx="172" cy="91" r="9" fill="#ffc775"/>
+        <circle cx="306" cy="91" r="9" fill="#1d3446"/>
+        <rect x="54" y="87" width="58" height="7" rx="3.5" fill="#6d8a9c"/>
+        <rect x="188" y="87" width="58" height="7" rx="3.5" fill="#ffc775" fill-opacity=".8"/>
+        <rect x="322" y="87" width="58" height="7" rx="3.5" fill="#6d8a9c"/>
+      </g>
+    </g>
+  </svg>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: transparent; overflow: hidden; }
+  body { width: 100vw; height: 100vh; }
+  svg { width: 100vw; height: 100vh; display: block; }
+</style>
+</head>
+<body>
+<!--
+  Better Lighting's language, for a sibling: the same dark squircle, the same
+  cool-to-warm ring, the same "day" gradient on the one bold outline.
+
+  The idea is the dashboard itself -- a tablet on its side, the sidebar down
+  its left with the temperature graph in it, tiles to the right, one of them
+  lit. Drawn for 32 pixels as much as for 512: thick strokes and solid
+  shapes, nothing that needs to be read.
+
+  Rendered by scripts/make_brand_images.sh; the SVG scales to the window.
+-->
+<svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="plate" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="512" y2="512">
+      <stop offset="0"    stop-color="#122534"/>
+      <stop offset="0.55" stop-color="#0d1b2a"/>
+      <stop offset="1"    stop-color="#0f141c"/>
+    </linearGradient>
+
+    <!-- Better Lighting's day: blue at one end, amber at the other. -->
+    <linearGradient id="day" gradientUnits="userSpaceOnUse" x1="96" y1="362" x2="416" y2="150">
+      <stop offset="0"    stop-color="#4aa8e0"/>
+      <stop offset="0.5"  stop-color="#ffd27a"/>
+      <stop offset="1"    stop-color="#ffb43c"/>
+    </linearGradient>
+
+    <radialGradient id="bloom" cx="0.66" cy="0.42" r="0.5">
+      <stop offset="0"   stop-color="#ffc768" stop-opacity=".42"/>
+      <stop offset="0.6" stop-color="#ff9c2e" stop-opacity=".10"/>
+      <stop offset="1"   stop-color="#ff9c2e" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="ring" gradientUnits="userSpaceOnUse" x1="40" y1="40" x2="472" y2="472">
+      <stop offset="0"   stop-color="#5bc8ff" stop-opacity=".62"/>
+      <stop offset="0.6" stop-color="#5bc8ff" stop-opacity=".18"/>
+      <stop offset="1"   stop-color="#ffb43c" stop-opacity=".38"/>
+    </linearGradient>
+
+    <linearGradient id="graphfill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4aa8e0" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#4aa8e0" stop-opacity=".05"/>
+    </linearGradient>
+  </defs>
+
+  <!-- The plate: a squircle, because it sits in a grid of rounded tiles. -->
+  <rect x="16" y="16" width="480" height="480" rx="126" fill="url(#plate)"/>
+  <rect x="16" y="16" width="480" height="480" rx="126" fill="none" stroke="url(#ring)" stroke-width="8"/>
+
+  <!-- The light the lit tile casts. -->
+  <circle cx="330" cy="220" r="170" fill="url(#bloom)"/>
+
+  <!-- The tablet. -->
+  <rect x="86" y="140" width="340" height="232" rx="36"
+        fill="#0b141d" fill-opacity=".6" stroke="url(#day)" stroke-width="20"/>
+
+  <!-- The sidebar: a column, the clock as one bold bar, the room's
+       temperature as the graph the dashboard draws. -->
+  <rect x="120" y="172" width="92" height="168" rx="16" fill="#16283a"/>
+  <path d="M136 198 h 52" stroke="#e9f2f8" stroke-width="14" stroke-linecap="round"/>
+  <path d="M120 300 C 138 300, 144 272, 160 272 C 176 272, 182 296, 212 284 L 212 324 Q 212 340 196 340 L 136 340 Q 120 340 120 324 Z"
+        fill="url(#graphfill)"/>
+  <path d="M124 298 C 138 300, 144 272, 160 272 C 176 272, 182 296, 208 285"
+        stroke="#4aa8e0" stroke-width="9" stroke-linecap="round" fill="none"/>
+
+  <!-- The tiles, one of them on. -->
+  <g>
+    <rect x="232" y="172" width="74" height="76" rx="16" fill="#16283a" stroke="#7fd2ff" stroke-opacity=".5" stroke-width="5"/>
+    <rect x="320" y="172" width="74" height="76" rx="16" fill="#ffb43c"/>
+    <rect x="232" y="264" width="74" height="76" rx="16" fill="#16283a" stroke="#7fd2ff" stroke-opacity=".5" stroke-width="5"/>
+    <rect x="320" y="264" width="74" height="76" rx="16" fill="#16283a" stroke="#7fd2ff" stroke-opacity=".5" stroke-width="5"/>
+  </g>
+  <!-- The lit tile's own mark: a bulb, nodding to Better Lighting. -->
+  <circle cx="357" cy="204" r="14" fill="#fff4d6"/>
+  <path d="M349 226 h 16" stroke="#fff4d6" stroke-width="7" stroke-linecap="round"/>
+</svg>
+</body>
+</html>

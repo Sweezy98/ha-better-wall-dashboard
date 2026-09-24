@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Better Wall Dashboard",
+        "description": "Fügt der Seitenleiste ein Vollbild-Dashboard für Wandtablets hinzu. Alles Weitere wird im Dashboard selbst eingerichtet: als Administrator öffnen und unter Einstellungen „Dashboard bearbeiten“ wählen."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Better Wall Dashboard ist bereits eingerichtet. Weitere Dashboards werden im Editor des Dashboards angelegt."
+    }
+  }
+}

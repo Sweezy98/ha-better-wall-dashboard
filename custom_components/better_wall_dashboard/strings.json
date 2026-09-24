@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Better Wall Dashboard",
+        "description": "Adds a full-screen dashboard for wall tablets to the sidebar. Everything else is set up on the dashboard itself: open it as an admin and choose Settings, then Edit dashboard."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Better Wall Dashboard is already set up. Add more dashboards from the dashboard's own editor."
+    }
+  }
+}

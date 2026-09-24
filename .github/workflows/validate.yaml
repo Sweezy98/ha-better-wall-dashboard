@@ -1,0 +1,24 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  validate-hacs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: HACS validation
+        uses: hacs/action@main
+        with:
+          category: integration
+          # home-assistant/brands no longer accepts custom integrations; the
+          # icon ships in custom_components/better_wall_dashboard/brand/
+          # instead (Home Assistant 2026.3+). See CLAUDE.md, section 7.
+          ignore: brands
