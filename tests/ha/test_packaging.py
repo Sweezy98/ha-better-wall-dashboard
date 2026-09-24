@@ -18,6 +18,7 @@ import pytest
 from custom_components.better_wall_dashboard.const import (
     APP_DIR,
     APP_ENTRY,
+    EDITOR_ELEMENT,
     PANEL_ELEMENT,
 )
 
@@ -98,9 +99,22 @@ def test_the_build_is_committed_where_hacs_installs_it() -> None:
     """HACS copies files and runs nothing: no build, no dashboard."""
     entry = COMPONENT / APP_DIR / APP_ENTRY
     assert entry.is_file(), "run `npm run build` in frontend/"
-    # The element the backend registers is the one the bundle defines.
-    # In any quotes: the minifier writes string literals as template literals.
-    assert re.search(rf"[\"'`]{PANEL_ELEMENT}[\"'`]", entry.read_text())
+    bundle = "".join(p.read_text() for p in (COMPONENT / APP_DIR).rglob("*.js"))
+    # The elements the backend registers are the ones the bundle defines. In
+    # any quotes: the minifier writes string literals as template literals.
+    for element in (PANEL_ELEMENT, EDITOR_ELEMENT):
+        assert re.search(rf"[\"'`]{element}[\"'`]", bundle), element
+
+
+def test_nothing_imports_the_entry_back() -> None:
+    """The entry is loaded as `better_wall_dashboard.js?v=...`.
+
+    A chunk importing it as plain `better_wall_dashboard.js` names a different
+    module to the browser, which then loads a second copy of the whole app,
+    React included. That made the editor a black page.
+    """
+    for chunk in (COMPONENT / APP_DIR / "assets").glob("*.js"):
+        assert APP_ENTRY not in chunk.read_text(), chunk.name
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
@@ -175,7 +189,7 @@ def _local_secrets() -> set[bytes]:
             key, _, value = line.partition("=")
             value = value.strip().strip("'\"")
             credential = re.search(
-                r"TOKEN|URL|HOST|PASSWORD|USER|SSID|KEY", key.upper()
+                r"TOKEN|URL|HOST|PASSWORD|USER|SSID|KEY|ADDRESS", key.upper()
             )
             if credential and not key.lstrip().startswith("#") and len(value) >= 6:
                 values.add(value.encode())

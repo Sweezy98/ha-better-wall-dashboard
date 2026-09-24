@@ -30,6 +30,10 @@ from .const import (
     APP_URL,
     BRAND_ICON_FILE,
     DOMAIN,
+    EDITOR_ELEMENT,
+    EDITOR_ICON,
+    EDITOR_TITLE,
+    EDITOR_URL_PATH,
     ICONS_FILE,
     PANEL_ELEMENT,
     PANEL_URL_PATH,
@@ -91,16 +95,6 @@ async def async_setup_panel(hass: HomeAssistant) -> bool:
     entry_hash = await hass.async_add_executor_job(fingerprint, app_entry())
     module_url = f"{APP_URL}/{APP_ENTRY}?v={entry_hash}"
 
-    panels = hass.data.get("frontend_panels", {})
-    if (existing := panels.get(PANEL_URL_PATH)) is not None:
-        if (existing.config or {}).get("_panel_custom", {}).get(
-            "module_url"
-        ) == module_url:
-            return True
-        # Registered from an older build: replace it, or the sidebar keeps
-        # pointing at a URL nothing will ever fetch again.
-        frontend.async_remove_panel(hass, PANEL_URL_PATH)
-
     kwargs = {}
     # The dashboard draws edge to edge and pads itself for a notch, so it opts
     # out of the inset Home Assistant would add. The argument is recent;
@@ -111,20 +105,65 @@ async def async_setup_panel(hass: HomeAssistant) -> bool:
     ):
         kwargs["handle_safe_area"] = True
 
-    await panel_custom.async_register_panel(
+    await _async_register(
         hass,
-        frontend_url_path=PANEL_URL_PATH,
-        webcomponent_name=PANEL_ELEMENT,
+        url_path=PANEL_URL_PATH,
+        element=PANEL_ELEMENT,
+        title=SIDEBAR_TITLE,
+        icon=SIDEBAR_ICON,
         module_url=module_url,
-        sidebar_title=SIDEBAR_TITLE,
-        sidebar_icon=SIDEBAR_ICON,
         # A wall tablet logs in as an ordinary user. Editing is what needs an
         # admin, and the websocket API checks that per command.
         require_admin=False,
+        **kwargs,
+    )
+    await _async_register(
+        hass,
+        url_path=EDITOR_URL_PATH,
+        element=EDITOR_ELEMENT,
+        title=EDITOR_TITLE,
+        icon=EDITOR_ICON,
+        module_url=module_url,
+        # Admin-only in the sidebar as well as in the API behind it: a tablet
+        # user should not even see where the dashboard is configured.
+        require_admin=True,
+    )
+    return True
+
+
+async def _async_register(
+    hass: HomeAssistant,
+    *,
+    url_path: str,
+    element: str,
+    title: str,
+    icon: str,
+    module_url: str,
+    require_admin: bool,
+    **kwargs: bool,
+) -> None:
+    """Register one panel, replacing it if it came from an older build."""
+    panels = hass.data.get("frontend_panels", {})
+    if (existing := panels.get(url_path)) is not None:
+        if (existing.config or {}).get("_panel_custom", {}).get(
+            "module_url"
+        ) == module_url:
+            return
+        # Registered from an older build: replace it, or the sidebar keeps
+        # pointing at a URL nothing will ever fetch again.
+        frontend.async_remove_panel(hass, url_path)
+
+    await panel_custom.async_register_panel(
+        hass,
+        frontend_url_path=url_path,
+        webcomponent_name=element,
+        module_url=module_url,
+        sidebar_title=title,
+        sidebar_icon=icon,
+        require_admin=require_admin,
         config={"app_url": APP_URL},
         **kwargs,
     )
-    return True
 
 
 async def _async_serve(hass: HomeAssistant) -> None:
@@ -184,7 +223,8 @@ def async_remove_panel(hass: HomeAssistant) -> None:
     uninstalled integration would otherwise leave a sidebar item loading a
     script that is no longer served.
     """
-    if PANEL_URL_PATH in hass.data.get("frontend_panels", {}):
-        frontend.async_remove_panel(hass, PANEL_URL_PATH)
+    for url_path in (PANEL_URL_PATH, EDITOR_URL_PATH):
+        if url_path in hass.data.get("frontend_panels", {}):
+            frontend.async_remove_panel(hass, url_path)
     for url in hass.data.pop(_EXTRA_URLS, set()):
         frontend.remove_extra_js_url(hass, url)

@@ -7,7 +7,7 @@ import { formatMonth, formatTime, formatWeekday } from '../../../lib/format';
 
 const StyledDay = styled.div`
   display: grid;
-  grid-template-columns: ${u(2.6)} minmax(0, 1fr);
+  grid-template-columns: ${u(3)} minmax(0, 1fr);
   column-gap: ${u(0.9)};
   padding: ${u(0.3)} 0;
 `;
@@ -19,16 +19,16 @@ const StyledDate = styled.div`
   line-height: 1.05;
 
   .weekday {
-    font-size: ${u(0.8)};
+    font-size: ${u(0.95)};
   }
 
   .day {
-    font-size: ${u(1.55)};
+    font-size: ${u(1.8)};
     font-weight: 600;
   }
 
   .month {
-    font-size: ${u(0.65)};
+    font-size: ${u(0.75)};
   }
 `;
 
@@ -46,7 +46,7 @@ const StyledEvent = styled.div`
   min-width: 0;
 
   .summary {
-    font-size: ${u(0.88)};
+    font-size: ${u(1.02)};
     font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
@@ -54,7 +54,7 @@ const StyledEvent = styled.div`
   }
 
   .when {
-    font-size: ${u(0.76)};
+    font-size: ${u(0.88)};
     color: ${({ theme }) => theme.text.secondary};
     white-space: nowrap;
     overflow: hidden;
@@ -63,7 +63,7 @@ const StyledEvent = styled.div`
 `;
 
 const StyledEmpty = styled.p`
-  font-size: ${u(0.88)};
+  font-size: ${u(1.02)};
   color: ${({ theme }) => theme.text.secondary};
 `;
 

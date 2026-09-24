@@ -29,7 +29,7 @@ const StyledHeader = styled.header`
 
   h2 {
     margin: 0 ${u(1.6)} 0 0;
-    font-size: ${u(1.05)};
+    font-size: ${u(1.2)};
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
@@ -50,7 +50,7 @@ const StyledReading = styled.span`
   display: inline-flex;
   align-items: center;
   gap: ${u(0.3)};
-  font-size: ${u(0.8)};
+  font-size: ${u(0.95)};
   white-space: nowrap;
   margin-left: ${u(0.9)};
   color: ${({ theme }) => theme.text.primary};

@@ -52,7 +52,7 @@ const Opening: React.FC<{ entityId: string }> = ({ entityId }) => {
 const OpeningsPopup: React.FC<{ open: boolean; onClose: () => void; entities: string[] }> = ({ open, onClose, entities }) => {
   const t = useT();
   return (
-    <Popup open={open} onClose={onClose} title={t('openings')} icon='mdi:window-open-variant' width={44}>
+    <Popup open={open} onClose={onClose} title={t('openings')} icon='mdi:window-open-variant' width={58}>
       <OpeningsList entities={entities} />
     </Popup>
   );

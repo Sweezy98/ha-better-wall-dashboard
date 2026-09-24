@@ -1,13 +1,22 @@
 /**
- * The one cell size every square section can hold.
+ * The one cell size every section can hold.
  *
- * For each section: the width its columns share and the height its rows
- * share, whichever is smaller -- that is the largest square that fits it.
- * The smallest of those over all sections is the size that fits all of them,
- * so a 1x1 tile is the same size everywhere and a 2x2 is exactly four of
- * them. Floored to a whole pixel: a fractional track is laid out at the pixel
- * below while its contents keep the fraction (CLAUDE.md, section 8).
+ * Width and height are found separately: the narrowest column any section
+ * can give and the shortest row any section can give. Every 1x1 tile on the
+ * dashboard is then exactly that size and every bigger tile a whole multiple,
+ * so everything lines up across sections.
+ *
+ * Strictly square cells left bands of empty space on screens that are short
+ * for their width -- the rows stopped where the columns ran out. So the cell
+ * may take the shape the space has, but only so far: neither side more than
+ * half as long again as the other (3:2), which is still a tile on a 4:3 tablet
+ * and never a strip.
+ *
+ * Floored to whole pixels: a fractional track is laid out at the pixel below
+ * while its contents keep the fraction (CLAUDE.md, section 8).
  */
+export const MAX_CELL_RATIO = 3 / 2;
+
 export interface GridBox {
   width: number;
   height: number;
@@ -16,11 +25,16 @@ export interface GridBox {
   gap: number;
 }
 
-export function uniformCell(boxes: GridBox[]): number | null {
-  let cell = Infinity;
-  for (const { width, height, columns, rows, gap } of boxes) {
-    if (width <= 0 || height <= 0 || columns < 1 || rows < 1) continue;
-    cell = Math.min(cell, (width - (columns - 1) * gap) / columns, (height - (rows - 1) * gap) / rows);
+export function uniformCell(boxes: GridBox[]): { width: number; height: number } | null {
+  let width = Infinity;
+  let height = Infinity;
+  for (const box of boxes) {
+    if (box.width <= 0 || box.height <= 0 || box.columns < 1 || box.rows < 1) continue;
+    width = Math.min(width, (box.width - (box.columns - 1) * box.gap) / box.columns);
+    height = Math.min(height, (box.height - (box.rows - 1) * box.gap) / box.rows);
   }
-  return Number.isFinite(cell) && cell > 0 ? Math.floor(cell) : null;
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+  width = Math.min(width, height * MAX_CELL_RATIO);
+  height = Math.min(height, width * MAX_CELL_RATIO);
+  return { width: Math.floor(width), height: Math.floor(height) };
 }

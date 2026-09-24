@@ -20,11 +20,21 @@ const StyledIcon = styled.span<{ $size?: string; $color?: string }>`
   height: ${({ $size }) => $size ?? '1em'};
   color: ${({ $color }) => $color ?? 'inherit'};
   --mdc-icon-size: ${({ $size }) => $size ?? '1em'};
+  /* ha-icon is inline: its line box would sit the glyph on the text
+     baseline, low and to the left of the circle it is meant to fill. */
+  line-height: 0;
   transition:
     color 0.3s ease-in-out,
     opacity 0.3s ease-in-out;
 
-  ha-icon,
+  ha-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+
   svg {
     width: 100%;
     height: 100%;

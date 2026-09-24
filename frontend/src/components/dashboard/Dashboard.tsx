@@ -16,7 +16,7 @@ const Dashboard: React.FC = () => {
   return <DashboardLayout />;
 };
 
-const DashboardLayout: React.FC = () => {
+export const DashboardLayout: React.FC = () => {
   const ref = useRef<HTMLDivElement>(null);
   const { view } = useDashboardContext();
   useUnit(ref);

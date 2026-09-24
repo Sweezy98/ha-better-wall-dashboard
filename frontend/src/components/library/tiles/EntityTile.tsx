@@ -22,8 +22,8 @@ const StyledButton = styled(StyledTile).attrs({ as: 'button', type: 'button' })<
   }
 
   .icon {
-    width: ${u(2.6)};
-    height: ${u(2.6)};
+    width: ${u(2.8)};
+    height: ${u(2.8)};
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -34,7 +34,7 @@ const StyledButton = styled(StyledTile).attrs({ as: 'button', type: 'button' })<
   }
 
   .name {
-    font-size: ${u(0.9)};
+    font-size: ${u(1.05)};
     font-weight: 600;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -43,7 +43,7 @@ const StyledButton = styled(StyledTile).attrs({ as: 'button', type: 'button' })<
   }
 
   .state {
-    font-size: ${u(0.8)};
+    font-size: ${u(0.95)};
     color: ${({ theme }) => theme.text.secondary};
   }
 `;

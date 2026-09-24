@@ -14,7 +14,10 @@ export function useUnit(ref: RefObject<HTMLElement | null>): void {
     const element = ref.current;
     if (!element) return;
     const apply = () => {
-      const { width, height } = element.getBoundingClientRect();
+      // Layout size, not the painted one: the editor's preview scales the
+      // dashboard down with a transform, and must still lay out as the tablet.
+      const width = element.offsetWidth;
+      const height = element.offsetHeight;
       if (!width || !height) return;
       element.style.setProperty('--u', `${unitFor(width, height).toFixed(2)}px`);
       element.dataset.orientation = height > width ? 'portrait' : 'landscape';

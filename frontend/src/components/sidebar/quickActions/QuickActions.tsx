@@ -6,10 +6,10 @@ import Bubble from '../../base/bubble/Bubble';
 import { StyledSidebarTitle } from '../Sidebar.styled';
 import { domainIcon, toggleService, useCallService, useEntity, useT } from '../../../hooks/useHa';
 
-/** Three to a row, so four to six actions make a second row. */
+/** Two to a row: four actions make two rows, six make three. */
 const StyledGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: ${u(0.6)};
 `;
 

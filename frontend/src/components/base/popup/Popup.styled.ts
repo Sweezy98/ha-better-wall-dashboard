@@ -15,7 +15,7 @@ export const StyledDialog = styled.dialog<{ $width: number; $full: boolean }>`
   /* fit-content, not auto: a modal dialog is positioned with inset: 0, and
      height: auto would stretch it from top to bottom whatever it holds. */
   height: ${({ $full }) => ($full ? 'calc(100dvh - 32px)' : 'fit-content')};
-  max-height: ${({ $full }) => ($full ? 'none' : `min(calc(100dvh - 32px), ${u(62)})`)};
+  max-height: ${({ $full }) => ($full ? 'none' : 'min(calc(100dvh - 32px), 92dvh)')};
   padding: 0;
   border: ${({ theme }) => theme.card.border};
   border-radius: ${u(1.8)};
@@ -42,7 +42,7 @@ export const StyledPopupHeader = styled.header`
   display: flex;
   align-items: center;
   gap: ${u(0.8)};
-  padding: ${u(1)} ${u(1)} ${u(0.6)} ${u(1.2)};
+  padding: ${u(1.2)} ${u(1.2)} ${u(0.8)} ${u(1.4)};
   flex-shrink: 0;
 `;
 
@@ -50,11 +50,11 @@ export const StyledPopupIcon = styled.span<{ $color?: string }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: ${u(2.8)};
-  height: ${u(2.8)};
+  width: ${u(3.2)};
+  height: ${u(3.2)};
   border-radius: 50%;
   background: ${({ theme }) => theme.bubble.icon};
-  font-size: ${u(1.5)};
+  font-size: ${u(1.7)};
   color: ${({ $color }) => $color ?? 'inherit'};
   flex-shrink: 0;
 `;
@@ -65,7 +65,7 @@ export const StyledPopupTitle = styled.div`
 
   h2 {
     margin: 0;
-    font-size: ${u(1.25)};
+    font-size: ${u(1.5)};
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
@@ -73,20 +73,20 @@ export const StyledPopupTitle = styled.div`
   }
 
   p {
-    font-size: ${u(0.85)};
+    font-size: ${u(1)};
     color: ${({ theme }) => theme.text.secondary};
     margin-top: ${u(0.15)};
   }
 `;
 
 export const StyledPopupClose = styled.button`
-  width: ${u(2.8)};
-  height: ${u(2.8)};
+  width: ${u(3.4)};
+  height: ${u(3.4)};
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: ${u(1.5)};
+  font-size: ${u(1.8)};
   flex-shrink: 0;
 
   &:active {
@@ -96,7 +96,8 @@ export const StyledPopupClose = styled.button`
 
 export const StyledPopupBody = styled.div`
   flex: 1;
-  padding: ${u(0.4)} ${u(1.2)} ${u(1.4)};
+  padding: ${u(0.4)} ${u(1.4)} ${u(1.6)};
+  font-size: ${u(1.05)};
   overflow-y: auto;
   overscroll-behavior: contain;
   min-height: 0;

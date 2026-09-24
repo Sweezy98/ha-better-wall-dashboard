@@ -10,7 +10,7 @@ interface PopupProps {
   subtitle?: React.ReactNode;
   icon?: string;
   iconColor?: string;
-  /** In units; 36 is Bubble Card's pop-up width on a tablet. */
+  /** In units. Wide by default: a wall tablet is read at arm's length. */
   width?: number;
   /**
    * Close after this long without a touch. A popup left open on a wall
@@ -43,7 +43,7 @@ const Popup: React.FC<PopupProps> = ({
   subtitle,
   icon,
   iconColor,
-  width = 36,
+  width = 50,
   idleMs = 120_000,
   full = false,
   actions,

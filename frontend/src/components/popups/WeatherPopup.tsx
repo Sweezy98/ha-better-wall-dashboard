@@ -14,16 +14,16 @@ const StyledNow = styled.div`
   gap: ${u(1.2)};
 
   .temperature {
-    font-size: ${u(3)};
+    font-size: ${u(3.6)};
     font-weight: 300;
   }
 
   .condition {
-    font-size: ${u(1.05)};
+    font-size: ${u(1.26)};
   }
 
   .details {
-    font-size: ${u(0.85)};
+    font-size: ${u(1.02)};
     color: ${({ theme }) => theme.text.secondary};
     margin-top: ${u(0.2)};
   }
@@ -31,7 +31,7 @@ const StyledNow = styled.div`
 
 const StyledHeading = styled.h3`
   margin: ${u(0.6)} 0 0;
-  font-size: ${u(0.95)};
+  font-size: ${u(1.14)};
   font-weight: 600;
 `;
 
@@ -51,17 +51,17 @@ const StyledHours = styled.div`
     padding: ${u(0.5)} 0;
     border-radius: ${u(1)};
     background: ${({ theme }) => theme.bubble.background};
-    font-size: ${u(0.8)};
+    font-size: ${u(0.96)};
   }
 
   .temp {
-    font-size: ${u(0.95)};
+    font-size: ${u(1.14)};
     font-weight: 600;
   }
 
   .rain {
     color: ${({ theme }) => theme.colors.temperature};
-    font-size: ${u(0.7)};
+    font-size: ${u(0.84)};
     min-height: 1em;
   }
 `;
@@ -79,7 +79,7 @@ const StyledDays = styled.div`
     padding: ${u(0.2)} ${u(0.6)};
     border-radius: ${u(1)};
     background: ${({ theme }) => theme.bubble.background};
-    font-size: ${u(0.9)};
+    font-size: ${u(1.08)};
   }
 
   .condition {
@@ -102,7 +102,7 @@ const StyledDays = styled.div`
 
 const StyledHint = styled.p`
   color: ${({ theme }) => theme.text.secondary};
-  font-size: ${u(0.9)};
+  font-size: ${u(1.08)};
 `;
 
 interface WeatherPopupProps {
@@ -123,7 +123,7 @@ const WeatherPopup: React.FC<WeatherPopupProps> = ({ open, onClose, entityId, te
       title={t('weather')}
       subtitle={weather?.attributes.friendly_name as string}
       icon='mdi:weather-partly-cloudy'
-      width={46}
+      width={60}
     >
       <WeatherContent entityId={entityId} temperature={temperature} />
     </Popup>

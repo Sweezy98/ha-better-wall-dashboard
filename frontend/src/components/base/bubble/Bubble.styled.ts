@@ -13,8 +13,8 @@ export const StyledBubble = styled.button<{ $interactive: boolean; $compact?: bo
   align-items: center;
   width: 100%;
   min-width: 0;
-  height: ${u(3.3)};
-  border-radius: ${u(1.65)};
+  height: ${u(3.4)};
+  border-radius: ${u(1.7)};
   background-color: ${({ theme, $background }) => $background ?? theme.bubble.background};
   overflow: hidden;
   transition: background-color 0.3s ease;
@@ -66,7 +66,7 @@ export const StyledBubbleText = styled.span`
 `;
 
 export const StyledBubbleName = styled.span`
-  font-size: ${u(0.86)};
+  font-size: ${u(0.95)};
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -74,7 +74,7 @@ export const StyledBubbleName = styled.span`
 `;
 
 export const StyledBubbleState = styled.span`
-  font-size: ${u(0.8)};
+  font-size: ${u(0.88)};
   opacity: 0.7;
   white-space: nowrap;
   overflow: hidden;

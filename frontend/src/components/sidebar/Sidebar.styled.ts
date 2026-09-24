@@ -53,6 +53,6 @@ export const StyledArea = styled.div<{ $area: string }>`
 
 export const StyledSidebarTitle = styled.h3`
   margin: ${u(0.5)} 0 ${u(0.2)} ${u(0.2)};
-  font-size: ${u(1.05)};
+  font-size: ${u(1.2)};
   font-weight: 600;
 `;

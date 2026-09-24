@@ -14,6 +14,7 @@ from custom_components.better_wall_dashboard.const import (
     APP_ENTRY,
     APP_URL,
     DOMAIN,
+    EDITOR_URL_PATH,
     PANEL_URL_PATH,
     STATIC_URL,
 )
@@ -29,8 +30,8 @@ async def _setup(hass: HomeAssistant) -> MockConfigEntry:
     return entry
 
 
-def _panel_url(hass: HomeAssistant) -> str | None:
-    panel = hass.data.get("frontend_panels", {}).get(PANEL_URL_PATH)
+def _panel_url(hass: HomeAssistant, url_path: str = PANEL_URL_PATH) -> str | None:
+    panel = hass.data.get("frontend_panels", {}).get(url_path)
     if panel is None:
         return None
     return panel.config["_panel_custom"]["module_url"]
@@ -62,6 +63,16 @@ async def test_setup_registers_the_panel_under_its_fingerprint(
     panel = hass.data["frontend_panels"][PANEL_URL_PATH]
     # A wall tablet logs in as an ordinary user.
     assert panel.require_admin is False
+
+
+async def test_the_editor_is_its_own_admin_only_panel(hass: HomeAssistant) -> None:
+    """Configured from a desk, never from the tablet it configures."""
+    await _setup(hass)
+    editor = hass.data["frontend_panels"][EDITOR_URL_PATH]
+    assert editor.require_admin is True
+    assert editor.config["_panel_custom"]["name"] == "better-wall-dashboard-editor"
+    # One bundle defines both elements.
+    assert _panel_url(hass, EDITOR_URL_PATH) == _panel_url(hass)
 
 
 async def test_setup_loads_the_icon_set_into_the_app_shell(hass: HomeAssistant) -> None:
@@ -107,6 +118,7 @@ async def test_unload_takes_the_panel_away(hass: HomeAssistant) -> None:
     assert await hass.config_entries.async_unload(entry.entry_id)
     await hass.async_block_till_done()
     assert _panel_url(hass) is None
+    assert _panel_url(hass, EDITOR_URL_PATH) is None
     assert not any(
         "better_wall_dashboard_icons.js" in url
         for url in hass.data[DATA_EXTRA_MODULE_URL].urls

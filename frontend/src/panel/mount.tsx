@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import App, { type AppProps } from '../App';
 import { setAttached } from './kiosk';
+import { setModeState, type Mode } from './mode';
 
 /**
  * The dashboard is mounted once per page and never unmounted.
@@ -12,6 +13,10 @@ import { setAttached } from './kiosk';
  * not reconnect at all and the dashboard would come back blank. Instead one
  * container holds one React root for the life of the page, and each new panel
  * element simply adopts it.
+ *
+ * The editor is the same root in the other panel element: `mode` says which
+ * one it is showing, and only the dashboard counts as "on screen" for kiosk
+ * mode, so the editor always has Home Assistant's sidebar.
  *
  * Moving that container between shadow roots is safe because the styles
  * travel inside it as text (see `disableCSSOMInjection` in App): rules
@@ -33,7 +38,7 @@ const HOST_CSS = `
   .bwd-host, .bwd-root { width: 100%; height: 100%; }
 `;
 
-export function attach(element: HTMLElement, props: Omit<AppProps, 'styleTarget'>): void {
+export function attach(element: HTMLElement, props: Omit<AppProps, 'styleTarget'>, mode: Mode = 'dashboard'): void {
   const shadow = element.shadowRoot ?? element.attachShadow({ mode: 'open' });
   if (!shadow.querySelector('style[data-host]')) {
     const style = document.createElement('style');
@@ -51,7 +56,8 @@ export function attach(element: HTMLElement, props: Omit<AppProps, 'styleTarget'
     createRoot(root).render(<App {...props} styleTarget={styles} />);
   }
   shadow.append(container);
-  setAttached(true);
+  setModeState({ mode });
+  setAttached(mode === 'dashboard');
 }
 
 export function detach(element: HTMLElement): void {

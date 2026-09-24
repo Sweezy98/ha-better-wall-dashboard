@@ -11,7 +11,7 @@ const StyledButtonBarContainer = styled.nav<{ $count: number }>`
   display: grid;
   grid-template-columns: repeat(${({ $count }) => $count}, minmax(0, 1fr));
   column-gap: ${u(0.7)};
-  height: ${u(2.9)};
+  height: ${u(3.2)};
 `;
 
 /** The reference config's bottom buttons: a 20 pt icon, the name centred. */
@@ -26,7 +26,7 @@ const StyledBarButton = styled.button`
   border-radius: ${u(0.7)};
   background-color: rgba(115, 115, 115, 0.15);
   box-shadow: ${({ theme }) => theme.card.shadow};
-  font-size: ${u(1)};
+  font-size: ${u(1.15)};
   transition: background-color 0.2s ease;
 
   &:active {
@@ -36,7 +36,7 @@ const StyledBarButton = styled.button`
   .icon {
     position: absolute;
     left: ${u(1.4)};
-    font-size: ${u(1.7)};
+    font-size: ${u(1.8)};
   }
 
   .name {
@@ -89,7 +89,7 @@ const ButtonBar: React.FC<{ buttons: BarButton[] }> = ({ buttons }) => {
           onClose={close}
           title={button.name}
           icon={button.icon}
-          width={Math.max(36, button.columns * 11)}
+          width={Math.max(50, button.columns * 14)}
         >
           <ButtonPopupContent button={button} />
         </Popup>

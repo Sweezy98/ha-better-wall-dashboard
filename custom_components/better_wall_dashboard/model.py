@@ -434,7 +434,9 @@ def default_dashboard() -> dict[str, Any]:
                 },
             ],
             "buttons": [
-                {"name": "Scenes", "icon": "mdi:palette-outline"},
+                # Where the doorbell's camera, talk-back, door opener and
+                # canned replies will live; empty until that component exists.
+                {"name": "Intercom", "icon": "mdi:doorbell-video"},
                 {"name": "Climate", "icon": "mdi:heat-wave"},
                 {"name": "Shading", "icon": "mdi:curtains"},
                 {"name": "Security", "icon": "mdi:shield-lock"},

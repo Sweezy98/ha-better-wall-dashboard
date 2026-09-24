@@ -1,4 +1,4 @@
-import { lazy, memo, Suspense, useCallback, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import type { SidebarConfig } from '../../../config/types';
@@ -11,10 +11,6 @@ import { useEntity, useIsNight, useLanguage, usePrecision, useT } from '../../..
 import { useNotifications } from '../../../hooks/useNotifications';
 import { formatMeasurement } from '../../../lib/format';
 import { conditionLabel } from '../../../lib/weather';
-
-// Admin-only and large: fetched the first time somebody opens it, never on
-// the wall tablet that has no business loading it.
-const DashboardEditor = lazy(() => import('../../editor/DashboardEditor'));
 
 const StyledFooter = styled.div`
   display: flex;
@@ -43,14 +39,14 @@ const StyledWeather = styled.button`
   }
 
   .temperature {
-    font-size: ${u(1.45)};
+    font-size: ${u(1.7)};
     font-weight: 700;
     align-self: end;
     white-space: nowrap;
   }
 
   .condition {
-    font-size: ${u(0.85)};
+    font-size: ${u(1)};
     align-self: start;
     white-space: nowrap;
     overflow: hidden;
@@ -97,7 +93,7 @@ const Weather: React.FC<{ config: SidebarConfig['weather'] }> = ({ config }) => 
 const SidebarFooter: React.FC<{ config: SidebarConfig }> = ({ config }) => {
   const t = useT();
   const { notifications, dismiss, dismissAll } = useNotifications(config.notifications.enabled, config.notifications.prefix);
-  const [panel, setPanel] = useState<'notifications' | 'settings' | 'editor' | null>(null);
+  const [panel, setPanel] = useState<'notifications' | 'settings' | null>(null);
   const close = useCallback(() => setPanel(null), []);
   return (
     <StyledFooter>
@@ -115,12 +111,7 @@ const SidebarFooter: React.FC<{ config: SidebarConfig }> = ({ config }) => {
         onDismiss={dismiss}
         onDismissAll={dismissAll}
       />
-      <SettingsPopup open={panel === 'settings'} onClose={close} config={config} onEdit={() => setPanel('editor')} />
-      {panel === 'editor' && (
-        <Suspense fallback={null}>
-          <DashboardEditor onClose={close} />
-        </Suspense>
-      )}
+      <SettingsPopup open={panel === 'settings'} onClose={close} config={config} />
     </StyledFooter>
   );
 };

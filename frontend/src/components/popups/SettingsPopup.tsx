@@ -19,7 +19,7 @@ const StyledSection = styled.section`
 
   h3 {
     margin: ${u(0.4)} 0 0;
-    font-size: ${u(0.95)};
+    font-size: ${u(1.14)};
     font-weight: 600;
   }
 `;
@@ -31,7 +31,7 @@ const StyledStats = styled.div`
 `;
 
 const StyledNote = styled.p`
-  font-size: ${u(0.8)};
+  font-size: ${u(0.96)};
   color: ${({ theme }) => theme.text.secondary};
 `;
 
@@ -42,6 +42,15 @@ const StyledSelect = styled.select`
   border: ${({ theme }) => theme.card.border};
   background: ${({ theme }) => theme.bubble.background};
 `;
+
+/**
+ * Go to the editor's own panel, the way Home Assistant navigates: push the
+ * path and announce it, and its router swaps the panel.
+ */
+function openEditor(): void {
+  window.history.pushState(null, '', '/better-wall-dashboard-editor');
+  window.dispatchEvent(new CustomEvent('location-changed', { detail: { replace: false } }));
+}
 
 const COLORS = ['temperature', 'humidity', 'warm', 'accent'] as const;
 
@@ -66,7 +75,7 @@ interface Version {
   version: string;
 }
 
-const SettingsContent: React.FC<{ config: SidebarConfig; onEdit: () => void }> = ({ config, onEdit }) => {
+const SettingsContent: React.FC<{ config: SidebarConfig }> = ({ config }) => {
   const t = useT();
   const theme = useTheme();
   const connection = useConnection();
@@ -125,7 +134,7 @@ const SettingsContent: React.FC<{ config: SidebarConfig; onEdit: () => void }> =
         {view?.kiosk && <StyledNote>{t('kiosk_hint')}</StyledNote>}
         {view?.is_admin ? (
           <>
-            <Bubble name={t('edit_dashboard')} icon='mdi:pencil' onClick={onEdit} />
+            <Bubble name={t('edit_dashboard')} state={t('edit_elsewhere')} icon='mdi:view-dashboard-edit' onClick={openEditor} />
             {view.dashboards.length > 1 && (
               <label>
                 <StyledNote>{t('dashboard')}</StyledNote>
@@ -154,16 +163,11 @@ const SettingsContent: React.FC<{ config: SidebarConfig; onEdit: () => void }> =
   );
 };
 
-const SettingsPopup: React.FC<{ open: boolean; onClose: () => void; config: SidebarConfig; onEdit: () => void }> = ({
-  open,
-  onClose,
-  config,
-  onEdit,
-}) => {
+const SettingsPopup: React.FC<{ open: boolean; onClose: () => void; config: SidebarConfig }> = ({ open, onClose, config }) => {
   const t = useT();
   return (
-    <Popup open={open} onClose={onClose} title={t('settings')} icon='mdi:cog' width={42}>
-      <SettingsContent config={config} onEdit={onEdit} />
+    <Popup open={open} onClose={onClose} title={t('settings')} icon='mdi:cog' width={56}>
+      <SettingsContent config={config} />
     </Popup>
   );
 };

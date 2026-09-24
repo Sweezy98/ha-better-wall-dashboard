@@ -10,8 +10,9 @@ change, no grid measured before it has a size, and no card-mod reaching through 
 roots. The layout scales to the screen it is on: a 7″ tablet, a 1280×800 wall panel and a 4K
 monitor draw the same dashboard at their own size, and every tile on it stays square.
 
-Everything is configured from your desk, as an admin, and stored inside Home Assistant. The
-tablet on the wall just shows it — and redraws the moment you save.
+Everything is configured from your desk, as an admin, in its own **Wall Dashboard Editor** —
+a separate, admin-only sidebar entry with a live preview at your tablet's size — and stored
+inside Home Assistant. The tablet on the wall just shows it, and redraws the moment you save.
 
 > **Status: early.** The layout, the sidebar and the editor are here. The device controls for
 > the tiles (lights, shading, climate, media, appliances, vacuum …) come next, as components in
@@ -36,12 +37,16 @@ tablet on the wall just shows it — and redraws the moment you save.
   forecast behind a tap.
 - **Notifications** with an unread count, and **settings** with system statistics.
 
-**The pages** to the right swipe sideways. Each page is a grid of up to four sections — 75/25
+**The pages** to the right swipe sideways — with a finger on the tablet, or by dragging with the
+mouse on a PC. Each page is a grid of up to four sections — 75/25
 across and 50/50 down by default — and each section has a header (icon, name, up to two readings)
-over a grid of square tiles. Bigger tiles are whole multiples of the small ones, so everything
-lines up; the cell size is the same across every section, whatever the screen.
+over a grid of tiles. Every 1×1 tile on the dashboard is the same size and a bigger tile is a whole
+multiple of it, so everything lines up. The cell takes the shape the screen has room for, but
+never more than 3:2, so tiles fill their section without being stretched.
 
-**The button bar** along the bottom: up to five buttons, each opening a popup of tiles.
+**The button bar** along the bottom: up to five buttons, each opening a popup of tiles. The first
+is the **Intercom** — where the doorbell's camera, talk-back, door opener and canned spoken replies
+are going, opening by itself when somebody rings.
 
 ## Several tablets, several dashboards
 
@@ -54,8 +59,7 @@ own Wi-Fi signal sensor), its own pages and its own buttons. Then, per Home Assi
 | **Kiosk** | Hides Home Assistant's sidebar while the dashboard is open, for a true full screen. Hold the clock for three seconds to get the sidebar back. |
 | **Opens on start** | Makes the dashboard that user's start page, so a tablet that reboots lands on it. (Home Assistant's own profile picker cannot choose a custom panel; this sets the same setting directly.) |
 
-All three live in the editor's **Users** tab. An admin can also preview any dashboard from their
-own browser.
+All three live in the editor's **Users** tab.
 
 ## Installation
 
@@ -66,7 +70,8 @@ own browser.
 2. Install **Better Wall Dashboard**, then restart Home Assistant.
 3. **Settings → Devices & services → Add integration → Better Wall Dashboard.**
 
-**Wall Dashboard** now appears in the sidebar for every user.
+**Wall Dashboard** now appears in the sidebar for every user, and **Wall Dashboard Editor** for
+admins.
 
 ### Manually
 
@@ -78,7 +83,9 @@ Requires Home Assistant **2026.3** or newer.
 
 ## Setting it up
 
-Open **Wall Dashboard** as an admin, tap the **cog** in the bottom left, then **Edit dashboard**.
+Open **Wall Dashboard Editor** from the sidebar. Pick a dashboard at the top, or make a new one;
+the right half shows it as a chosen tablet would — 10″, 11″, 12″, Full HD, a 7″ panel, in
+landscape or portrait — updating as you type. Nothing reaches the tablets until you **Save**.
 
 - **General** — name, background image (e.g. `/local/wall.jpg`), how much to darken and blur it.
 - **Sidebar** — the entities for each block. Anything left empty simply is not drawn.
@@ -96,7 +103,7 @@ Save, and every tablet showing that dashboard updates immediately.
 | Wi-Fi signal | The companion app's *Wi-Fi signal strength* sensor on the tablet (`sensor.<tablet>_wifi_signal_strength`). |
 | Guest Wi-Fi code | The [UniFi] integration's QR-code image entity for the network — or type the network name and password, and the code is drawn for you. |
 | Room climate | Any temperature and humidity sensors. |
-| Travel time | A [Google Travel Time] sensor. For the map, paste a Google Maps embed URL (Share → Embed a map) or add a Maps Embed API key. |
+| Travel time | A [Google Travel Time] sensor. For the map, paste a Google Maps embed URL (Share → Embed a map) or add an API key with the **Maps Embed API** enabled. |
 | Calendar | Any `calendar.*` entities. |
 | Weather | A `weather.*` entity for the condition and forecast, and optionally your own outdoor temperature sensor. |
 | Notifications | Home Assistant's persistent notifications. An automation that runs `persistent_notification.create` shows up here; set an id prefix (e.g. `wall_`) to show only yours. |
@@ -132,7 +139,7 @@ cd frontend
 nvm use && npm ci
 cp .env.example .env                          # your Home Assistant's URL
 cp .env.development.example .env.development  # a long-lived access token
-npm run dev      # the dashboard against your Home Assistant, with hot reload
+npm run dev      # the dashboard against your Home Assistant, with hot reload (/#editor: the editor)
 npm run check    # prettier, eslint, tsc, vitest
 npm run build    # into custom_components/better_wall_dashboard/frontend
 npm run deploy   # copy the integration to your Home Assistant over SSH

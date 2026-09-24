@@ -8,6 +8,9 @@ import theme from './themes/default.theme';
 import GlobalStyle from './globalStyle';
 import { DashboardProvider } from './config/DashboardProvider';
 import Dashboard from './components/dashboard/Dashboard';
+import { useModeState } from './panel/mode';
+import { Suspense } from 'react';
+import { lazyWithRetry } from './lazyWithRetry';
 import Splash from './components/base/splash/Splash';
 
 export interface AppProps {
@@ -19,6 +22,26 @@ export interface AppProps {
   /** Where styles are written: inside our shadow root, beside the app. */
   styleTarget: HTMLElement;
 }
+
+// The editor is admin-only and large: fetched the first time its panel is
+// opened, never by a wall tablet.
+const EditorPage = lazyWithRetry(() => import('./components/editor/EditorPage'));
+
+const Content: React.FC = () => {
+  const { mode } = useModeState();
+  if (mode === 'editor') {
+    return (
+      <Suspense fallback={<Splash />}>
+        <EditorPage />
+      </Suspense>
+    );
+  }
+  return (
+    <DashboardProvider>
+      <Dashboard />
+    </DashboardProvider>
+  );
+};
 
 const App: React.FC<AppProps> = ({ hassUrl, hassToken, embedded, styleTarget }) => {
   // ha-component-kit draws its own error and login screens with emotion,
@@ -47,9 +70,7 @@ const App: React.FC<AppProps> = ({ hassUrl, hassToken, embedded, styleTarget }) 
               handleResumeOptions: { suspendWhenHidden: !embedded },
             }}
           >
-            <DashboardProvider>
-              <Dashboard />
-            </DashboardProvider>
+            <Content />
           </HassConnect>
         </ThemeProvider>
       </CacheProvider>

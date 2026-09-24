@@ -18,7 +18,7 @@ const StyledState = styled.div`
   gap: ${u(1)};
 
   strong {
-    font-size: ${u(2.6)};
+    font-size: ${u(3.12)};
     font-weight: 400;
   }
 `;
@@ -30,7 +30,7 @@ const StyledRanges = styled.div`
   button {
     padding: ${u(0.3)} ${u(0.7)};
     border-radius: ${u(1)};
-    font-size: ${u(0.8)};
+    font-size: ${u(0.96)};
     color: ${({ theme }) => theme.text.secondary};
   }
 
@@ -62,12 +62,12 @@ const StyledExtrema = styled.div`
   }
 
   span {
-    font-size: ${u(0.75)};
+    font-size: ${u(0.9)};
     color: ${({ theme }) => theme.text.secondary};
   }
 
   strong {
-    font-size: ${u(1.05)};
+    font-size: ${u(1.26)};
     font-weight: 600;
   }
 `;
@@ -93,7 +93,7 @@ const HistoryPopup: React.FC<HistoryPopupProps> = ({ open, onClose, entityId, na
   const language = useLanguage();
   const subtitle = entity ? formatRelative(new Date(entity.last_changed), language) : undefined;
   return (
-    <Popup open={open} onClose={onClose} title={name} subtitle={subtitle} icon={icon} iconColor={color} width={40}>
+    <Popup open={open} onClose={onClose} title={name} subtitle={subtitle} icon={icon} iconColor={color} width={58}>
       <HistoryContent entityId={entityId} color={color} />
     </Popup>
   );

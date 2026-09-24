@@ -15,6 +15,13 @@ PANEL_ELEMENT: Final = "better-wall-dashboard-panel"
 SIDEBAR_TITLE: Final = "Wall Dashboard"
 SIDEBAR_ICON: Final = "better-wall-dashboard:tablet"
 
+# The editor: its own sidebar entry, admin-only, so it never lives on the
+# tablet it configures. The same bundle defines both elements.
+EDITOR_URL_PATH: Final = "better-wall-dashboard-editor"
+EDITOR_ELEMENT: Final = "better-wall-dashboard-editor"
+EDITOR_TITLE: Final = "Wall Dashboard Editor"
+EDITOR_ICON: Final = "mdi:view-dashboard-edit"
+
 # The React build, served as one directory. Every file in it except the entry
 # is named after its own contents by Vite; the entry carries a fingerprint in
 # its query string instead.

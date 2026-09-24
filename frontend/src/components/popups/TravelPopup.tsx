@@ -28,7 +28,7 @@ const StyledFacts = styled.dl`
   grid-template-columns: auto 1fr;
   gap: ${u(0.35)} ${u(1)};
   margin: 0;
-  font-size: ${u(0.9)};
+  font-size: ${u(1.08)};
 
   dt {
     color: ${({ theme }) => theme.text.secondary};
@@ -48,7 +48,7 @@ const StyledGraph = styled.div`
 
 const StyledHint = styled.p`
   color: ${({ theme }) => theme.text.secondary};
-  font-size: ${u(0.9)};
+  font-size: ${u(1.08)};
   padding: ${u(2)};
   text-align: center;
 `;
@@ -65,7 +65,7 @@ const TravelPopup: React.FC<{ open: boolean; onClose: () => void; config: Sideba
       title={config.name || t('travel_time')}
       subtitle={minutes === null ? undefined : formatMinutes(minutes, language)}
       icon='mdi:car-clock'
-      width={58}
+      width={72}
     >
       <TravelContent config={config} />
     </Popup>

@@ -27,7 +27,7 @@ const StyledDetails = styled.dl`
   grid-template-columns: auto 1fr;
   gap: ${u(0.3)} ${u(1)};
   margin: 0;
-  font-size: ${u(0.95)};
+  font-size: ${u(1.14)};
 
   dt {
     color: ${({ theme }) => theme.text.secondary};
@@ -44,7 +44,7 @@ const StyledDetails = styled.dl`
 const StyledHint = styled.p`
   text-align: center;
   color: ${({ theme }) => theme.text.secondary};
-  font-size: ${u(0.9)};
+  font-size: ${u(1.08)};
 `;
 
 /**
@@ -59,7 +59,7 @@ const WifiPopup: React.FC<{ open: boolean; onClose: () => void; config: SidebarC
   const t = useT();
   const wifi = config.guest_wifi;
   return (
-    <Popup open={open} onClose={onClose} title={t('guest_wifi')} icon='mdi:qrcode' width={30}>
+    <Popup open={open} onClose={onClose} title={t('guest_wifi')} icon='mdi:qrcode' width={42}>
       <WifiContent wifi={wifi} />
     </Popup>
   );

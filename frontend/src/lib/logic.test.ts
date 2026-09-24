@@ -3,6 +3,7 @@ import { countOpen, isOpen } from './openings';
 import { mapEmbedUrl } from './travel';
 import { freeCells } from './grid';
 import { uniformCell } from './cell';
+import { swipeTarget } from './swipe';
 import { isStaleCandidate } from './reload';
 import { move } from './editing';
 import { groupByDay, type CalendarEvent } from './calendar';
@@ -101,30 +102,55 @@ describe('groupByDay', () => {
 });
 
 describe('unitFor', () => {
-  it('fits the reference layout on a 1280x800 tablet and a 2560x1440 screen', () => {
-    expect(unitFor(1280, 800)).toBe(10);
-    expect(unitFor(2560, 1440)).toBe(18);
+  it('stays readable on a 10-inch tablet and matches the reference at 1440p', () => {
+    expect(unitFor(1280, 800)).toBeCloseTo(13.6, 1);
+    expect(unitFor(2560, 1440)).toBeCloseTo(18.08, 1);
+  });
+
+  it('never makes the columns overflow the width', () => {
+    // A squarish screen: the height would allow 15 px, the width only 12.8.
+    expect(unitFor(1200, 1000)).toBeCloseTo(1200 / 94, 1);
   });
 
   it('is clamped for phones and very large screens', () => {
-    expect(unitFor(360, 640)).toBe(9);
+    expect(unitFor(360, 640)).toBe(11);
     expect(unitFor(7680, 4320)).toBe(22);
   });
 });
 
 describe('uniformCell', () => {
-  it('is the largest square every section can hold, in whole pixels', () => {
+  it('is one size every section can hold, in whole pixels', () => {
     // The reference page 1 at 1280x800: Living room 5x2 and Bedroom 2x2.
     const living = { width: 673, height: 329, columns: 5, rows: 2, gap: 5.5 };
     const bedroom = { width: 262, height: 329, columns: 2, rows: 2, gap: 5.5 };
-    expect(uniformCell([living, bedroom])).toBe(128);
+    expect(uniformCell([living, bedroom])).toEqual({ width: 128, height: 161 });
   });
 
-  it('is limited by height on a wide screen', () => {
-    expect(uniformCell([{ width: 2000, height: 300, columns: 5, rows: 2, gap: 10 }])).toBe(145);
+  it('fills the space, but never beyond 3:2', () => {
+    // Plenty of height: the cell grows taller, stops at 3:2.
+    expect(uniformCell([{ width: 500, height: 2000, columns: 5, rows: 2, gap: 0 }])).toEqual({ width: 100, height: 150 });
+    // Plenty of width: the cell grows wider, stops at 3:2.
+    expect(uniformCell([{ width: 2000, height: 300, columns: 5, rows: 2, gap: 10 }])).toEqual({ width: 217, height: 145 });
   });
 
   it('ignores sections that have no size yet', () => {
     expect(uniformCell([{ width: 0, height: 0, columns: 2, rows: 2, gap: 5 }])).toBeNull();
+  });
+});
+
+describe('swipeTarget', () => {
+  it('moves one page when dragged far enough, in the direction of the drag', () => {
+    expect(swipeTarget(0, -200, 1000, 3)).toBe(1);
+    expect(swipeTarget(1, 200, 1000, 3)).toBe(0);
+  });
+
+  it('stays on a short, slow drag and moves on a quick flick', () => {
+    expect(swipeTarget(0, -50, 1000, 3)).toBe(0);
+    expect(swipeTarget(0, -50, 1000, 3, -1.2)).toBe(1);
+  });
+
+  it('never goes past either end', () => {
+    expect(swipeTarget(0, 400, 1000, 3)).toBe(0);
+    expect(swipeTarget(2, -400, 1000, 3)).toBe(2);
   });
 });

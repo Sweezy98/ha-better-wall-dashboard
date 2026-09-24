@@ -40,14 +40,14 @@ const StyledGrid = styled.div<{ $columns: number; $rows: number; $square: boolea
         grid-template-rows: repeat(${$rows}, minmax(0, 1fr));
       `;
     }
-    // --cell is set by the page swiper to the one size that fits every
-    // section of every page, so all tiles on the dashboard share it. Outside
-    // the swiper (the editor's preview) the section fits itself instead.
+    // --cell-w and --cell-h are set by the page swiper to the one size that
+    // fits every section of every page (lib/cell), so all tiles on the
+    // dashboard share it. Before the first measurement a section fits a
+    // square to itself.
     const own = `min((100cqw - (${$columns - 1}) * var(--gap)) / ${$columns}, (100cqh - (${$rows - 1}) * var(--gap)) / ${$rows})`;
-    const cell = `var(--cell, ${own})`;
     return `
-      grid-template-columns: repeat(${$columns}, ${cell});
-      grid-template-rows: repeat(${$rows}, ${cell});
+      grid-template-columns: repeat(${$columns}, var(--cell-w, ${own}));
+      grid-template-rows: repeat(${$rows}, var(--cell-h, ${own}));
       justify-content: start;
       align-content: start;
     `;

@@ -16,18 +16,18 @@ const StyledItem = styled.article`
 
   h4 {
     margin: 0;
-    font-size: ${u(0.95)};
+    font-size: ${u(1.14)};
     font-weight: 600;
   }
 
   time {
-    font-size: ${u(0.75)};
+    font-size: ${u(0.9)};
     color: ${({ theme }) => theme.text.secondary};
   }
 
   .message {
     grid-column: 1 / -1;
-    font-size: ${u(0.9)};
+    font-size: ${u(1.08)};
     white-space: pre-line;
     color: ${({ theme }) => theme.text.primary};
     user-select: text;
@@ -42,7 +42,7 @@ const StyledItem = styled.article`
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: ${u(1.2)};
+    font-size: ${u(1.44)};
     color: ${({ theme }) => theme.text.secondary};
   }
 
@@ -59,7 +59,7 @@ const StyledActions = styled.div`
     padding: ${u(0.4)} ${u(1)};
     border-radius: ${u(1)};
     background: ${({ theme }) => theme.bubble.background};
-    font-size: ${u(0.85)};
+    font-size: ${u(1.02)};
   }
 `;
 
@@ -89,7 +89,7 @@ const NotificationsPopup: React.FC<NotificationsPopupProps> = ({ open, onClose, 
   const t = useT();
   const language = useLanguage();
   return (
-    <Popup open={open} onClose={onClose} title={t('notifications')} icon='mdi:bell' width={40}>
+    <Popup open={open} onClose={onClose} title={t('notifications')} icon='mdi:bell' width={54}>
       {notifications.length === 0 && <StyledEmpty>{t('no_notifications')}</StyledEmpty>}
       {notifications.length > 1 && (
         <StyledActions>

@@ -1,5 +1,6 @@
 import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { uniformCell } from '../../../lib/cell';
+import { useMouseSwipe } from '../../../hooks/useMouseSwipe';
 import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import type { Page as PageConfig } from '../../../config/types';
@@ -77,6 +78,7 @@ const StyledDots = styled.div`
 const PageSwiper: React.FC<{ pages: PageConfig[] }> = ({ pages }) => {
   const track = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  useMouseSwipe(track, pages.length);
 
   useEffect(() => {
     const element = track.current;
@@ -105,14 +107,21 @@ const PageSwiper: React.FC<{ pages: PageConfig[] }> = ({ pages }) => {
     if (!element) return;
     const apply = () => {
       const boxes = [...element.querySelectorAll<HTMLElement>('[data-cell-grid]')].map(body => {
-        const { width, height } = body.getBoundingClientRect();
+        // Layout size, untouched by the editor preview's scale transform.
+        const width = body.clientWidth;
+        const height = body.clientHeight;
         const grid = body.firstElementChild as HTMLElement | null;
         const gap = grid ? parseFloat(getComputedStyle(grid).columnGap) || 0 : 0;
         return { width, height, gap, columns: Number(body.dataset.columns), rows: Number(body.dataset.rows) };
       });
       const cell = uniformCell(boxes);
-      if (cell) element.style.setProperty('--cell', `${cell}px`);
-      else element.style.removeProperty('--cell');
+      if (cell) {
+        element.style.setProperty('--cell-w', `${cell.width}px`);
+        element.style.setProperty('--cell-h', `${cell.height}px`);
+      } else {
+        element.style.removeProperty('--cell-w');
+        element.style.removeProperty('--cell-h');
+      }
     };
     apply();
     const observer = new ResizeObserver(apply);

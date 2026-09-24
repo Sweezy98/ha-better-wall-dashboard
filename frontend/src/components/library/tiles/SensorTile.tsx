@@ -20,7 +20,7 @@ const StyledSensor = styled(StyledTile).attrs({ as: 'button', type: 'button' })`
     align-items: center;
     gap: ${u(0.5)};
     padding: ${u(0.7)} ${u(0.8)} 0;
-    font-size: ${u(0.85)};
+    font-size: ${u(0.98)};
     color: ${({ theme }) => theme.text.secondary};
     white-space: nowrap;
     overflow: hidden;
@@ -28,7 +28,7 @@ const StyledSensor = styled(StyledTile).attrs({ as: 'button', type: 'button' })`
 
   .value {
     padding: ${u(0.1)} ${u(0.8)};
-    font-size: ${u(1.5)};
+    font-size: ${u(1.7)};
     font-weight: 500;
   }
 
