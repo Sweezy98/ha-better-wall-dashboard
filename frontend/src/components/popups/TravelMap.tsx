@@ -21,6 +21,13 @@ const StyledMap = styled.div`
   border-radius: ${u(1.2)};
   overflow: hidden;
   background: #1d2126;
+
+  /* The one part that gives way on a short screen, so the routes and the
+     graph below always fit without the popup scrolling. */
+  && {
+    flex: 0 1 auto;
+    min-height: ${u(10)};
+  }
 `;
 
 const StyledRoutes = styled.div`

@@ -39,13 +39,23 @@ const StyledNow = styled.div`
     margin-top: ${u(0.2)};
   }
 
+  /* Today's high and low, marked as in the sidebar's weather button. */
   .today {
-    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: ${u(0.2)};
     font-size: ${u(1.2)};
-    line-height: 1.5;
   }
 
-  .today span {
+  .today div {
+    display: flex;
+    align-items: center;
+    gap: ${u(0.15)};
+  }
+
+  .today .icon {
+    font-size: ${u(1.4)};
     color: ${({ theme }) => theme.text.secondary};
   }
 `;
@@ -343,11 +353,13 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
         </div>
         {today && (
           <div className='today'>
-            <div>
-              <span>{t('high_short')}</span> {degrees(today.temperature, language)}
+            <div title={t('high_short')}>
+              <Icon className='icon' icon='mdi:arrow-up-thin' />
+              {degrees(today.temperature, language)}
             </div>
-            <div>
-              <span>{t('low_short')}</span> {degrees(today.templow, language)}
+            <div title={t('low_short')}>
+              <Icon className='icon' icon='mdi:arrow-down-thin' />
+              {degrees(today.templow, language)}
             </div>
           </div>
         )}

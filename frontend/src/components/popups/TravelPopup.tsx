@@ -16,6 +16,13 @@ const StyledMap = styled.div`
   overflow: hidden;
   background: ${({ theme }) => theme.bubble.inset};
 
+  /* The one part that gives way on a short screen, so the routes and the
+     graph below always fit without the popup scrolling. */
+  && {
+    flex: 0 1 auto;
+    min-height: ${u(10)};
+  }
+
   iframe {
     width: 100%;
     height: 100%;
@@ -51,6 +58,7 @@ const TravelPopup: React.FC<{ open: boolean; onClose: () => void; config: Sideba
       subtitle={minutes === null ? undefined : formatMinutes(minutes, language)}
       icon='mdi:car-clock'
       width={72}
+      fixedBody
     >
       <TravelContent config={config} />
     </Popup>

@@ -107,6 +107,9 @@ const Popup: React.FC<PopupProps> = ({
       $full={full}
       // Escape closes a dialog by itself; route it through onClose so React
       // state and the element agree about whether it is open.
+      // However the dialog was closed -- by us, by the browser, by a script --
+      // React hears of it, or the next render would open it again.
+      onClose={() => open && onClose()}
       onCancel={event => {
         event.preventDefault();
         onClose();
