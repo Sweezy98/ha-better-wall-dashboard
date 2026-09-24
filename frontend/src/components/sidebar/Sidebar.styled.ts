@@ -3,49 +3,56 @@ import { StyledCardContainer } from '../base/card/Card.styled';
 import { u } from '../../themes/default.theme';
 
 /**
- * One column in landscape; in portrait a band across the top in two columns.
+ * The clock on top and the footer at the foot, always; everything between
+ * them in a body that scrolls when the screen is too short for it.
  *
- * The same elements either way, so rotating the tablet moves them instead of
- * mounting new ones -- nothing re-subscribes, no graph redraws its history.
- * In landscape the two column wrappers are `display: contents` and every
- * block takes its grid area. In portrait they are two independent stacks:
- * one shared grid made the tall calendar on the right stretch the rows on
- * the left into big empty gaps.
+ * In landscape one column. In portrait a band across the top in two columns:
+ * the header over the left blocks, the right blocks over the footer. The same
+ * elements either way, so rotating the tablet moves them instead of mounting
+ * new ones -- nothing re-subscribes, no graph redraws its history.
  */
 export const StyledSidebarContainer = styled(StyledCardContainer)`
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  /* The calendar takes what is left, but never less than one day: squeezed to
-     nothing it would sit behind the weather. */
-  grid-template-rows: auto auto auto auto auto auto minmax(auto, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   grid-template-areas:
     'header'
-    'climate'
-    'persons'
-    'openings'
-    'travel'
-    'quick'
-    'calendar'
+    'body'
     'footer';
-  /* No row-gap: an unconfigured block is an empty area, and a gap would
-     still be drawn around it. Spacing sits on the blocks that have content. */
-  row-gap: 0;
   padding: ${u(0.9)} ${u(1.1)} ${u(0.6)};
-  align-content: start;
-  /* Only on a very short screen, where even one calendar day does not fit:
-     the whole column scrolls rather than cutting off the footer. */
+
+  [data-orientation='portrait'] & {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'header right'
+      'left right'
+      'left footer';
+    column-gap: ${u(1.4)};
+  }
+`;
+
+/**
+ * The scrolling part. A block that does not fit is cut off at the header and
+ * the footer and scrolled to -- by finger, wheel or mouse drag -- rather than
+ * pushing the footer out of the card.
+ */
+export const StyledBody = styled.div`
+  grid-area: body;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
     display: none;
   }
 
+  /* In portrait both columns are the band's own grid items. */
   [data-orientation='portrait'] & {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: auto;
-    grid-template-areas: none;
-    column-gap: ${u(1.4)};
+    display: contents;
   }
 `;
 
@@ -53,6 +60,7 @@ export const StyledColumn = styled.div<{ $side: 'left' | 'right' }>`
   display: contents;
 
   [data-orientation='portrait'] & {
+    grid-area: ${({ $side }) => $side};
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -62,27 +70,22 @@ export const StyledColumn = styled.div<{ $side: 'left' | 'right' }>`
        its calendar scrolls within that. */
     ${({ $side }) => ($side === 'right' ? 'contain: size;' : '')}
   }
-
-  [data-orientation='portrait'] & > [data-area='calendar'] {
-    flex: 1;
-  }
-
-  [data-orientation='portrait'] & > [data-area='footer'] {
-    margin-top: auto;
-  }
 `;
 
 export const StyledArea = styled.div<{ $area: string }>`
   grid-area: ${({ $area }) => $area};
   min-width: 0;
+  /* Every block keeps its content's height; the calendar alone gives way. */
+  flex: none;
 
   &:not(:empty) {
     padding-bottom: ${u(0.6)};
   }
 
-  /* Every other block keeps its content's height; the calendar alone gives
-     way, down to one day. */
+  /* The calendar takes the space that is left, and when there is not enough,
+     shrinks to one day and scrolls within that before the body has to. */
   &[data-area='calendar'] {
+    flex: 1 1 auto;
     min-height: 0;
   }
 
@@ -93,6 +96,10 @@ export const StyledArea = styled.div<{ $area: string }>`
   /* The last block sits on the card's own padding, not on its own too. */
   &[data-area='footer'] {
     padding-bottom: 0;
+  }
+
+  [data-orientation='portrait'] &[data-area='footer'] {
+    align-self: end;
   }
 `;
 

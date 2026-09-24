@@ -28,6 +28,7 @@ const theme: DefaultTheme = {
     inset: 'rgba(255, 255, 255, 0.035)',
     header: 'rgba(255, 255, 255, 0.1)',
     icon: 'rgba(255, 255, 255, 0.08)',
+    hover: 'rgba(255, 255, 255, 0.09)',
     pressed: 'rgba(255, 255, 255, 0.14)',
   },
   text: {

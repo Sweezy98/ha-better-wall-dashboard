@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
+import { pressable } from '../../../themes/interaction';
 
 export const StyledIconButtonBadge = styled.span`
   position: absolute;
@@ -31,13 +32,5 @@ export const StyledIconButton = styled.button<{ $active?: boolean }>`
   flex-shrink: 0;
   font-size: ${u(1.5)};
   color: ${({ theme, $active }) => ($active === false ? theme.text.secondary : theme.text.primary)};
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: ${({ theme }) => theme.bubble.background};
-  }
-
-  &:active {
-    background-color: ${({ theme }) => theme.bubble.pressed};
-  }
+  ${({ theme }) => pressable(theme.bubble.background, theme.bubble.pressed)}
 `;

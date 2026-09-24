@@ -64,3 +64,21 @@ export function plainText(value: string | undefined): string {
     .replace(/ *\n */g, '\n')
     .trim();
 }
+
+/**
+ * A day's heading: "Today" and "Tomorrow" by name with the date beside them,
+ * any later day by its date alone.
+ */
+export function dayHeading(
+  day: Date,
+  language: string,
+  words: { today: string; tomorrow: string },
+  style: 'long' | 'short' = 'long',
+  now = new Date()
+): { label: string; date: string } {
+  const today = startOfDay(now).getTime();
+  const date = new Intl.DateTimeFormat(language, { weekday: style, day: 'numeric', month: style }).format(day);
+  if (startOfDay(day).getTime() === today) return { label: words.today, date };
+  if (startOfDay(day).getTime() === addDays(new Date(today), 1).getTime()) return { label: words.tomorrow, date };
+  return { label: date, date: '' };
+}

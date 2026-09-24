@@ -1,5 +1,6 @@
 import styled, { keyframes } from 'styled-components';
 import { u } from '../../../themes/default.theme';
+import { pressable } from '../../../themes/interaction';
 
 const rise = keyframes`
   from { opacity: 0; transform: translateY(${u(3)}) scale(0.98); }
@@ -88,17 +89,14 @@ export const StyledPopupClose = styled.button`
   justify-content: center;
   font-size: ${u(1.8)};
   flex-shrink: 0;
-
-  &:active {
-    background: ${({ theme }) => theme.bubble.pressed};
-  }
+  ${({ theme }) => pressable(theme.bubble.background, theme.bubble.pressed)}
 `;
 
-export const StyledPopupBody = styled.div`
+export const StyledPopupBody = styled.div<{ $fixed: boolean }>`
   flex: 1;
   padding: ${u(0.4)} ${u(1.4)} ${u(1.6)};
   font-size: ${u(1.05)};
-  overflow-y: auto;
+  overflow-y: ${({ $fixed }) => ($fixed ? 'hidden' : 'auto')};
   overscroll-behavior: contain;
   min-height: 0;
   display: flex;
@@ -110,5 +108,24 @@ export const StyledPopupBody = styled.div`
      shrink below its content, and did, to a sliver. */
   > * {
     flex-shrink: 0;
+  }
+`;
+
+/**
+ * The one part of a fixed-body popup that scrolls -- by finger, wheel or
+ * mouse drag -- and the only part that gives way when the screen is short.
+ */
+export const StyledPopupScroll = styled.div`
+  ${StyledPopupBody} > & {
+    flex: 0 1 auto;
+  }
+
+  min-height: ${u(6)};
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
   }
 `;

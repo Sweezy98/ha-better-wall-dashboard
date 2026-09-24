@@ -3,10 +3,10 @@ import { countOpen, isOpen } from './openings';
 import { mapEmbedUrl } from './travel';
 import { uniformCell } from './cell';
 import { swipeTarget } from './swipe';
-import { parseRoutes, routesRequest, trafficDelayMinutes, waypoint } from './routes';
+import { mergeRoutes, parseRoutes, routesRequests, trafficDelayMinutes, waypoint } from './routes';
 import { isStaleCandidate } from './reload';
 import { move } from './editing';
-import { calendarColor, eventProgress, eventSpan, groupByDay, plainText, type CalendarEvent } from './calendar';
+import { calendarColor, dayHeading, eventProgress, eventSpan, groupByDay, plainText, type CalendarEvent } from './calendar';
 import { unitFor } from './unit';
 
 describe('openings', () => {
@@ -110,6 +110,14 @@ describe('calendar event details', () => {
     expect(plainText(undefined)).toBe('');
   });
 
+  it('names today and tomorrow, and dates the days after', () => {
+    const now = new Date(2026, 8, 24, 10);
+    const words = { today: 'Today', tomorrow: 'Tomorrow' };
+    expect(dayHeading(new Date(2026, 8, 24), 'en', words, 'long', now)).toEqual({ label: 'Today', date: 'Thursday, September 24' });
+    expect(dayHeading(new Date(2026, 8, 25), 'en', words, 'long', now).label).toBe('Tomorrow');
+    expect(dayHeading(new Date(2026, 8, 26), 'en', words, 'short', now)).toEqual({ label: 'Sat, Sep 26', date: '' });
+  });
+
   it('gives every calendar a colour, repeating after the palette', () => {
     expect(calendarColor(0)).toBe(calendarColor(7));
     expect(calendarColor(0)).not.toBe(calendarColor(1));
@@ -174,11 +182,25 @@ describe('routes', () => {
     expect(waypoint('47.07, 15.44')).toEqual({ location: { latLng: { latitude: 47.07, longitude: 15.44 } } });
   });
 
-  it('asks for traffic-aware alternatives by car', () => {
-    const body = routesRequest('A', 'B', 'de');
-    expect(body.travelMode).toBe('DRIVE');
-    expect(body.routingPreference).toBe('TRAFFIC_AWARE');
-    expect(body.computeAlternativeRoutes).toBe(true);
+  it('asks for traffic-aware alternatives by car, and again without motorways', () => {
+    const [usual, local] = routesRequests('A', 'B', 'de');
+    expect(usual.travelMode).toBe('DRIVE');
+    expect(usual.routingPreference).toBe('TRAFFIC_AWARE');
+    expect(usual.computeAlternativeRoutes).toBe(true);
+    expect(local).toMatchObject({ ...usual, routeModifiers: { avoidHighways: true } });
+  });
+
+  it('merges the responses into three different routes, fastest first', () => {
+    const route = (description: string, duration: number, polyline = description) => ({
+      description,
+      duration,
+      staticDuration: duration,
+      distanceMeters: 0,
+      polyline,
+    });
+    const usual = [route('S Autobahn/E66', 1080), route('S Autobahn/E59/E66', 1140)];
+    const local = [route('B67a', 900), route('B67a', 905, 'other line'), route('L311', 1500)];
+    expect(mergeRoutes([usual, local]).map(item => item.description)).toEqual(['B67a', 'S Autobahn/E66', 'S Autobahn/E59/E66']);
   });
 
   it('parses the protobuf durations and sorts the fastest first', () => {

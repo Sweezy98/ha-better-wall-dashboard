@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { u } from '../../../themes/default.theme';
+import { pressable } from '../../../themes/interaction';
 import Bubble from '../bubble/Bubble';
 import MiniGraph from '../miniGraph/MiniGraph';
 import { useHistory } from '../../../hooks/useHistory';
@@ -16,10 +17,7 @@ const StyledGraphCard = styled.button`
   border: ${({ theme }) => theme.card.border};
   overflow: hidden;
   cursor: pointer;
-
-  &:active {
-    background: ${({ theme }) => theme.bubble.background};
-  }
+  ${({ theme }) => pressable(theme.bubble.background, theme.bubble.hover)}
 `;
 
 const StyledGraphArea = styled.div`

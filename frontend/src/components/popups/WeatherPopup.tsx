@@ -2,23 +2,15 @@ import { useMemo } from 'react';
 import styled from 'styled-components';
 import { u } from '../../themes/default.theme';
 import Popup from '../base/popup/Popup';
+import PopupScroll from '../base/popup/PopupScroll';
 import Icon from '../base/icon/Icon';
 import WeatherIcon from '../base/weatherIcon/WeatherIcon';
-import Gauge, { type GaugeSegment } from '../base/gauge/Gauge';
+import Barometer from './Barometer';
 import { useEntity, useIsNight, useLanguage, useT } from '../../hooks/useHa';
 import { useForecast, type ForecastEntry } from '../../hooks/useForecast';
 import { useTick } from '../../hooks/useNow';
 import { formatNumber, formatTime, formatWeekday } from '../../lib/format';
-import {
-  BAROMETER_MAX,
-  BAROMETER_ZONES,
-  barometerFraction,
-  barometerZone,
-  compassPoint,
-  conditionLabel,
-  pressureToHpa,
-  rangeBar,
-} from '../../lib/weather';
+import { compassPoint, conditionLabel, rangeBar } from '../../lib/weather';
 import { smoothPath } from '../../lib/graph';
 
 const StyledNow = styled.div`
@@ -73,11 +65,11 @@ const StyledFacts = styled.div`
     background: ${({ theme }) => theme.bubble.background};
   }
 
-  > .gauge {
-    display: block;
+  /* Two rows high: the reading on top as in every fact, the dial under it. */
+  > .barometer {
     grid-row: span 2;
-    height: ${u(9.5)};
-    padding: ${u(0.5)} ${u(0.6)};
+    grid-template-rows: auto auto minmax(0, 1fr);
+    align-items: start;
   }
 
   .icon {
@@ -99,31 +91,6 @@ const StyledFacts = styled.div`
     text-overflow: ellipsis;
   }
 `;
-
-/** Beside the facts, two of their rows high. */
-const BAROMETER_SEGMENTS: GaugeSegment[] = BAROMETER_ZONES.map((zone, index) => ({
-  from: barometerFraction(zone.from),
-  to: barometerFraction(BAROMETER_ZONES[index + 1]?.from ?? BAROMETER_MAX),
-  color: zone.color,
-}));
-
-const Barometer: React.FC<{ value: number; unit: string | undefined }> = ({ value, unit }) => {
-  const t = useT();
-  const language = useLanguage();
-  const hpa = pressureToHpa(value, unit);
-  const digits = hpa === value ? 0 : unit === 'inHg' || unit === 'kPa' ? 2 : 1;
-  return (
-    <Gauge
-      fraction={barometerFraction(hpa)}
-      segments={BAROMETER_SEGMENTS}
-      // No grouping: "1.013" reads as one-point-something in German.
-      value={new Intl.NumberFormat(language, { maximumFractionDigits: digits, useGrouping: false }).format(value)}
-      unit={unit ?? 'hPa'}
-      caption={t(barometerZone(hpa).key)}
-      label={t('pressure')}
-    />
-  );
-};
 
 const StyledHeading = styled.h3`
   margin: ${u(0.6)} 0 0;
@@ -298,6 +265,9 @@ const WeatherPopup: React.FC<WeatherPopupProps> = ({ open, onClose, entityId, te
       subtitle={weather?.attributes.friendly_name as string}
       icon='mdi:weather-partly-cloudy'
       width={66}
+      // Now, the facts and the hours stay in view; on a short screen only
+      // the week scrolls.
+      fixedBody
     >
       <WeatherContent entityId={entityId} temperature={temperature} />
     </Popup>
@@ -467,11 +437,7 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
 
       {(facts.length > 0 || pressure) && (
         <StyledFacts>
-          {pressure && (
-            <div className='gauge'>
-              <Barometer value={pressure.value} unit={pressure.unit} />
-            </div>
-          )}
+          {pressure && <Barometer entityId={entityId} value={pressure.value} unit={pressure.unit} />}
           {facts.map(fact => (
             <div key={fact.label}>
               <Icon className='icon' icon={fact.icon} />
@@ -492,7 +458,9 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
       {days.length > 0 && (
         <>
           <StyledHeading>{t('forecast_daily')}</StyledHeading>
-          <Days days={days} current={current} />
+          <PopupScroll>
+            <Days days={days} current={current} />
+          </PopupScroll>
         </>
       )}
 

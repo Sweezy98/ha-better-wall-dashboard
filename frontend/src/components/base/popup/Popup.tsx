@@ -22,6 +22,11 @@ interface PopupProps {
   idleMs?: number;
   /** Fill the screen, for the editor. */
   full?: boolean;
+  /**
+   * The body does not scroll as a whole: its content keeps what matters in
+   * view and scrolls a part of its own (a `PopupScroll`) when it must.
+   */
+  fixedBody?: boolean;
   /** Extra controls in the header, before the close button. */
   actions?: React.ReactNode;
   children: React.ReactNode;
@@ -46,18 +51,23 @@ const Popup: React.FC<PopupProps> = ({
   width = 50,
   idleMs = 120_000,
   full = false,
+  fixedBody = false,
   actions,
   children,
 }) => {
   const ref = useRef<HTMLDialogElement>(null);
   const t = useT();
 
+  // After every render, not only when `open` changes: the <dialog> element
+  // itself can be replaced while the popup stays open -- a hot reload in
+  // development does exactly that -- and a new one not shown as a modal
+  // would draw inline, inside whatever card opened it.
   useEffect(() => {
     const dialog = ref.current;
     if (!dialog) return;
     if (open && !dialog.open) dialog.showModal();
     if (!open && dialog.open) dialog.close();
-  }, [open]);
+  });
 
   useEffect(() => {
     const dialog = ref.current;
@@ -112,7 +122,7 @@ const Popup: React.FC<PopupProps> = ({
               <Icon icon='mdi:close' />
             </StyledPopupClose>
           </StyledPopupHeader>
-          <StyledPopupBody>{children}</StyledPopupBody>
+          <StyledPopupBody $fixed={fixedBody}>{children}</StyledPopupBody>
         </>
       )}
     </StyledDialog>

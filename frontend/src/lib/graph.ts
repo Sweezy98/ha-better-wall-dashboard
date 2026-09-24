@@ -162,3 +162,9 @@ export function smoothPath(points: { x: number; y: number }[]): string {
   const last = points[points.length - 1];
   return `${path} L ${fmt(last.x)},${fmt(last.y)}`;
 }
+
+/** The lowest and highest of some readings, ignoring any that are not numbers. */
+export function numericRange(values: number[]): { min: number; max: number } | null {
+  const finite = values.filter(Number.isFinite);
+  return finite.length ? { min: Math.min(...finite), max: Math.max(...finite) } : null;
+}

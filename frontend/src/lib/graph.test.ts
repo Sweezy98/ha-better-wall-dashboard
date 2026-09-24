@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bucket, buildGraph, extrema, smoothPath, type Sample } from './graph';
+import { bucket, buildGraph, extrema, numericRange, smoothPath, type Sample } from './graph';
 
 const HOUR = 3_600_000;
 const NOW = Date.UTC(2026, 8, 24, 12);
@@ -80,5 +80,12 @@ describe('smoothPath', () => {
       { x: 20, y: 10 },
     ]);
     expect(path).toBe('M0,10 Q 0,10 5,5 Q 10,0 15,5 L 20,10');
+  });
+});
+
+describe('numericRange', () => {
+  it('ignores readings that are not numbers', () => {
+    expect(numericRange([1012, NaN, 1008, 1020])).toEqual({ min: 1008, max: 1020 });
+    expect(numericRange([NaN])).toBeNull();
   });
 });

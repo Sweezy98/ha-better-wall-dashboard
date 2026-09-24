@@ -6,8 +6,8 @@ import Icon from '../base/icon/Icon';
 import { useEntity, useLanguage, useT } from '../../hooks/useHa';
 import { useGroupedEvents, type CalendarEvent } from '../../hooks/useCalendarEvents';
 import { useTick } from '../../hooks/useNow';
-import { addDays, formatMinutes, formatRelative, formatTime, startOfDay } from '../../lib/format';
-import { calendarColor, eventProgress, eventSpan, plainText } from '../../lib/calendar';
+import { formatMinutes, formatRelative, formatTime, startOfDay } from '../../lib/format';
+import { calendarColor, dayHeading, eventProgress, eventSpan, plainText } from '../../lib/calendar';
 
 const StyledChips = styled.div`
   display: flex;
@@ -249,14 +249,6 @@ const EventCard: React.FC<EventProps> = ({ event, day, color, now, next }) => {
   );
 };
 
-function dayHeading(day: Date, language: string, t: ReturnType<typeof useT>): { label: string; date: string } {
-  const today = startOfDay(new Date());
-  const date = new Intl.DateTimeFormat(language, { weekday: 'long', day: 'numeric', month: 'long' }).format(day);
-  if (day.getTime() === today.getTime()) return { label: t('today'), date };
-  if (day.getTime() === addDays(today, 1).getTime()) return { label: t('tomorrow'), date };
-  return { label: date, date: '' };
-}
-
 /**
  * Two weeks ahead, one card per event: the calendar's colour, when, how long,
  * where, and what -- with the running event's progress and how soon the next
@@ -294,7 +286,7 @@ const CalendarPopupContent: React.FC<{ entities: string[] }> = ({ entities }) =>
         </StyledEmpty>
       )}
       {busy.map(({ day, events }) => {
-        const heading = dayHeading(day, language, t);
+        const heading = dayHeading(day, language, { today: t('today'), tomorrow: t('tomorrow') }, 'long', new Date(now));
         return (
           <StyledDay key={day.getTime()}>
             <h3>
@@ -322,7 +314,7 @@ const CalendarPopup: React.FC<{ open: boolean; onClose: () => void; entities: st
   const t = useT();
   return (
     <Popup open={open} onClose={onClose} title={t('calendar')} icon='mdi:calendar' width={58}>
-      {open && <CalendarPopupContent entities={entities} />}
+      <CalendarPopupContent entities={entities} />
     </Popup>
   );
 };

@@ -40,8 +40,17 @@ export const ROUTES_URL = 'https://routes.googleapis.com/directions/v2:computeRo
 export const ROUTES_FIELDS =
   'routes.description,routes.duration,routes.staticDuration,routes.distanceMeters,routes.polyline.encodedPolyline';
 
-export function routesRequest(origin: string, destination: string, language: string) {
-  return {
+/**
+ * The requests the popup sends: the usual one, and the same avoiding
+ * motorways.
+ *
+ * Google returns "up to three" alternatives and decides how many by itself,
+ * so one request alone shows three routes one time and two the next -- and
+ * the one it drops is usually the drive through town. Asking again without
+ * motorways brings that one back every time; `mergeRoutes` makes one list.
+ */
+export function routesRequests(origin: string, destination: string, language: string) {
+  const base = {
     origin: waypoint(origin),
     destination: waypoint(destination),
     travelMode: 'DRIVE',
@@ -50,6 +59,28 @@ export function routesRequest(origin: string, destination: string, language: str
     languageCode: language,
     units: 'METRIC',
   };
+  return [base, { ...base, routeModifiers: { avoidHighways: true } }];
+}
+
+/**
+ * Several responses' routes as one list, fastest first, at most `max`.
+ *
+ * The same road comes back from both requests, so a route is kept once per
+ * description ("über B67a"), and once per line for routes Google left
+ * undescribed.
+ */
+export function mergeRoutes(lists: TravelRoute[][], max = 3): TravelRoute[] {
+  const seen = new Set<string>();
+  return lists
+    .flat()
+    .sort((a, b) => a.duration - b.duration)
+    .filter(route => {
+      const key = route.description || route.polyline;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, max);
 }
 
 /** "1234s" -> 1234. The Routes API writes durations as protobuf strings. */

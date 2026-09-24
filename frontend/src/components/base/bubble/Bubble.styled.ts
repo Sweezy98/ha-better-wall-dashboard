@@ -1,4 +1,5 @@
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
+import { pressable } from '../../../themes/interaction';
 import { u } from '../../../themes/default.theme';
 
 /**
@@ -17,15 +18,8 @@ export const StyledBubble = styled.button<{ $interactive: boolean; $compact?: bo
   border-radius: ${u(1.7)};
   background-color: ${({ theme, $background }) => $background ?? theme.bubble.background};
   overflow: hidden;
-  transition: background-color 0.3s ease;
   cursor: ${({ $interactive }) => ($interactive ? 'pointer' : 'default')};
-  ${({ $interactive, theme }) =>
-    $interactive &&
-    css`
-      &:active {
-        background-color: ${theme.bubble.pressed};
-      }
-    `}
+  ${({ $interactive, theme }) => $interactive && pressable(theme.bubble.hover, theme.bubble.pressed)}
 `;
 
 export const StyledBubbleIcon = styled.span<{ $active: boolean; $color?: string }>`

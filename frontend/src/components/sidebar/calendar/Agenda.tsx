@@ -1,101 +1,103 @@
 import { memo } from 'react';
 import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
-import type { CalendarEvent } from '../../../lib/calendar';
+import Bubble from '../../base/bubble/Bubble';
 import { useLanguage, useT } from '../../../hooks/useHa';
-import { formatMonth, formatTime, formatWeekday } from '../../../lib/format';
+import { formatTime } from '../../../lib/format';
+import { calendarColor, dayHeading, eventProgress, eventSpan, type CalendarEvent } from '../../../lib/calendar';
 
 const StyledDay = styled.div`
-  display: grid;
-  grid-template-columns: ${u(3)} minmax(0, 1fr);
-  column-gap: ${u(0.9)};
-  padding: ${u(0.3)} 0;
-`;
-
-const StyledDate = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
-  line-height: 1.05;
 
-  .weekday {
-    font-size: ${u(0.95)};
+  & + & {
+    margin-top: ${u(0.7)};
   }
 
-  .day {
-    font-size: ${u(1.8)};
+  h4 {
+    display: flex;
+    align-items: baseline;
+    gap: ${u(0.5)};
+    margin: 0 0 ${u(0.2)} ${u(0.3)};
+    font-size: ${u(0.95)};
     font-weight: 600;
   }
 
-  .month {
-    font-size: ${u(0.75)};
-  }
-`;
-
-const StyledEvents = styled.div`
-  border-left: ${u(0.14)} solid ${({ theme }) => theme.colors.calendar};
-  padding: ${u(0.15)} 0 ${u(0.15)} ${u(0.8)};
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: ${u(0.35)};
-  min-width: 0;
-`;
-
-const StyledEvent = styled.div`
-  min-width: 0;
-
-  .summary {
-    font-size: ${u(1.02)};
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .when {
-    font-size: ${u(0.88)};
+  h4 span {
+    font-weight: 400;
     color: ${({ theme }) => theme.text.secondary};
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 `;
 
-const StyledEmpty = styled.p`
-  font-size: ${u(1.02)};
-  color: ${({ theme }) => theme.text.secondary};
+/** A bubble without its pill, with the running event's progress under its text. */
+const StyledEvent = styled.div`
+  position: relative;
+  border-radius: ${u(1.7)};
+  overflow: hidden;
+
+  .progress {
+    position: absolute;
+    left: ${u(3.3)};
+    right: ${u(1)};
+    bottom: ${u(0.2)};
+    height: ${u(0.2)};
+    border-radius: ${u(0.2)};
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+  }
+
+  .progress span {
+    display: block;
+    height: 100%;
+  }
 `;
 
 interface DayProps {
   day: Date;
   events: CalendarEvent[];
+  /** Every configured calendar, in order: an event's colour is its calendar's place. */
+  calendars: string[];
+  now: number;
 }
 
-/** One day of the agenda: the date on the left, its events beside a rule. */
-const AgendaDay: React.FC<DayProps> = ({ day, events }) => {
+/** One day of the sidebar's agenda: its name, then a bubble per event still to come. */
+const AgendaDay: React.FC<DayProps> = ({ day, events, calendars, now }) => {
   const language = useLanguage();
   const t = useT();
-  const shown = events.slice(0, 3);
+  const heading = dayHeading(day, language, { today: t('today'), tomorrow: t('tomorrow') }, 'short', new Date(now));
   return (
     <StyledDay>
-      <StyledDate>
-        <span className='weekday'>{formatWeekday(day, language)}</span>
-        <span className='day'>{day.getDate()}</span>
-        <span className='month'>{formatMonth(day, language)}</span>
-      </StyledDate>
-      <StyledEvents>
-        {shown.length === 0 && <StyledEmpty>✓ {t('no_events')}</StyledEmpty>}
-        {shown.map(event => (
+      <h4>
+        {heading.label}
+        {heading.date && <span>{heading.date}</span>}
+      </h4>
+      {events.length === 0 && <Bubble name={t('no_events')} icon='mdi:calendar-check-outline' active={false} background='transparent' />}
+      {events.map(event => {
+        const color = calendarColor(calendars.indexOf(event.calendar));
+        const progress = event.allDay ? null : eventProgress(event, now);
+        const span = eventSpan(event, day);
+        const when = span
+          ? t('event_day', span)
+          : event.allDay
+            ? t('all_day')
+            : `${formatTime(event.start, language)} – ${formatTime(event.end, language)}`;
+        return (
           <StyledEvent key={`${event.calendar}-${event.start.getTime()}-${event.summary}`}>
-            <div className='summary'>{event.summary}</div>
-            <div className='when'>
-              {event.allDay ? t('all_day') : `${formatTime(event.start, language)} – ${formatTime(event.end, language)}`}
-            </div>
+            <Bubble
+              name={event.summary}
+              state={progress !== null ? `${t('happening_now')} · ${when}` : when}
+              icon={event.allDay || span ? 'mdi:calendar-star' : 'mdi:calendar-clock'}
+              iconColor={color}
+              background='transparent'
+            />
+            {progress !== null && (
+              <span className='progress'>
+                <span style={{ width: `${progress * 100}%`, background: color }} />
+              </span>
+            )}
           </StyledEvent>
-        ))}
-        {events.length > shown.length && <StyledEmpty>+{events.length - shown.length}</StyledEmpty>}
-      </StyledEvents>
+        );
+      })}
     </StyledDay>
   );
 };

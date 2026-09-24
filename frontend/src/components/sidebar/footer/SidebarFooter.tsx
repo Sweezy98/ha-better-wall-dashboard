@@ -1,6 +1,7 @@
 import { memo, useCallback, useState } from 'react';
 import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
+import { pressable } from '../../../themes/interaction';
 import type { SidebarConfig } from '../../../config/types';
 import IconButton from '../../base/iconButton/IconButton';
 import WeatherIcon from '../../base/weatherIcon/WeatherIcon';
@@ -30,10 +31,7 @@ const StyledWeather = styled.button`
   min-width: 0;
   padding: ${u(0.4)} ${u(0.7)} ${u(0.4)} ${u(0.4)};
   border-radius: ${u(1)};
-
-  &:active {
-    background: ${({ theme }) => theme.bubble.background};
-  }
+  ${({ theme }) => pressable(theme.bubble.background, theme.bubble.hover)}
 
   > :first-child {
     grid-row: 1 / 3;

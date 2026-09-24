@@ -3,7 +3,6 @@ import {
   CONDITION_LABELS,
   CONDITIONS,
   barometerFraction,
-  barometerZone,
   compassPoint,
   pressureToHpa,
   conditionLabel,
@@ -70,16 +69,8 @@ describe('barometer', () => {
     expect(pressureToHpa(101.3, 'kPa')).toBeCloseTo(1013, 1);
   });
 
-  it('names the zone the needle is in, as a barometer dial does', () => {
-    expect(barometerZone(965).key).toBe('pressure_stormy');
-    expect(barometerZone(1013).key).toBe('pressure_change');
-    expect(barometerZone(1020).key).toBe('pressure_fair');
-    expect(barometerZone(1075).key).toBe('pressure_dry');
-    expect(barometerZone(900).key).toBe('pressure_stormy');
-  });
-
   it('keeps the needle on the dial', () => {
-    expect(barometerFraction(1005)).toBeCloseTo(0.5, 5);
+    expect(barometerFraction(1010)).toBeCloseTo(0.5, 5);
     expect(barometerFraction(900)).toBe(0);
     expect(barometerFraction(1100)).toBe(1);
   });

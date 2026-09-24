@@ -5,10 +5,11 @@ import { useLanguage, useT } from '../../hooks/useHa';
 import { loadGoogleMaps, onMapsRefused } from '../../lib/googleMaps';
 import {
   DARK_MAP_STYLE,
+  mergeRoutes,
   parseRoutes,
   ROUTES_FIELDS,
   ROUTES_URL,
-  routesRequest,
+  routesRequests,
   trafficDelayMinutes,
   type TravelRoute,
 } from '../../lib/routes';
@@ -122,20 +123,22 @@ const TravelMap: React.FC<{ apiKey: string; origin: string; destination: string 
   // The routes, now and every five minutes.
   useEffect(() => {
     let cancelled = false;
-    const fetchRoutes = () =>
+    const fetchOne = (body: unknown) =>
       fetch(ROUTES_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': apiKey, 'X-Goog-FieldMask': ROUTES_FIELDS },
-        body: JSON.stringify(routesRequest(origin, destination, language)),
+        body: JSON.stringify(body),
       })
         .then(response => response.json())
-        .then(json => {
-          if (cancelled) return;
-          const parsed = parseRoutes(json);
-          setError(parsed.length === 0);
-          setRoutes(parsed);
-        })
-        .catch(() => !cancelled && setError(true));
+        .then(parseRoutes);
+    // Settled, not all: the second request failing still leaves the first.
+    const fetchRoutes = () =>
+      Promise.allSettled(routesRequests(origin, destination, language).map(fetchOne)).then(results => {
+        if (cancelled) return;
+        const merged = mergeRoutes(results.map(result => (result.status === 'fulfilled' ? result.value : [])));
+        setError(merged.length === 0);
+        setRoutes(merged);
+      });
     void fetchRoutes();
     const timer = window.setInterval(fetchRoutes, 300_000);
     return () => {
