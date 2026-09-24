@@ -1,5 +1,6 @@
 import { memo, useCallback, useState } from 'react';
 import styled from 'styled-components';
+import { tileButton, tileSurface } from '../library/tiles/Tile.styled';
 import { u } from '../../themes/default.theme';
 import type { BarButton } from '../../config/types';
 import Icon from '../base/icon/Icon';
@@ -23,15 +24,9 @@ const StyledBarButton = styled.button`
   height: 100%;
   min-width: 0;
   padding: 0 ${u(1)} 0 ${u(3.4)};
-  border-radius: ${u(0.7)};
-  background-color: rgba(115, 115, 115, 0.15);
-  box-shadow: ${({ theme }) => theme.card.shadow};
+  ${tileSurface}
+  ${tileButton}
   font-size: ${u(1.15)};
-  transition: background-color 0.2s ease;
-
-  &:active {
-    background-color: rgba(115, 115, 115, 0.3);
-  }
 
   .icon {
     position: absolute;

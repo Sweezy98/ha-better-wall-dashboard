@@ -2,7 +2,7 @@ import { memo, useState } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import type { TileProps } from '../registry';
-import { StyledTile } from './Tile.styled';
+import { StyledTile, tileButton } from './Tile.styled';
 import Icon from '../../base/icon/Icon';
 import MiniGraph from '../../base/miniGraph/MiniGraph';
 import HistoryPopup from '../../popups/HistoryPopup';
@@ -14,6 +14,7 @@ const StyledSensor = styled(StyledTile).attrs({ as: 'button', type: 'button' })`
   display: flex;
   flex-direction: column;
   text-align: left;
+  ${tileButton}
 
   .head {
     display: flex;

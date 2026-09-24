@@ -2,7 +2,7 @@ import { memo } from 'react';
 import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import type { TileProps } from '../registry';
-import { StyledTile } from './Tile.styled';
+import { StyledTile, tileButton } from './Tile.styled';
 import Icon from '../../base/icon/Icon';
 import { domainIcon, toggleService, useCallService, useEntity, useT } from '../../../hooks/useHa';
 
@@ -14,12 +14,7 @@ const StyledButton = styled(StyledTile).attrs({ as: 'button', type: 'button' })<
   justify-content: space-between;
   padding: ${u(0.8)};
   text-align: left;
-  background-color: ${({ $active }) => ($active ? 'rgba(255, 255, 255, 0.16)' : undefined)};
-  transition: background-color 0.3s ease;
-
-  &:active {
-    transform: scale(0.98);
-  }
+  ${tileButton}
 
   .icon {
     width: ${u(2.8)};
@@ -29,8 +24,13 @@ const StyledButton = styled(StyledTile).attrs({ as: 'button', type: 'button' })<
     align-items: center;
     justify-content: center;
     font-size: ${u(1.4)};
-    background: ${({ theme }) => theme.bubble.icon};
+    /* On: the icon in the light's own colour, on a wash of it. */
+    background: ${({ $active, $glow, theme }) =>
+      $active ? `color-mix(in srgb, ${$glow ?? theme.colors.warm} 22%, transparent)` : theme.bubble.icon};
     color: ${({ $active, $glow, theme }) => ($active ? ($glow ?? theme.colors.warm) : theme.text.secondary)};
+    transition:
+      background 0.3s ease,
+      color 0.3s ease;
   }
 
   .name {

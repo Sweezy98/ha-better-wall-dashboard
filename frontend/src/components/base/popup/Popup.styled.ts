@@ -34,6 +34,10 @@ export const StyledDialog = styled.dialog<{ $width: number; $full: boolean }>`
     animation: ${rise} 0.28s cubic-bezier(0.215, 0.61, 0.355, 1);
   }
 
+  &:focus {
+    outline: none;
+  }
+
   &::backdrop {
     background: ${({ theme }) => theme.popup.backdrop};
   }
@@ -97,6 +101,9 @@ export const StyledPopupBody = styled.div<{ $fixed: boolean }>`
   padding: ${u(0.4)} ${u(1.4)} ${u(1.6)};
   font-size: ${u(1.05)};
   overflow-y: ${({ $fixed }) => ($fixed ? 'hidden' : 'auto')};
+  /* Vertical only: a notification swiped away slides past the edge, and
+     would otherwise give the body a horizontal scrollbar. */
+  overflow-x: hidden;
   overscroll-behavior: contain;
   min-height: 0;
   display: flex;

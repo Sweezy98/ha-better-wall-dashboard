@@ -65,8 +65,19 @@ const Popup: React.FC<PopupProps> = ({
   useEffect(() => {
     const dialog = ref.current;
     if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
-    if (!open && dialog.open) dialog.close();
+    if (open && !dialog.open) {
+      // The dialog takes the first focus itself, so its close button is not
+      // drawn with a focus ring the moment it opens.
+      dialog.setAttribute('autofocus', '');
+      dialog.showModal();
+    }
+    if (!open && dialog.open) {
+      dialog.close();
+      // Closing hands focus back to the button that opened the popup, and
+      // the browser rings it -- a white outline on a wall tablet nobody
+      // uses a keyboard on.
+      ((dialog.getRootNode() as Document | ShadowRoot).activeElement as HTMLElement | null)?.blur();
+    }
   });
 
   useEffect(() => {
@@ -91,6 +102,7 @@ const Popup: React.FC<PopupProps> = ({
   return (
     <StyledDialog
       ref={ref}
+      tabIndex={-1}
       $width={width}
       $full={full}
       // Escape closes a dialog by itself; route it through onClose so React

@@ -10,7 +10,8 @@ import NotificationsPopup from '../../popups/NotificationsPopup';
 import SettingsPopup from '../../popups/SettingsPopup';
 import { useEntity, useIsNight, useLanguage, usePrecision, useT } from '../../../hooks/useHa';
 import { useNotifications } from '../../../hooks/useNotifications';
-import { formatMeasurement } from '../../../lib/format';
+import { formatMeasurement, formatNumber } from '../../../lib/format';
+import { useForecast } from '../../../hooks/useForecast';
 import { conditionLabel } from '../../../lib/weather';
 
 const StyledFooter = styled.div`
@@ -22,13 +23,16 @@ const StyledFooter = styled.div`
   margin: 0 ${u(-0.4)} ${u(-0.3)};
 `;
 
+/** As wide as the footer allows: the icon, now, and today's high and low. */
 const StyledWeather = styled.button`
+  flex: 1 1 auto;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr) auto;
   grid-template-rows: auto auto;
   column-gap: ${u(1)};
   align-items: center;
   min-width: 0;
+  text-align: left;
   padding: ${u(0.4)} ${u(0.7)} ${u(0.4)} ${u(0.4)};
   border-radius: ${u(1)};
   ${({ theme }) => pressable(theme.bubble.background, theme.bubble.hover)}
@@ -51,6 +55,19 @@ const StyledWeather = styled.button`
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
+  .range {
+    grid-column: 3;
+    grid-row: 1 / 3;
+    text-align: right;
+    font-size: ${u(1.05)};
+    line-height: 1.45;
+    white-space: nowrap;
+  }
+
+  .range span {
+    color: ${({ theme }) => theme.text.secondary};
+  }
 `;
 
 const StyledButtons = styled.div`
@@ -68,7 +85,9 @@ const Weather: React.FC<{ config: SidebarConfig['weather'] }> = ({ config }) => 
   const t = useT();
   const [open, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
+  const today = useForecast(config.entity || undefined, 'daily').forecast?.[0];
   if (!config.entity && !config.temperature) return <span />;
+  const degrees = (value: number | undefined) => (value === undefined ? '–' : `${formatNumber(value, language, 0)}°`);
 
   // The house's own thermometer when there is one; the forecast's guess for
   // the grid square otherwise.
@@ -83,6 +102,13 @@ const Weather: React.FC<{ config: SidebarConfig['weather'] }> = ({ config }) => 
         <WeatherIcon condition={weather?.state} night={night} size={u(4.4)} />
         <span className='temperature'>{temperature}</span>
         <span className='condition'>{conditionLabel(weather?.state, language)}</span>
+        {today && (
+          <span className='range'>
+            <span>{t('high_short')}</span> {degrees(today.temperature)}
+            <br />
+            <span>{t('low_short')}</span> {degrees(today.templow)}
+          </span>
+        )}
       </StyledWeather>
       {config.entity && <WeatherPopup open={open} onClose={close} entityId={config.entity} temperature={temperature} />}
     </>
