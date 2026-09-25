@@ -2,7 +2,9 @@ import { useState } from 'react';
 import type { Tile } from '../../config/types';
 import { LIMITS } from '../../config/types';
 import { useEntity, useT } from '../../hooks/useHa';
-import { LIBRARY, LIBRARY_BY_TYPE } from '../library/registry';
+import { LIBRARY_BY_TYPE } from '../library/registry';
+import { useOfferedTiles } from './useOfferedTiles';
+import BetterLightingOptions from './BetterLightingOptions';
 import Icon from '../base/icon/Icon';
 import HaButton from './ha/HaButton';
 import { EntityField, IconField, ListControls, NumberField, SelectField, TextField } from './fields';
@@ -74,6 +76,7 @@ interface TileListEditorProps {
 /** The tiles of a section or of a button's popup, chosen from the library: one folded panel each. */
 const TileListEditor: React.FC<TileListEditorProps> = ({ tiles, columns, rows, onChange }) => {
   const t = useT();
+  const offered = useOfferedTiles();
   const set = (index: number, patch: Partial<Tile>) => onChange(replaceAt(tiles, index, { ...tiles[index], ...patch }));
   return (
     <>
@@ -104,8 +107,11 @@ const TileListEditor: React.FC<TileListEditorProps> = ({ tiles, columns, rows, o
                 label={t('type')}
                 value={tile.type}
                 options={[
-                  ...LIBRARY.map(item => ({ value: item.type, label: t(item.label) })),
-                  ...(entry ? [] : [{ value: tile.type, label: tile.type }]),
+                  ...offered.map(item => ({ value: item.type, label: t(item.label) })),
+                  // Its own type, even one this house no longer offers or this build does not know.
+                  ...(offered.some(item => item.type === tile.type)
+                    ? []
+                    : [{ value: tile.type, label: entry ? t(entry.label) : tile.type }]),
                 ]}
                 onChange={type => {
                   const size = LIBRARY_BY_TYPE[type]?.size ?? [1, 1];
@@ -113,7 +119,13 @@ const TileListEditor: React.FC<TileListEditorProps> = ({ tiles, columns, rows, o
                 }}
               />
               {entry?.needsEntity !== false && (
-                <EntityField label={t('entity')} value={tile.entity} domains={entry?.domains} onChange={entity => set(index, { entity })} />
+                <EntityField
+                  label={t('entity')}
+                  value={tile.entity}
+                  domains={entry?.domains}
+                  integration={entry?.integration}
+                  onChange={entity => set(index, { entity })}
+                />
               )}
               <StyledRow>
                 <TextField label={t('name')} hint={t('name_hint')} value={tile.name} onChange={name => set(index, { name })} />
@@ -136,6 +148,7 @@ const TileListEditor: React.FC<TileListEditorProps> = ({ tiles, columns, rows, o
                 />
               </StyledRow>
               {tile.type === 'sensor' && <OptionsField value={tile.options} onChange={options => set(index, { options })} />}
+              {tile.type === 'better_lighting' && <BetterLightingOptions tile={tile} onChange={options => set(index, { options })} />}
             </div>
           </StyledDetails>
         );

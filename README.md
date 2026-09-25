@@ -44,6 +44,12 @@ over a grid of tiles. Every 1×1 tile on the dashboard is the same size and a bi
 multiple of it, so everything lines up. The cell takes the shape the screen has room for, but
 never more than 3:2, so tiles fill their section without being stretched.
 
+**Tiles** come from a library: an entity button, a sensor with its graph, and — where
+[Better Lighting] is installed — a **Better Lighting room**: switched by its icon, how it is lit
+and why (presence, night, by hand or automatically, the countdown to switching off), a brightness
+bar in the room's own colour, its scenes a step either way or all of them a tap away, back to
+adaptive in one press, and one extra button of your choice.
+
 **The button bar** along the bottom: up to five buttons, each opening a popup of tiles. The first
 is the **Intercom** — where the doorbell's camera, talk-back, door opener and canned spoken replies
 are going, opening by itself when somebody rings.

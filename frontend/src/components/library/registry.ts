@@ -2,6 +2,7 @@ import type { Tile } from '../../config/types';
 import type { TranslationKey } from '../../lib/i18n';
 import EntityTile from './tiles/EntityTile';
 import SensorTile from './tiles/SensorTile';
+import BetterLightingTile from './tiles/BetterLightingTile';
 
 export interface TileProps {
   tile: Tile;
@@ -18,6 +19,8 @@ export interface LibraryEntry {
   domains: string[];
   /** Cells it takes when first added. */
   size: [number, number];
+  /** Offered only where this integration is installed, and its entities only in the picker. */
+  integration?: string;
 }
 
 /**
@@ -26,8 +29,8 @@ export interface LibraryEntry {
  * This is the library the editor offers. A component added here appears in
  * the editor's type menu and can be placed on any page or in any button's
  * popup; the stored `type` is its key, so a key is forever once released --
- * rename the label, never the key. The device controls to come (the Better
- * Lighting room card and the rest) are added the same way.
+ * rename the label, never the key. The device controls to come are added
+ * the same way.
  */
 export const LIBRARY: LibraryEntry[] = [
   {
@@ -47,6 +50,16 @@ export const LIBRARY: LibraryEntry[] = [
     needsEntity: true,
     domains: ['sensor', 'input_number', 'number', 'counter'],
     size: [2, 1],
+  },
+  {
+    type: 'better_lighting',
+    label: 'tile_better_lighting',
+    icon: 'mdi:lightbulb-group',
+    component: BetterLightingTile,
+    needsEntity: true,
+    domains: ['light'],
+    size: [2, 2],
+    integration: 'better_lighting',
   },
 ];
 
