@@ -48,15 +48,11 @@ const StyledHeader = styled.header`
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
   }
 
+  /* Kept clear of the first reading by that reading's own margin, the same
+     gap as either side of a dot; without readings it runs to the end. */
   .line {
     flex: 1;
     min-width: ${u(1)};
-    margin-right: ${u(0.9)};
-  }
-
-  /* No readings after it: it runs to where they would have ended. */
-  .line:last-child {
-    margin-right: 0;
   }
 
   /* Between two readings: the rule again, as a dot. */
