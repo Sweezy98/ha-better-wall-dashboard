@@ -160,8 +160,9 @@ const en = {
   weather_entity: 'Weather entity',
   outdoor_temperature: 'Outdoor temperature sensor',
   notifications_enabled: 'Show notifications',
-  notifications_prefix: 'Only notifications whose id starts with',
-  notifications_prefix_hint: 'Empty shows every persistent notification.',
+  notifications_prefix: 'Only notifications whose id starts with one of',
+  notifications_prefix_hint:
+    'For example wall_all_ for every tablet and wall_living_ for this one. Empty shows every persistent notification.',
   system_stats: 'System statistics',
   page: 'Page',
   add_page: 'Add page',
@@ -428,8 +429,9 @@ const de: Record<TranslationKey, string> = {
   weather_entity: 'Wetter-Entität',
   outdoor_temperature: 'Außentemperatur-Sensor',
   notifications_enabled: 'Benachrichtigungen anzeigen',
-  notifications_prefix: 'Nur Benachrichtigungen, deren ID beginnt mit',
-  notifications_prefix_hint: 'Leer zeigt alle dauerhaften Benachrichtigungen.',
+  notifications_prefix: 'Nur Benachrichtigungen, deren ID beginnt mit einem von',
+  notifications_prefix_hint:
+    'Zum Beispiel wall_all_ für alle Tablets und wall_living_ für dieses. Leer zeigt alle dauerhaften Benachrichtigungen.',
   system_stats: 'Systemstatistik',
   page: 'Seite',
   add_page: 'Seite hinzufügen',

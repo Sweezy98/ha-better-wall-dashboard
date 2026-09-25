@@ -52,6 +52,33 @@ export const TextField: React.FC<Base<string> & { placeholder?: string; type?: '
   );
 };
 
+/**
+ * Several short texts: Home Assistant's text field with a row per value and
+ * a button to add one; typed separated by commas without it.
+ */
+export const TextListField: React.FC<Base<string[]>> = ({ label, hint, value, onChange }) => {
+  const ha = useHaControls();
+  const clean = (items: unknown[]) => items.filter((item): item is string => typeof item === 'string').map(item => item.trim());
+  if (ha) {
+    return (
+      <HaSelector
+        selector={{ text: { multiple: true } }}
+        value={value}
+        label={label}
+        helper={hint}
+        onChange={next => onChange(Array.isArray(next) ? clean(next) : [])}
+      />
+    );
+  }
+  return (
+    <StyledField>
+      <span className='label'>{label}</span>
+      <input type='text' value={value.join(', ')} onChange={event => onChange(clean(event.target.value.split(',')).filter(Boolean))} />
+      {hint && <small>{hint}</small>}
+    </StyledField>
+  );
+};
+
 export const NumberField: React.FC<Base<number> & { min?: number; max?: number; step?: number; unit?: string }> = ({
   label,
   hint,

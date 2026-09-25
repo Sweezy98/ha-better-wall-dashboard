@@ -1,4 +1,4 @@
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import { pressable } from '../../../themes/interaction';
@@ -11,6 +11,7 @@ import NotificationsPopup from '../../popups/NotificationsPopup';
 import SettingsPopup from '../../popups/SettingsPopup';
 import { useEntity, useIsNight, useLanguage, usePrecision, useT } from '../../../hooks/useHa';
 import { useNotifications } from '../../../hooks/useNotifications';
+import { notificationPrefixes } from '../../../lib/notifications';
 import { formatMeasurement, formatNumber } from '../../../lib/format';
 import { useForecast } from '../../../hooks/useForecast';
 import { conditionLabel } from '../../../lib/weather';
@@ -132,7 +133,9 @@ const Weather: React.FC<{ config: SidebarConfig['weather'] }> = ({ config }) => 
 
 const SidebarFooter: React.FC<{ config: SidebarConfig }> = ({ config }) => {
   const t = useT();
-  const { notifications, dismiss, dismissAll } = useNotifications(config.notifications.enabled, config.notifications.prefix);
+  // A new array each render would re-filter for nothing.
+  const prefixes = useMemo(() => notificationPrefixes(config.notifications), [config.notifications]);
+  const { notifications, dismiss, dismissAll } = useNotifications(config.notifications.enabled, prefixes);
   const [panel, setPanel] = useState<'notifications' | 'settings' | null>(null);
   const close = useCallback(() => setPanel(null), []);
   return (

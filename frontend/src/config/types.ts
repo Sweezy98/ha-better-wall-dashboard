@@ -82,7 +82,8 @@ export interface SidebarConfig {
   quick_actions: NamedEntity[];
   calendar: { entities: EntityId[]; days: number };
   weather: { entity: EntityId; temperature: EntityId };
-  notifications: { enabled: boolean; prefix: string };
+  /** `prefixes` is missing from a backend older than this page, which sends only `prefix`. */
+  notifications: { enabled: boolean; prefix: string; prefixes?: string[] };
   /** Missing from a backend older than this page. */
   settings?: { enabled: boolean };
   /** Missing from a backend older than this page. */

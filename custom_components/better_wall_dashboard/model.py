@@ -39,6 +39,7 @@ MAX_SECTION_CELLS: Final = 12
 MAX_TILES: Final = 64
 MAX_QUICK_ACTIONS: Final = 6
 MAX_STATUS_ICONS: Final = 6
+MAX_NOTIFICATION_PREFIXES: Final = 16
 CLOCK_STYLES: Final = ("digital", "analog")
 MAX_BUTTONS: Final = 5
 MAX_SECTION_STATUS: Final = 2
@@ -275,6 +276,29 @@ def _status_icons(status: dict[str, Any], assign: Callable[[Any], str]) -> list:
     ]
 
 
+def _prefixes(notifications: dict[str, Any]) -> list[str]:
+    """The notification ids a tablet shows start with one of these.
+
+    So the tablet shows "the washing machine is done" and not "new devices
+    discovered" -- and one tablet can show what is meant for every wall
+    ("wall_all_") and for its own room ("wall_living_") while another shows
+    only the first. Empty shows everything. A dashboard saved before this
+    was a list has its single prefix read into it.
+    """
+    if "prefixes" not in notifications:
+        old = _text(notifications.get("prefix"), "", 64)
+        return [old] if old else []
+    raw = notifications.get("prefixes")
+    if not isinstance(raw, list):
+        return []
+    found: list[str] = []
+    for item in raw:
+        prefix = _text(item, "", 64)
+        if prefix and prefix not in found:
+            found.append(prefix)
+    return found[:MAX_NOTIFICATION_PREFIXES]
+
+
 def _sidebar(raw: Any, assign: Callable[[Any], str]) -> dict:
     raw = _dict(raw)
     status = _dict(raw.get("status"))
@@ -345,10 +369,9 @@ def _sidebar(raw: Any, assign: Callable[[Any], str]) -> dict:
         "settings": {"enabled": _bool(settings.get("enabled"), True)},
         "notifications": {
             "enabled": _bool(notifications.get("enabled"), True),
-            # Only persistent notifications whose id starts with this, so the
-            # tablet shows "the washing machine is done" and not "new devices
-            # discovered". Empty shows everything.
+            # Before `prefixes`: read into it, kept as it was stored.
             "prefix": _text(notifications.get("prefix"), "", 64),
+            "prefixes": _prefixes(notifications),
         },
         "system": _named_entities(raw.get("system"), assign, MAX_SYSTEM_STATS),
     }

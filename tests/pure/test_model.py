@@ -242,3 +242,25 @@ def test_the_clock_is_digital_unless_asked_otherwise() -> None:
     assert analog["sidebar"]["clock"]["style"] == "analog"
     odd = model.normalize_dashboard({"sidebar": {"clock": {"style": "sundial"}}})
     assert odd["sidebar"]["clock"]["style"] == "digital"
+
+
+def test_notification_prefixes_are_a_list_read_from_the_old_single_one() -> None:
+    old = model.normalize_dashboard({"sidebar": {"notifications": {"prefix": "wall_"}}})
+    assert old["sidebar"]["notifications"]["prefixes"] == ["wall_"]
+    assert old["sidebar"]["notifications"]["prefix"] == "wall_"
+
+    listed = model.normalize_dashboard(
+        {
+            "sidebar": {
+                "notifications": {
+                    "prefix": "wall_",
+                    "prefixes": ["wall_all_", "", "wall_living_", "wall_all_"],
+                }
+            }
+        }
+    )
+    assert listed["sidebar"]["notifications"]["prefixes"] == [
+        "wall_all_",
+        "wall_living_",
+    ]
+    assert model.normalize_dashboard({})["sidebar"]["notifications"]["prefixes"] == []

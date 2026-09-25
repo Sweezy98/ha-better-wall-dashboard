@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useSubscription } from './useSubscription';
+import { isForTablet } from '../lib/notifications';
 import { useCallService } from './useHa';
 
 export interface Notification {
@@ -20,10 +21,10 @@ interface NotificationEvent {
  * Persistent notifications are what an automation already creates for "the
  * washing machine is done" (`persistent_notification.create`), and what stays
  * until somebody dismisses it -- exactly the life of an unread message. The
- * optional prefix keeps Home Assistant's own ("new devices discovered") off
- * the wall.
+ * optional prefixes keep Home Assistant's own ("new devices discovered") off
+ * the wall, and each tablet to what is meant for it.
  */
-export function useNotifications(enabled: boolean, prefix: string) {
+export function useNotifications(enabled: boolean, prefixes: string[]) {
   const [all, setAll] = useState<Record<string, Notification>>({});
   const callService = useCallService();
 
@@ -46,9 +47,9 @@ export function useNotifications(enabled: boolean, prefix: string) {
   const notifications = useMemo(
     () =>
       Object.values(all)
-        .filter(item => !prefix || item.notification_id.startsWith(prefix))
+        .filter(item => isForTablet(item.notification_id, prefixes))
         .sort((a, b) => b.created_at.localeCompare(a.created_at)),
-    [all, prefix]
+    [all, prefixes]
   );
 
   const dismiss = useCallback((id: string) => callService('persistent_notification', 'dismiss', { notification_id: id }), [callService]);
