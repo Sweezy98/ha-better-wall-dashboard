@@ -39,6 +39,7 @@ MAX_SECTION_CELLS: Final = 12
 MAX_TILES: Final = 64
 MAX_QUICK_ACTIONS: Final = 6
 MAX_STATUS_ICONS: Final = 6
+CLOCK_STYLES: Final = ("digital", "analog")
 MAX_BUTTONS: Final = 5
 MAX_SECTION_STATUS: Final = 2
 MAX_SYSTEM_STATS: Final = 8
@@ -284,6 +285,7 @@ def _sidebar(raw: Any, assign: Callable[[Any], str]) -> dict:
     weather = _dict(raw.get("weather"))
     notifications = _dict(raw.get("notifications"))
     settings = _dict(raw.get("settings"))
+    clock = _dict(raw.get("clock"))
     return {
         "status": {
             "absence": _entity(status.get("absence")),
@@ -334,6 +336,7 @@ def _sidebar(raw: Any, assign: Callable[[Any], str]) -> dict:
             # thermometer on the balcony.
             "temperature": _entity(weather.get("temperature")),
         },
+        "clock": {"style": _choice(clock.get("style"), CLOCK_STYLES, "digital")},
         # The cog in the footer. Hidden, the tablet has no settings of its own
         # to open: an admin reloads it from the editor instead.
         "settings": {"enabled": _bool(settings.get("enabled"), True)},

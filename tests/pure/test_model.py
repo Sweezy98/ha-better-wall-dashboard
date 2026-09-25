@@ -231,3 +231,11 @@ def test_retired_spacer_tiles_are_dropped_and_unknown_types_kept() -> None:
     dashboard = model.normalize_dashboard({"pages": [{"sections": [section]}]})
     types = [tile["type"] for tile in dashboard["pages"][0]["sections"][0]["tiles"]]
     assert types == ["entity", "from_a_newer_build", "entity"]
+
+
+def test_the_clock_is_digital_unless_asked_otherwise() -> None:
+    assert model.normalize_dashboard({})["sidebar"]["clock"] == {"style": "digital"}
+    analog = model.normalize_dashboard({"sidebar": {"clock": {"style": "analog"}}})
+    assert analog["sidebar"]["clock"]["style"] == "analog"
+    odd = model.normalize_dashboard({"sidebar": {"clock": {"style": "sundial"}}})
+    assert odd["sidebar"]["clock"]["style"] == "digital"

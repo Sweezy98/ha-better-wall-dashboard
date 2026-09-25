@@ -7,6 +7,7 @@
  */
 
 export const SIDEBAR_PARTS = [
+  { part: 'clock', icon: 'mdi:clock-outline', label: 'clock' },
   { part: 'status', icon: 'mdi:wifi-star', label: 'nav_status' },
   { part: 'climate', icon: 'mdi:home-thermometer-outline', label: 'room_climate' },
   { part: 'persons', icon: 'mdi:account-multiple-outline', label: 'persons' },

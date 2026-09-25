@@ -22,6 +22,23 @@ const SidebarScreen: React.FC<ScreenProps & { part: SidebarPart }> = ({ draft, u
   const title = <ScreenTitle title={t(label)} lead={t(`lead_${part}`)} />;
 
   switch (part) {
+    case 'clock':
+      return (
+        <>
+          {title}
+          <StyledFieldset>
+            <SelectField
+              label={t('clock_style')}
+              value={value.clock?.style ?? 'digital'}
+              options={[
+                { value: 'digital', label: t('clock_digital') },
+                { value: 'analog', label: t('clock_analog') },
+              ]}
+              onChange={style => set('clock', { style: style as 'digital' | 'analog' })}
+            />
+          </StyledFieldset>
+        </>
+      );
     case 'status':
       return (
         <>

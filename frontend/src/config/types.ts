@@ -85,6 +85,8 @@ export interface SidebarConfig {
   notifications: { enabled: boolean; prefix: string };
   /** Missing from a backend older than this page. */
   settings?: { enabled: boolean };
+  /** Missing from a backend older than this page. */
+  clock?: { style: 'digital' | 'analog' };
   system: NamedEntity[];
 }
 

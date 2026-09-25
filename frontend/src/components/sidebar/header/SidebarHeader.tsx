@@ -10,6 +10,7 @@ import PinPopup from '../../popups/PinPopup';
 import { useDashboardContext } from '../../../config/DashboardProvider';
 import { domainIcon, useEntity, useT } from '../../../hooks/useHa';
 import { useLongPress } from '../../../hooks/useLongPress';
+import { usePresence } from '../../../hooks/usePresence';
 import { openHomeAssistantSidebar } from '../../../panel/kiosk';
 import { signalIcon, signalLevel } from '../../../lib/wifi';
 import { toNumber } from '../../../lib/format';
@@ -45,14 +46,28 @@ const StyledStatus = styled.div`
   }
 `;
 
-/** The same box as the Wi-Fi button beside it, so their glyphs line up. */
+/**
+ * The same box as the Wi-Fi button beside it, so their glyphs line up.
+ * Coming and going it grows from, and shrinks to, nothing -- so the icons
+ * beside it slide over rather than jump.
+ */
 const StyledStatusIcon = styled.span`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
   font-size: ${u(1.5)};
+  overflow: hidden;
+  transition:
+    width 0.3s ease,
+    opacity 0.3s ease,
+    transform 0.3s ease;
+
+  &&[data-presence='enter'],
+  &&[data-presence='leave'] {
+    width: 0;
+    opacity: 0;
+    transform: scale(0.4);
+  }
 `;
 
 /** Whether a mode helper counts as "on" -- an input_boolean, a switch, a template binary sensor. */
@@ -62,10 +77,11 @@ const ModeIcon: React.FC<{ item: NamedEntity }> = ({ item }) => {
   const entity = useEntity(item.entity || undefined);
   // Shown only while the mode is on: a row of icons that are always there
   // stops being read at all.
-  if (!isOn(entity?.state)) return null;
+  const presence = usePresence(isOn(entity?.state));
+  if (!presence) return null;
   const label = item.name || (entity?.attributes.friendly_name as string | undefined) || item.entity;
   return (
-    <StyledStatusIcon title={label} aria-label={label}>
+    <StyledStatusIcon title={label} aria-label={label} data-presence={presence}>
       <Icon icon={item.icon || (entity?.attributes.icon as string | undefined) || domainIcon(item.entity)} />
     </StyledStatusIcon>
   );
@@ -118,7 +134,7 @@ const SidebarHeader: React.FC<{ config: SidebarConfig }> = ({ config }) => {
   return (
     <StyledHeader>
       {popup}
-      <Clock timeProps={longPress} />
+      <Clock timeProps={longPress} analog={config.clock?.style === 'analog'} />
       <StyledStatus>
         {/* Right to left: Wi-Fi first, so it always holds the corner. */}
         <WifiButton config={config} />
