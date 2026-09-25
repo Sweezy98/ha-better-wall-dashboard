@@ -234,7 +234,10 @@ def test_retired_spacer_tiles_are_dropped_and_unknown_types_kept() -> None:
 
 
 def test_the_clock_is_digital_unless_asked_otherwise() -> None:
-    assert model.normalize_dashboard({})["sidebar"]["clock"] == {"style": "digital"}
+    assert model.normalize_dashboard({})["sidebar"]["clock"] == {
+        "style": "digital",
+        "seconds": False,
+    }
     analog = model.normalize_dashboard({"sidebar": {"clock": {"style": "analog"}}})
     assert analog["sidebar"]["clock"]["style"] == "analog"
     odd = model.normalize_dashboard({"sidebar": {"clock": {"style": "sundial"}}})

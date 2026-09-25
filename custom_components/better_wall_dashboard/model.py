@@ -336,7 +336,10 @@ def _sidebar(raw: Any, assign: Callable[[Any], str]) -> dict:
             # thermometer on the balcony.
             "temperature": _entity(weather.get("temperature")),
         },
-        "clock": {"style": _choice(clock.get("style"), CLOCK_STYLES, "digital")},
+        "clock": {
+            "style": _choice(clock.get("style"), CLOCK_STYLES, "digital"),
+            "seconds": _bool(clock.get("seconds"), False),
+        },
         # The cog in the footer. Hidden, the tablet has no settings of its own
         # to open: an admin reloads it from the editor instead.
         "settings": {"enabled": _bool(settings.get("enabled"), True)},

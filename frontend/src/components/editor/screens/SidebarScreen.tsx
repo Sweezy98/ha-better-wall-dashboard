@@ -36,6 +36,7 @@ const SidebarScreen: React.FC<ScreenProps & { part: SidebarPart }> = ({ draft, u
               ]}
               onChange={style => set('clock', { style: style as 'digital' | 'analog' })}
             />
+            <CheckField label={t('clock_seconds')} value={Boolean(value.clock?.seconds)} onChange={seconds => set('clock', { seconds })} />
           </StyledFieldset>
         </>
       );

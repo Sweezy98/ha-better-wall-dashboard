@@ -86,7 +86,7 @@ export interface SidebarConfig {
   /** Missing from a backend older than this page. */
   settings?: { enabled: boolean };
   /** Missing from a backend older than this page. */
-  clock?: { style: 'digital' | 'analog' };
+  clock?: { style: 'digital' | 'analog'; seconds?: boolean };
   system: NamedEntity[];
 }
 

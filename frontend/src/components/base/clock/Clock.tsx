@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import styled, { useTheme } from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import { useTick } from '../../../hooks/useNow';
 import { useLanguage } from '../../../hooks/useHa';
@@ -19,6 +19,14 @@ const StyledTime = styled.p`
   margin-left: -0.04em;
 `;
 
+/** Seconds after the minutes: smaller and dimmer, so the time still reads first. */
+const StyledSeconds = styled.span`
+  font-size: 0.42em;
+  margin-left: 0.08em;
+  color: ${({ theme }) => theme.text.secondary};
+  font-variant-numeric: tabular-nums;
+`;
+
 const StyledDate = styled.p`
   font-size: ${u(2.05)};
   margin-top: ${u(0.35)};
@@ -27,27 +35,40 @@ const StyledDate = styled.p`
 `;
 
 /**
- * The time and date as figures, in the user's locale. Ticks on the minute --
- * there are no seconds -- and is the only thing on the dashboard that
- * re-renders because time passed.
+ * The time and date as figures, in the user's locale. Ticks on the minute,
+ * or every second when seconds are shown -- and is the only thing on the
+ * dashboard that re-renders because time passed.
  */
-const Clock: React.FC<{ timeProps?: React.HTMLAttributes<HTMLDivElement> }> = ({ timeProps }) => {
-  const now = new Date(useTick(60_000));
+const Clock: React.FC<{ timeProps?: React.HTMLAttributes<HTMLDivElement>; seconds?: boolean }> = ({ timeProps, seconds = false }) => {
+  // Every second only when seconds are shown; otherwise on the minute.
+  const now = new Date(useTick(seconds ? 1_000 : 60_000));
   const language = useLanguage();
   return (
     <StyledClock>
       <div {...timeProps}>
-        <StyledTime>{formatTime(now, language)}</StyledTime>
+        <StyledTime>
+          {formatTime(now, language)}
+          {seconds && <StyledSeconds>{String(now.getSeconds()).padStart(2, '0')}</StyledSeconds>}
+        </StyledTime>
       </div>
       <StyledDate>{formatDate(now, language)}</StyledDate>
     </StyledClock>
   );
 };
 
-/** Straight on the sidebar: no face of its own behind the marks. */
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
+/**
+ * Straight on the sidebar: no face of its own behind the marks. As tall as
+ * the digital clock's figures and date together, so the header keeps its
+ * height whichever is chosen.
+ */
 const StyledDial = styled.div`
-  width: ${u(7)};
-  height: ${u(7)};
+  width: ${u(8.8)};
+  height: ${u(8.8)};
   flex: none;
 
   svg {
@@ -55,6 +76,15 @@ const StyledDial = styled.div`
     width: 100%;
     height: 100%;
     overflow: visible;
+  }
+
+  /* Each hand turns about the dial's centre, forever, at its own speed. */
+  .hand {
+    transform-box: view-box;
+    transform-origin: 50px 50px;
+    animation-name: ${spin};
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
   }
 `;
 
@@ -64,41 +94,71 @@ const at = (fraction: number, radius: number) => {
   return { x: 50 + radius * Math.sin(angle), y: 50 - radius * Math.cos(angle) };
 };
 
-const RIM = 46;
+/**
+ * One hand, drawn pointing at twelve and turned by a CSS animation of
+ * `period` seconds, started `into` seconds in: the browser moves it smoothly,
+ * every frame, on its own -- no re-render, no stepping.
+ */
+const Hand: React.FC<{ period: number; into: number; length: number; width: number; opacity?: number }> = ({
+  period,
+  into,
+  length,
+  width,
+  opacity = 1,
+}) => (
+  <g className='hand' style={{ animationDuration: `${period}s`, animationDelay: `-${into}s` }}>
+    <line x1={50} y1={57} x2={50} y2={50 - length} stroke='#fff' strokeOpacity={opacity} strokeWidth={width} strokeLinecap='round' />
+  </g>
+);
 
 /**
- * A wall clock in the dashboard's dial language, the barometer's: a faint
- * flat ring for the rim, the minutes of the hour run round it in the accent
- * colour, the hours as dots like the page dots, two white rounded hands and
- * the accent at their pivot. No second hand: it moves on the minute, like
- * the figures.
+ * A wall clock in the dashboard's style, straight on the sidebar: the hours
+ * as dots with bars at the quarters, and white rounded hands -- a thin second
+ * hand too, when seconds are shown.
+ *
+ * The hands are re-set to the real time every ten minutes and whenever the
+ * page comes back from sleep, by drawing them afresh: an animation keeps its
+ * own time, and a clock that is changed or a tablet that is suspended would
+ * otherwise leave it behind.
  */
-export const AnalogClock: React.FC<{ timeProps?: React.HTMLAttributes<HTMLDivElement> }> = ({ timeProps }) => {
-  const now = new Date(useTick(60_000));
-  const accent = useTheme().colors.accent;
-  const minutes = now.getMinutes();
-  const hours = (now.getHours() % 12) + minutes / 60;
-  const hand = (fraction: number, length: number, width: number) => {
-    const tip = at(fraction, length);
-    const tail = at(fraction + 0.5, 6);
-    return <line x1={tail.x} y1={tail.y} x2={tip.x} y2={tip.y} stroke='#fff' strokeWidth={width} strokeLinecap='round' />;
-  };
-  // The hour so far, as an arc from twelve.
-  const end = at(minutes / 60, RIM);
-  const arc = minutes ? `M 50 ${50 - RIM} A ${RIM} ${RIM} 0 ${minutes > 30 ? 1 : 0} 1 ${end.x.toFixed(2)} ${end.y.toFixed(2)}` : '';
+export const AnalogClock: React.FC<{ timeProps?: React.HTMLAttributes<HTMLDivElement>; seconds?: boolean }> = ({
+  timeProps,
+  seconds = false,
+}) => {
+  const set = useTick(600_000);
+  const now = new Date(set);
+  const second = now.getSeconds() + now.getMilliseconds() / 1000;
+  const minute = now.getMinutes() * 60 + second;
+  const hour = (now.getHours() % 12) * 3600 + minute;
   return (
     <StyledDial {...timeProps}>
       <svg viewBox='0 0 100 100' role='img' aria-label={now.toLocaleTimeString()}>
-        <circle cx={50} cy={50} r={RIM} fill='none' stroke='rgba(255, 255, 255, 0.08)' strokeWidth={2.8} />
-        {arc && <path d={arc} fill='none' stroke={accent} strokeOpacity={0.9} strokeWidth={2.8} strokeLinecap='round' />}
         {Array.from({ length: 12 }, (_, index) => {
-          const dot = at(index / 12, 36);
-          const quarter = index % 3 === 0;
-          return <circle key={index} cx={dot.x} cy={dot.y} r={quarter ? 2.8 : 1.8} fill={`rgba(255, 255, 255, ${quarter ? 0.8 : 0.35})`} />;
+          if (index % 3 === 0) {
+            const outer = at(index / 12, 44);
+            const inner = at(index / 12, 35);
+            return (
+              <line
+                key={index}
+                x1={inner.x}
+                y1={inner.y}
+                x2={outer.x}
+                y2={outer.y}
+                stroke='rgba(255, 255, 255, 0.75)'
+                strokeWidth={3.5}
+                strokeLinecap='round'
+              />
+            );
+          }
+          const dot = at(index / 12, 40);
+          return <circle key={index} cx={dot.x} cy={dot.y} r={1.9} fill='rgba(255, 255, 255, 0.35)' />;
         })}
-        {hand(hours / 12, 22, 6)}
-        {hand(minutes / 60, 32, 4)}
-        <circle cx={50} cy={50} r={4.2} fill={accent} stroke='#fff' strokeWidth={1.5} />
+        <g key={set}>
+          <Hand period={43_200} into={hour} length={24} width={6} />
+          <Hand period={3_600} into={minute} length={35} width={4} />
+          {seconds && <Hand period={60} into={second} length={39} width={1.6} opacity={0.75} />}
+        </g>
+        <circle cx={50} cy={50} r={3.4} fill='#fff' />
       </svg>
     </StyledDial>
   );

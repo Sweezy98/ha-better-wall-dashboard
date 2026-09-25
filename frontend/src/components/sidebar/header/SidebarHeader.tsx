@@ -166,7 +166,7 @@ const SidebarHeader: React.FC<{ config: SidebarConfig }> = ({ config }) => {
     return (
       <StyledHeader>
         {popup}
-        <AnalogClock timeProps={longPress} />
+        <AnalogClock timeProps={longPress} seconds={config.clock?.seconds} />
         <StyledSide>
           {status}
           <ClockDate />
@@ -177,7 +177,7 @@ const SidebarHeader: React.FC<{ config: SidebarConfig }> = ({ config }) => {
   return (
     <StyledHeader>
       {popup}
-      <Clock timeProps={longPress} />
+      <Clock timeProps={longPress} seconds={config.clock?.seconds} />
       {status}
     </StyledHeader>
   );
