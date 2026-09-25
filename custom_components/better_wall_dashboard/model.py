@@ -148,7 +148,7 @@ def _tile(raw: Any, assign: Callable[[Any], str], columns: int, rows: int) -> di
         # The component to draw, from the frontend's library. Free text rather
         # than an enum here: the library grows with the frontend, and a type
         # this backend has never heard of must survive a save untouched.
-        "type": _text(raw.get("type"), "placeholder", 64) or "placeholder",
+        "type": _text(raw.get("type"), "entity", 64) or "entity",
         "entity": _entity(raw.get("entity")),
         "name": _text(raw.get("name")),
         "icon": _text(raw.get("icon"), "", 64),
@@ -160,10 +160,18 @@ def _tile(raw: Any, assign: Callable[[Any], str], columns: int, rows: int) -> di
     }
 
 
+# The empty spacer tile, retired: a tile is either there or not. Stored ones
+# are dropped when read, and gone with the next save.
+_RETIRED_TILE_TYPES = frozenset({"placeholder"})
+
+
 def _tiles(raw: Any, assign: Callable[[Any], str], columns: int, rows: int) -> list:
     if not isinstance(raw, list):
         return []
-    return [_tile(item, assign, columns, rows) for item in raw[:MAX_TILES]]
+    tiles = [_tile(item, assign, columns, rows) for item in raw]
+    return [tile for tile in tiles if tile["type"] not in _RETIRED_TILE_TYPES][
+        :MAX_TILES
+    ]
 
 
 def _section(raw: Any, assign: Callable[[Any], str]) -> dict:

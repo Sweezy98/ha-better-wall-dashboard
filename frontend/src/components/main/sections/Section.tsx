@@ -36,11 +36,16 @@ const StyledHeader = styled.header`
     text-overflow: ellipsis;
   }
 
+  /* The tiles' glass, as far as a thin line can carry it: a tint a little
+     stronger than theirs, their hairline edge and top highlight. */
   .line,
   .dot {
-    height: ${u(0.4)};
-    border-radius: ${u(0.4)};
-    background: rgba(255, 255, 255, 0.06);
+    height: ${u(0.5)};
+    border-radius: ${u(0.5)};
+    box-sizing: border-box;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.05));
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
   }
 
   .line {
@@ -52,7 +57,7 @@ const StyledHeader = styled.header`
   /* Between two readings: the rule again, as a dot. */
   .dot {
     flex: none;
-    width: ${u(0.4)};
+    width: ${u(0.5)};
     margin-left: ${u(0.9)};
   }
 `;

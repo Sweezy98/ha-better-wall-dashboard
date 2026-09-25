@@ -1,8 +1,8 @@
 import styled from 'styled-components';
-import { QRCodeSVG } from 'qrcode.react';
 import { u } from '../../themes/default.theme';
 import type { SidebarConfig } from '../../config/types';
 import Popup from '../base/popup/Popup';
+import WifiQr from './WifiQr';
 import { useEntity, useHassUrl, useT } from '../../hooks/useHa';
 import { wifiQrPayload } from '../../lib/wifi';
 
@@ -10,15 +10,18 @@ const StyledCode = styled.div`
   align-self: center;
   width: min(100%, ${u(22)});
   aspect-ratio: 1;
+  /* The dark around the code is its quiet zone. */
   padding: ${u(1)};
-  border-radius: ${u(1.2)};
-  background: #fff;
 
-  img,
-  svg {
+  /* The UniFi integration's picture is dark on white: on a card of its own. */
+  > img {
     width: 100%;
     height: 100%;
     display: block;
+    padding: ${u(1.2)};
+    border-radius: ${u(1.8)};
+    background: #fff;
+    box-sizing: border-box;
   }
 `;
 
@@ -67,7 +70,7 @@ const WifiContent: React.FC<{ wifi: SidebarConfig['guest_wifi'] }> = ({ wifi }) 
   return (
     <>
       <StyledCode>
-        <QRCodeSVG value={wifiQrPayload(wifi.ssid, wifi.password, wifi.security, wifi.hidden)} level='M' marginSize={0} />
+        <WifiQr payload={wifiQrPayload(wifi.ssid, wifi.password, wifi.security, wifi.hidden)} />
       </StyledCode>
       <StyledHint>{t('guest_wifi_hint')}</StyledHint>
     </>

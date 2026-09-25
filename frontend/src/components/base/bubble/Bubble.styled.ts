@@ -18,7 +18,8 @@ export const StyledBubble = styled.button<{ $interactive: boolean; $compact?: bo
   border-radius: ${u(1.7)};
   background-color: ${({ theme, $background }) => $background ?? theme.bubble.background};
   overflow: hidden;
-  cursor: ${({ $interactive }) => ($interactive ? 'pointer' : 'default')};
+  /* A bubble that is part of a bigger button -- a graph card's header -- keeps that button's hand. */
+  cursor: ${({ $interactive }) => ($interactive ? 'pointer' : 'inherit')};
   ${({ $interactive, theme }) => $interactive && pressable(theme.bubble.hover, theme.bubble.pressed)}
 `;
 

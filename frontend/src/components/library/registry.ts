@@ -1,6 +1,5 @@
 import type { Tile } from '../../config/types';
 import type { TranslationKey } from '../../lib/i18n';
-import PlaceholderTile from './tiles/PlaceholderTile';
 import EntityTile from './tiles/EntityTile';
 import SensorTile from './tiles/SensorTile';
 
@@ -31,15 +30,6 @@ export interface LibraryEntry {
  * Lighting room card and the rest) are added the same way.
  */
 export const LIBRARY: LibraryEntry[] = [
-  {
-    type: 'placeholder',
-    label: 'tile_placeholder',
-    icon: 'mdi:border-none-variant',
-    component: PlaceholderTile,
-    needsEntity: false,
-    domains: [],
-    size: [1, 1],
-  },
   {
     type: 'entity',
     label: 'tile_entity',

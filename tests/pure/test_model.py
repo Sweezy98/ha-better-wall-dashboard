@@ -215,3 +215,19 @@ def test_status_icons_are_limited() -> None:
     icons = [{"entity": f"input_boolean.m{i}", "icon": "mdi:star"} for i in range(9)]
     dashboard = model.normalize_dashboard({"sidebar": {"status": {"icons": icons}}})
     assert len(dashboard["sidebar"]["status"]["icons"]) == model.MAX_STATUS_ICONS
+
+
+def test_retired_spacer_tiles_are_dropped_and_unknown_types_kept() -> None:
+    section = {
+        "columns": 2,
+        "rows": 2,
+        "tiles": [
+            {"type": "placeholder"},
+            {"type": "entity", "entity": "light.kitchen"},
+            {"type": "from_a_newer_build"},
+            {},
+        ],
+    }
+    dashboard = model.normalize_dashboard({"pages": [{"sections": [section]}]})
+    types = [tile["type"] for tile in dashboard["pages"][0]["sections"][0]["tiles"]]
+    assert types == ["entity", "from_a_newer_build", "entity"]
