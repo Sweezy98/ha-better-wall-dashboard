@@ -76,14 +76,19 @@ export const ChipListField: React.FC<Base<string[]> & { suggestions?: string[] }
   ];
   if (ha) {
     const options = [...new Set([...value, ...suggestions])];
+    // Its chips draw no heading -- the label only names the add button --
+    // and indent the helper under that button: both are drawn here instead.
     return (
-      <HaSelector
-        selector={{ select: { multiple: true, custom_value: true, mode: 'dropdown', sort: false, options } }}
-        value={value}
-        label={label}
-        helper={hint}
-        onChange={next => onChange(Array.isArray(next) ? clean(next) : [])}
-      />
+      <StyledField as='div'>
+        <span className='label'>{label}</span>
+        {hint && <small>{hint}</small>}
+        <HaSelector
+          selector={{ select: { multiple: true, custom_value: true, mode: 'dropdown', sort: false, options } }}
+          value={value}
+          label={label}
+          onChange={next => onChange(Array.isArray(next) ? clean(next) : [])}
+        />
+      </StyledField>
     );
   }
   return (

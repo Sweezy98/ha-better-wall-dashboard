@@ -2,7 +2,8 @@ import type { SidebarConfig } from '../../../config/types';
 import { LIMITS } from '../../../config/types';
 import { useT } from '../../../hooks/useHa';
 import { SIDEBAR_PARTS, type SidebarPart } from '../../../lib/editorNav';
-import { notificationPrefixes } from '../../../lib/notifications';
+import { notificationPrefixes, prefixesInUse } from '../../../lib/notifications';
+import { useStoredDashboards } from '../storedDashboards';
 import { CheckField, EntityField, EntityListField, NumberField, SelectField, TextField, ChipListField } from '../fields';
 import { StyledRow } from '../fields.styled';
 import { StyledFieldset } from '../editor.styled';
@@ -15,6 +16,7 @@ const MODE_DOMAINS = ['input_boolean', 'switch', 'binary_sensor'];
 /** One part of the sidebar, as the menu lists them, top to bottom as the tablet draws them. */
 const SidebarScreen: React.FC<ScreenProps & { part: SidebarPart }> = ({ draft, update, part }) => {
   const t = useT();
+  const stored = useStoredDashboards();
   const value = draft.sidebar;
   const change = (sidebar: SidebarConfig) => update({ ...draft, sidebar });
   const set = <K extends keyof SidebarConfig>(key: K, patch: Partial<SidebarConfig[K]>) =>
@@ -258,6 +260,8 @@ const SidebarScreen: React.FC<ScreenProps & { part: SidebarPart }> = ({ draft, u
             <ChipListField
               label={t('notifications_prefix')}
               hint={t('notifications_prefix_hint')}
+              // What any dashboard uses already, to pick rather than retype.
+              suggestions={prefixesInUse([...stored, draft])}
               value={notificationPrefixes(value.notifications)}
               onChange={prefixes => set('notifications', { prefixes })}
             />

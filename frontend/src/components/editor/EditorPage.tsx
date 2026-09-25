@@ -11,6 +11,7 @@ import EditorPreview from './EditorPreview';
 import UsersForm from './UsersForm';
 import AboutDialog from './AboutDialog';
 import { useConfirm } from './useConfirm';
+import { StoredDashboards } from './storedDashboards';
 import { showHaToast } from '../../panel/toast';
 import GeneralScreen from './screens/GeneralScreen';
 import SidebarScreen from './screens/SidebarScreen';
@@ -221,6 +222,8 @@ const EditorPage: React.FC = () => {
     open({ kind: 'general' });
   };
 
+  const stored = useMemo(() => Object.values(document?.dashboards ?? {}), [document]);
+
   const dashboards = useMemo(() => {
     const list = Object.values(document?.dashboards ?? {}).map(item => ({ id: item.id, name: item.name }));
     if (draft && !list.some(item => item.id === draft.id)) list.push({ id: draft.id, name: draft.name });
@@ -347,7 +350,9 @@ const EditorPage: React.FC = () => {
 
           <StyledScreen $hidden={showPreview}>
             <div className='screen-body'>
-              <Screen view={current} dashboards={dashboards} draft={draft} update={update} open={open} />
+              <StoredDashboards.Provider value={stored}>
+                <Screen view={current} dashboards={dashboards} draft={draft} update={update} open={open} />
+              </StoredDashboards.Provider>
             </div>
             {savesWithDashboard && (
               <div className='screen-foot'>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isForTablet, notificationPrefixes } from './notifications';
+import { isForTablet, notificationPrefixes, prefixesInUse } from './notifications';
 
 describe('notifications for a tablet', () => {
   it('shows what starts with any of its prefixes', () => {
@@ -19,5 +19,17 @@ describe('notifications for a tablet', () => {
     expect(notificationPrefixes({ prefix: 'wall_' })).toEqual(['wall_']);
     expect(notificationPrefixes({ prefix: '', prefixes: ['a_', 'b_'] })).toEqual(['a_', 'b_']);
     expect(notificationPrefixes({ prefix: '' })).toEqual([]);
+  });
+});
+
+describe('prefixesInUse', () => {
+  it('collects every prefix any dashboard uses, once each', () => {
+    const dashboard = (prefixes: string[]) => ({ sidebar: { notifications: { prefix: '', prefixes } } });
+    expect(prefixesInUse([dashboard(['wall_all_', 'wall_living_']), dashboard(['wall_all_', 'wall_bed_']), dashboard([])])).toEqual([
+      'wall_all_',
+      'wall_living_',
+      'wall_bed_',
+    ]);
+    expect(prefixesInUse([{ sidebar: { notifications: { prefix: 'old_' } } }])).toEqual(['old_']);
   });
 });
