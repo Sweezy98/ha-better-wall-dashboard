@@ -56,8 +56,24 @@ export function attach(element: HTMLElement, props: Omit<AppProps, 'styleTarget'
     createRoot(root).render(<App {...props} styleTarget={styles} />);
   }
   shadow.append(container);
+  restoreModalDialogs(container);
   setModeState({ mode });
   setAttached(mode === 'dashboard');
+}
+
+/**
+ * Moving the container takes any open popup with it -- and a dialog moved in
+ * the page leaves the top layer: it is still open, but drawn in place, inside
+ * whatever card opened it and cut off by it. Put back, without closing it:
+ * removing `open` directly fires no close event, so React never hears the
+ * popup was shut.
+ */
+function restoreModalDialogs(root: HTMLElement): void {
+  for (const dialog of root.querySelectorAll<HTMLDialogElement>('dialog[open]')) {
+    if (dialog.matches(':modal')) continue;
+    dialog.removeAttribute('open');
+    dialog.showModal();
+  }
 }
 
 export function detach(element: HTMLElement): void {

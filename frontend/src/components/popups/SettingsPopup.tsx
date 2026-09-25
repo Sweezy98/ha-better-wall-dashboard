@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import styled, { useTheme } from 'styled-components';
+import styled, { keyframes, useTheme } from 'styled-components';
 import { u } from '../../themes/default.theme';
 import type { NamedEntity, SidebarConfig } from '../../config/types';
 import Popup from '../base/popup/Popup';
@@ -24,6 +24,11 @@ const StyledSection = styled.section`
   }
 `;
 
+const breathe = keyframes`
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+`;
+
 const StyledStats = styled.div`
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -33,6 +38,31 @@ const StyledStats = styled.div`
 const StyledNote = styled.p`
   font-size: ${u(0.96)};
   color: ${({ theme }) => theme.text.secondary};
+`;
+
+/**
+ * On the reload row while a newer build is installed than the one running:
+ * where the eye already is, in the accent colour, with a dot that breathes.
+ */
+const StyledUpdate = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: ${u(0.4)};
+  padding: ${u(0.2)} ${u(0.7)};
+  border-radius: ${u(1)};
+  background: color-mix(in srgb, ${({ theme }) => theme.colors.accent} 20%, transparent);
+  color: ${({ theme }) => theme.colors.accent};
+  font-size: ${u(0.85)};
+  font-weight: 600;
+
+  &::before {
+    content: '';
+    width: ${u(0.5)};
+    height: ${u(0.5)};
+    border-radius: 50%;
+    background: currentColor;
+    animation: ${breathe} 1.6s ease-in-out infinite;
+  }
 `;
 
 const StyledSelect = styled.select`
@@ -123,12 +153,11 @@ const SettingsContent: React.FC<{ config: SidebarConfig }> = ({ config }) => {
 
       <StyledSection>
         <h3>{t('settings')}</h3>
-        {outdated && <StyledNote>{t('update_available')}</StyledNote>}
         <Bubble
           name={t('reload')}
-          state={missing ? t('not_found') : t('reload_hint')}
+          state={missing ? t('not_found') : outdated ? t('update_available_tap') : t('reload_hint')}
           icon='mdi:refresh'
-          iconColor={outdated ? theme.colors.warm : undefined}
+          trailing={outdated ? <StyledUpdate>{t('update')}</StyledUpdate> : undefined}
           onClick={reload}
         />
         {view?.is_admin && (

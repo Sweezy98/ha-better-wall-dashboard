@@ -71,7 +71,7 @@ const EditorNav: React.FC<EditorNavProps> = ({ dashboards, draft, view, expanded
       {item({ kind: 'general' }, t('tab_general'), 'mdi:cog-outline')}
       {branch(
         'sidebar',
-        { kind: 'sidebar', part: 'status' },
+        { kind: 'sidebar', part: SIDEBAR_PARTS[0].part },
         t('tab_sidebar'),
         'mdi:dock-left',
         SIDEBAR_PARTS.map(part => item({ kind: 'sidebar', part: part.part }, t(part.label), part.icon))

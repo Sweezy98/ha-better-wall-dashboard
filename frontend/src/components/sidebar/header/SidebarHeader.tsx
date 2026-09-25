@@ -2,7 +2,7 @@ import { memo, useCallback, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import type { NamedEntity, SidebarConfig } from '../../../config/types';
-import Clock from '../../base/clock/Clock';
+import Clock, { AnalogClock, ClockDate } from '../../base/clock/Clock';
 import Icon from '../../base/icon/Icon';
 import IconButton from '../../base/iconButton/IconButton';
 import WifiPopup from '../../popups/WifiPopup';
@@ -43,6 +43,23 @@ const StyledStatus = styled.div`
     width: ${u(3)};
     height: ${u(3)};
     flex: none;
+  }
+`;
+
+/** Right of the dial: the status icons on top, the date at the foot. */
+const StyledSide = styled.div`
+  flex: 1 1 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: ${u(0.4)};
+  min-width: 0;
+
+  > :first-child {
+    flex: none;
+    align-self: stretch;
   }
 `;
 
@@ -131,20 +148,37 @@ function useSidebarUnlock() {
 
 const SidebarHeader: React.FC<{ config: SidebarConfig }> = ({ config }) => {
   const { longPress, popup } = useSidebarUnlock();
+  const status = (
+    <StyledStatus>
+      {/* Right to left: Wi-Fi first, so it always holds the corner. */}
+      <WifiButton config={config} />
+      {/* The list reads left to right; the row fills from the right. */}
+      {/* Missing from a backend older than this page -- installed, not
+          yet restarted into -- rather than a crash. */}
+      {[...(config.status.icons ?? [])].reverse().map(item => (
+        <ModeIcon key={item.id} item={item} />
+      ))}
+    </StyledStatus>
+  );
+  if (config.clock?.style === 'analog') {
+    // The dial on the left, the date to its right under the status icons:
+    // no row of its own under the clock.
+    return (
+      <StyledHeader>
+        {popup}
+        <AnalogClock timeProps={longPress} />
+        <StyledSide>
+          {status}
+          <ClockDate />
+        </StyledSide>
+      </StyledHeader>
+    );
+  }
   return (
     <StyledHeader>
       {popup}
-      <Clock timeProps={longPress} analog={config.clock?.style === 'analog'} />
-      <StyledStatus>
-        {/* Right to left: Wi-Fi first, so it always holds the corner. */}
-        <WifiButton config={config} />
-        {/* The list reads left to right; the row fills from the right. */}
-        {/* Missing from a backend older than this page -- installed, not
-            yet restarted into -- rather than a crash. */}
-        {[...(config.status.icons ?? [])].reverse().map(item => (
-          <ModeIcon key={item.id} item={item} />
-        ))}
-      </StyledStatus>
+      <Clock timeProps={longPress} />
+      {status}
     </StyledHeader>
   );
 };

@@ -11,6 +11,7 @@
 export function showHaToast(message: string): boolean {
   const app = document.querySelector('home-assistant');
   if (!app) return false;
-  app.dispatchEvent(new CustomEvent('hass-notification', { bubbles: true, composed: true, detail: { message } }));
+  // With Home Assistant's own close button, so it need not be waited out.
+  app.dispatchEvent(new CustomEvent('hass-notification', { bubbles: true, composed: true, detail: { message, dismissable: true } }));
   return true;
 }
