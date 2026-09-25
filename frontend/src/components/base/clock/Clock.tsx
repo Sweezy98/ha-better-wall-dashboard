@@ -3,7 +3,7 @@ import styled, { useTheme } from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import { useTick } from '../../../hooks/useNow';
 import { useLanguage } from '../../../hooks/useHa';
-import { formatDate, formatTime, formatWeekday } from '../../../lib/format';
+import { formatDate, formatTime } from '../../../lib/format';
 
 const StyledClock = styled.div`
   display: flex;
@@ -44,22 +44,17 @@ const Clock: React.FC<{ timeProps?: React.HTMLAttributes<HTMLDivElement> }> = ({
   );
 };
 
-/** The glass of the tiles, round: a faint tint, a hairline edge, a highlight along the top. */
+/** Straight on the sidebar: no face of its own behind the marks. */
 const StyledDial = styled.div`
   width: ${u(7)};
   height: ${u(7)};
   flex: none;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035) 60%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 ${u(0.3)} ${u(1.2)} rgba(0, 0, 0, 0.28);
 
   svg {
     display: block;
     width: 100%;
     height: 100%;
+    overflow: visible;
   }
 `;
 
@@ -69,11 +64,14 @@ const at = (fraction: number, radius: number) => {
   return { x: 50 + radius * Math.sin(angle), y: 50 - radius * Math.cos(angle) };
 };
 
+const RIM = 46;
+
 /**
- * A wall clock in the dashboard's style: the tiles' glass for a face, the
- * hours as dots like the page dots with bars at the quarters, two white
- * rounded hands and the accent colour at their pivot. No second hand: it
- * moves on the minute, like the figures.
+ * A wall clock in the dashboard's dial language, the barometer's: a faint
+ * flat ring for the rim, the minutes of the hour run round it in the accent
+ * colour, the hours as dots like the page dots, two white rounded hands and
+ * the accent at their pivot. No second hand: it moves on the minute, like
+ * the figures.
  */
 export const AnalogClock: React.FC<{ timeProps?: React.HTMLAttributes<HTMLDivElement> }> = ({ timeProps }) => {
   const now = new Date(useTick(60_000));
@@ -82,68 +80,42 @@ export const AnalogClock: React.FC<{ timeProps?: React.HTMLAttributes<HTMLDivEle
   const hours = (now.getHours() % 12) + minutes / 60;
   const hand = (fraction: number, length: number, width: number) => {
     const tip = at(fraction, length);
-    const tail = at(fraction + 0.5, 7);
+    const tail = at(fraction + 0.5, 6);
     return <line x1={tail.x} y1={tail.y} x2={tip.x} y2={tip.y} stroke='#fff' strokeWidth={width} strokeLinecap='round' />;
   };
+  // The hour so far, as an arc from twelve.
+  const end = at(minutes / 60, RIM);
+  const arc = minutes ? `M 50 ${50 - RIM} A ${RIM} ${RIM} 0 ${minutes > 30 ? 1 : 0} 1 ${end.x.toFixed(2)} ${end.y.toFixed(2)}` : '';
   return (
     <StyledDial {...timeProps}>
       <svg viewBox='0 0 100 100' role='img' aria-label={now.toLocaleTimeString()}>
+        <circle cx={50} cy={50} r={RIM} fill='none' stroke='rgba(255, 255, 255, 0.08)' strokeWidth={2.8} />
+        {arc && <path d={arc} fill='none' stroke={accent} strokeOpacity={0.9} strokeWidth={2.8} strokeLinecap='round' />}
         {Array.from({ length: 12 }, (_, index) => {
-          if (index % 3 === 0) {
-            const outer = at(index / 12, 40);
-            const inner = at(index / 12, 32);
-            return (
-              <line
-                key={index}
-                x1={inner.x}
-                y1={inner.y}
-                x2={outer.x}
-                y2={outer.y}
-                stroke='rgba(255, 255, 255, 0.75)'
-                strokeWidth={3.5}
-                strokeLinecap='round'
-              />
-            );
-          }
-          const dot = at(index / 12, 37);
-          return <circle key={index} cx={dot.x} cy={dot.y} r={1.8} fill='rgba(255, 255, 255, 0.35)' />;
+          const dot = at(index / 12, 36);
+          const quarter = index % 3 === 0;
+          return <circle key={index} cx={dot.x} cy={dot.y} r={quarter ? 2.8 : 1.8} fill={`rgba(255, 255, 255, ${quarter ? 0.8 : 0.35})`} />;
         })}
         {hand(hours / 12, 22, 6)}
-        {hand(minutes / 60, 33, 4)}
+        {hand(minutes / 60, 32, 4)}
         <circle cx={50} cy={50} r={4.2} fill={accent} stroke='#fff' strokeWidth={1.5} />
       </svg>
     </StyledDial>
   );
 };
 
-const StyledSideDate = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+const StyledSideDate = styled.p`
+  font-size: ${u(1.8)};
+  font-weight: 300;
   line-height: 1.1;
   white-space: nowrap;
-
-  .weekday {
-    font-size: ${u(1.15)};
-    color: ${({ theme }) => theme.text.secondary};
-  }
-
-  .date {
-    font-size: ${u(1.8)};
-    font-weight: 300;
-  }
 `;
 
-/** The date beside the dial, at the header's right: the weekday over it. */
+/** The date beside the dial, at the header's right. */
 export const ClockDate: React.FC = () => {
   const now = new Date(useTick(60_000));
   const language = useLanguage();
-  return (
-    <StyledSideDate>
-      <span className='weekday'>{formatWeekday(now, language, 'long')}</span>
-      <span className='date'>{formatDate(now, language)}</span>
-    </StyledSideDate>
-  );
+  return <StyledSideDate>{formatDate(now, language)}</StyledSideDate>;
 };
 
 export default memo(Clock);

@@ -65,10 +65,12 @@ const StyledUpdate = styled.span`
   }
 `;
 
-/** Set apart from the buttons above, at the right: a detail, not a control. */
+/** Set apart from the buttons above: what this is at the left, its version at the right. */
 const StyledVersion = styled(StyledNote)`
+  display: flex;
+  justify-content: space-between;
+  gap: ${u(1)};
   margin-top: ${u(0.8)};
-  text-align: right;
 `;
 
 const StyledSelect = styled.select`
@@ -186,8 +188,11 @@ const SettingsContent: React.FC<{ config: SidebarConfig }> = ({ config }) => {
         )}
         {version && (
           <StyledVersion>
-            {t('version')} {version.version}
-            {loaded ? ` · ${loaded}` : ''}
+            <span>Better Wall Dashboard</span>
+            <span>
+              {t('version')} {version.version}
+              {loaded ? ` · ${loaded}` : ''}
+            </span>
           </StyledVersion>
         )}
       </StyledSection>
