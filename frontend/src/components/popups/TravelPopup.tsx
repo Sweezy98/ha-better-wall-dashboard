@@ -31,9 +31,11 @@ const StyledMap = styled.div`
   }
 `;
 
-/** On the popup's own glass: no card of its own around it. */
+/** On the popup's own glass: no card of its own around it, but its corners. */
 const StyledGraph = styled.div`
   height: ${u(6)};
+  border-radius: ${u(1.2)};
+  overflow: hidden;
 `;
 
 const StyledHint = styled.p`

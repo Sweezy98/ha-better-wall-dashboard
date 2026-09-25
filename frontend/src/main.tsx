@@ -10,8 +10,10 @@
  */
 import { attach } from './panel/mount';
 import { setModeState } from './panel/mode';
+import { registerGlowProperties } from './panel/glow';
 
 const TAG = 'better-wall-dashboard-dev';
+registerGlowProperties();
 
 class DevDashboard extends HTMLElement {
   connectedCallback(): void {

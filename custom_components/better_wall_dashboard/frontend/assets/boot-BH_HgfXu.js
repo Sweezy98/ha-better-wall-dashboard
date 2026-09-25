@@ -156,6 +156,9 @@ function print() { __p += __j.call(arguments, '') }
   @media (hover: hover) {
     &:hover:enabled {
       background-color: ${e};
+      background-image:
+        radial-gradient(120px circle at var(--glow-x, 50%) var(--glow-y, 50%), rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0)),
+        var(--own-sheen, none);
     }
   }
 
@@ -167,7 +170,10 @@ function print() { __p += __j.call(arguments, '') }
   /* The sheen is a fixed size from the top left corner, not a share of the
      surface: stretched over the tall sidebar, a proportional one made it
      lighter than the tiles beside it. */
-  background-image: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0) 190px);
+  /* Through a variable, so a hovered surface can lay the pointer's glow
+     over its sheen (see interaction.ts). Not inherited: see glow.ts. */
+  --own-sheen: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0) 190px);
+  background-image: var(--own-sheen);
   ${t?`backdrop-filter: blur(${t}px) saturate(140%); -webkit-backdrop-filter: blur(${t}px) saturate(140%);`:``}
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow:
@@ -334,6 +340,11 @@ function print() { __p += __j.call(arguments, '') }
   color: ${({theme:e})=>e.text.primary};
   font-family: ${({theme:e})=>e.font};
   overflow: hidden;
+  /* Its own rule: a modal dialog does not take the dashboard's -- its text
+     came out selectable by a long press. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 
   &[open] {
     display: flex;
@@ -453,6 +464,8 @@ function print() { __p += __j.call(arguments, '') }
   }
 `,Rf=K.div`
   height: ${q(11)};
+  border-radius: ${q(1.2)};
+  overflow: hidden;
 `,zf=K.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1172,6 +1185,8 @@ function print() { __p += __j.call(arguments, '') }
   }
 `,Uh=K.div`
   height: ${q(6)};
+  border-radius: ${q(1.2)};
+  overflow: hidden;
 `,Wh=K.p`
   color: ${({theme:e})=>e.text.secondary};
   font-size: ${q(1.08)};
@@ -1848,7 +1863,7 @@ function print() { __p += __j.call(arguments, '') }
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
   }
-`;function $_(e,t){let n=t>e,r=8+.007*(n?e:t),i=n?e/58:e/94;return Math.max(11,Math.min(22,r,i))}function ev(e){(0,v.useLayoutEffect)(()=>{let t=e.current;if(!t)return;let n=()=>{let e=t.offsetWidth,n=t.offsetHeight;e&&n&&(t.style.setProperty(`--u`,`${$_(e,n).toFixed(2)}px`),t.dataset.orientation=n>e?`portrait`:`landscape`)};n();let r=new ResizeObserver(n);return r.observe(t),()=>r.disconnect()},[e])}var tv=new URL(`background-D0ndr4z6.jpg`,import.meta.url).href,nv=`media-source://`,rv=604800,iv=216e5;function av(e){let t=ed(),n=id(),[r,i]=(0,v.useState)(null),a=e.startsWith(nv);return(0,v.useEffect)(()=>{if(!a||!t)return;let n=!0,r=()=>t.sendMessagePromise({type:`media_source/resolve_media`,media_content_id:e,expires:rv}).then(t=>n&&i({id:e,url:t.url})).catch(t=>{console.warn(`Better Wall Dashboard: background picture not found`,e,t),n&&i({id:e,url:``})});r();let o=window.setInterval(r,iv);return()=>{n=!1,window.clearInterval(o)}},[e,a,t]),e?a?r?.id===e?r.url?n(r.url):tv:``:e.startsWith(`/`)?n(e):e:tv}var ov=()=>{let{view:e,error:t}=Md(),n=Z();return t?(0,C.jsx)(Y_,{message:t===`not_loaded`||t===`unknown_command`?n(`not_loaded`):t}):e?(0,C.jsx)(sv,{}):(0,C.jsx)(Y_,{message:n(`loading`)})},sv=()=>{let e=(0,v.useRef)(null),{view:t}=Md();ev(e);let n=t.dashboard.background,r=av(n.image);return(0,C.jsxs)(X_,{ref:e,children:[(0,C.jsx)(Z_,{$image:r,$dim:n.dim,$blur:n.blur}),(0,C.jsxs)(Q_,{children:[(0,C.jsx)(K_,{}),(0,C.jsx)(hp,{})]})]})},cv={mode:`dashboard`,narrow:!1},lv=new Set;function uv(e){let t={...cv,...e};(t.mode!==cv.mode||t.narrow!==cv.narrow)&&(cv=t,lv.forEach(e=>e()))}function dv(){return(0,v.useSyncExternalStore)(e=>(lv.add(e),()=>lv.delete(e)),()=>cv)}function fv(e,t=3){return(0,v.lazy)(async()=>{for(let n=1;;n+=1)try{return await e()}catch(e){if(n>=t)throw e;await new Promise(e=>setTimeout(e,1e3*n))}})}var pv=fv(()=>M(()=>import(`./EditorPage-C063YCbl.js`),[],import.meta.url)),mv=()=>{let{mode:e}=dv();return e===`editor`?(0,C.jsx)(v.Suspense,{fallback:(0,C.jsx)(Y_,{}),children:(0,C.jsx)(pv,{})}):(0,C.jsx)(Ad,{children:(0,C.jsx)(ov,{})})},hv=({hassUrl:e,hassToken:t,embedded:n,styleTarget:r})=>{let i=(0,v.useMemo)(()=>ct({key:`bwd`,container:r,speedy:!1}),[r]);return(0,C.jsx)(Pu,{target:r,disableCSSOMInjection:!0,children:(0,C.jsx)(ui,{value:i,children:(0,C.jsxs)(Lu,{theme:Zu,children:[(0,C.jsx)(Qu,{}),(0,C.jsx)(Hs,{hassUrl:e,hassToken:t,loading:(0,C.jsx)(Y_,{}),wrapperProps:{className:`bwd-connect`},options:{handleResumeOptions:{suspendWhenHidden:!n}},children:(0,C.jsx)(mv,{})})]})})})},gv=null,_v=`
+`;function $_(e,t){let n=t>e,r=8+.007*(n?e:t),i=n?e/58:e/94;return Math.max(11,Math.min(22,r,i))}function ev(e){(0,v.useLayoutEffect)(()=>{let t=e.current;if(!t)return;let n=()=>{let e=t.offsetWidth,n=t.offsetHeight;e&&n&&(t.style.setProperty(`--u`,`${$_(e,n).toFixed(2)}px`),t.dataset.orientation=n>e?`portrait`:`landscape`)};n();let r=new ResizeObserver(n);return r.observe(t),()=>r.disconnect()},[e])}var tv=new URL(`background-D0ndr4z6.jpg`,import.meta.url).href,nv=`media-source://`,rv=604800,iv=216e5;function av(e){let t=ed(),n=id(),[r,i]=(0,v.useState)(null),a=e.startsWith(nv);return(0,v.useEffect)(()=>{if(!a||!t)return;let n=!0,r=()=>t.sendMessagePromise({type:`media_source/resolve_media`,media_content_id:e,expires:rv}).then(t=>n&&i({id:e,url:t.url})).catch(t=>{console.warn(`Better Wall Dashboard: background picture not found`,e,t),n&&i({id:e,url:``})});r();let o=window.setInterval(r,iv);return()=>{n=!1,window.clearInterval(o)}},[e,a,t]),e?a?r?.id===e?r.url?n(r.url):tv:``:e.startsWith(`/`)?n(e):e:tv}function ov(e){if(e.pointerType!==`mouse`)return;let t=e.target.closest?.(`button, [role="button"]`);if(!t)return;let n=t.getBoundingClientRect();t.style.setProperty(`--glow-x`,`${e.clientX-n.left}px`),t.style.setProperty(`--glow-y`,`${e.clientY-n.top}px`)}function sv(){try{CSS.registerProperty({name:`--own-sheen`,syntax:`*`,inherits:!1})}catch{}}var cv=()=>{let{view:e,error:t}=Md(),n=Z();return t?(0,C.jsx)(Y_,{message:t===`not_loaded`||t===`unknown_command`?n(`not_loaded`):t}):e?(0,C.jsx)(lv,{}):(0,C.jsx)(Y_,{message:n(`loading`)})},lv=()=>{let e=(0,v.useRef)(null),{view:t}=Md();ev(e);let n=t.dashboard.background,r=av(n.image);return(0,C.jsxs)(X_,{ref:e,onPointerMove:ov,children:[(0,C.jsx)(Z_,{$image:r,$dim:n.dim,$blur:n.blur}),(0,C.jsxs)(Q_,{children:[(0,C.jsx)(K_,{}),(0,C.jsx)(hp,{})]})]})},uv={mode:`dashboard`,narrow:!1},dv=new Set;function fv(e){let t={...uv,...e};(t.mode!==uv.mode||t.narrow!==uv.narrow)&&(uv=t,dv.forEach(e=>e()))}function pv(){return(0,v.useSyncExternalStore)(e=>(dv.add(e),()=>dv.delete(e)),()=>uv)}function mv(e,t=3){return(0,v.lazy)(async()=>{for(let n=1;;n+=1)try{return await e()}catch(e){if(n>=t)throw e;await new Promise(e=>setTimeout(e,1e3*n))}})}var hv=mv(()=>M(()=>import(`./EditorPage-BLrxD4OF.js`),[],import.meta.url)),gv=()=>{let{mode:e}=pv();return e===`editor`?(0,C.jsx)(v.Suspense,{fallback:(0,C.jsx)(Y_,{}),children:(0,C.jsx)(hv,{})}):(0,C.jsx)(Ad,{children:(0,C.jsx)(cv,{})})},_v=({hassUrl:e,hassToken:t,embedded:n,styleTarget:r})=>{let i=(0,v.useMemo)(()=>ct({key:`bwd`,container:r,speedy:!1}),[r]);return(0,C.jsx)(Pu,{target:r,disableCSSOMInjection:!0,children:(0,C.jsx)(ui,{value:i,children:(0,C.jsxs)(Lu,{theme:Zu,children:[(0,C.jsx)(Qu,{}),(0,C.jsx)(Hs,{hassUrl:e,hassToken:t,loading:(0,C.jsx)(Y_,{}),wrapperProps:{className:`bwd-connect`},options:{handleResumeOptions:{suspendWhenHidden:!n}},children:(0,C.jsx)(gv,{})})]})})})},vv=null,yv=`
   :host {
     display: block;
     position: relative;
@@ -1859,4 +1874,4 @@ function print() { __p += __j.call(arguments, '') }
     background: #111;
   }
   .bwd-host, .bwd-root { width: 100%; height: 100%; }
-`;function vv(e,t,n=`dashboard`){let r=e.shadowRoot??e.attachShadow({mode:`open`});if(!r.querySelector(`style[data-host]`)){let e=document.createElement(`style`);e.dataset.host=``,e.textContent=_v,r.append(e)}if(!gv){gv=document.createElement(`div`),gv.className=`bwd-host`;let e=document.createElement(`div`),n=document.createElement(`div`);n.className=`bwd-root`,gv.append(e,n),(0,y.createRoot)(n).render((0,C.jsx)(hv,{...t,styleTarget:e}))}r.append(gv),uv({mode:n}),md(n===`dashboard`)}function yv(e){gv&&e.shadowRoot?.contains(gv)&&md(!1)}var bv=null,xv=new Set;function Sv(e){bv=e,xv.forEach(t=>t(e))}function Cv(){return bv}function wv(e){return xv.add(e),()=>xv.delete(e)}function Tv(e,t){class n extends HTMLElement{route;panel;_narrow=!1;_hass=null;get hass(){return this._hass}set hass(e){this._hass=e,this.isConnected&&Sv(e)}get narrow(){return this._narrow}set narrow(e){this._narrow=!!e,this.isConnected&&uv({narrow:this._narrow})}connectedCallback(){for(let e of[`narrow`,`hass`]){if(!Object.prototype.hasOwnProperty.call(this,e))continue;let t=this[e];delete this[e],this[e]=t}vv(this,{hassUrl:window.location.origin,embedded:!0},t),uv({narrow:this._narrow}),Sv(this._hass)}disconnectedCallback(){yv(this)}}customElements.get(e)||customElements.define(e,n)}xd(globalThis.__betterWallDashboardEntry??import.meta.url),Tv(`better-wall-dashboard-panel`,`dashboard`),Tv(`better-wall-dashboard-editor`,`editor`);export{f as C,S,X as _,Qh as a,K as b,Wf as c,Cd as d,Td as f,ed as g,od as h,sv as i,Q as l,hd as m,wv as n,uh as o,Sd as p,dv as r,Uf as s,Cv as t,jd as u,Z as v,c as w,B as x,G as y};
+`;function bv(e,t,n=`dashboard`){let r=e.shadowRoot??e.attachShadow({mode:`open`});if(!r.querySelector(`style[data-host]`)){let e=document.createElement(`style`);e.dataset.host=``,e.textContent=yv,r.append(e)}if(!vv){vv=document.createElement(`div`),vv.className=`bwd-host`;let e=document.createElement(`div`),n=document.createElement(`div`);n.className=`bwd-root`,vv.append(e,n),(0,y.createRoot)(n).render((0,C.jsx)(_v,{...t,styleTarget:e}))}r.append(vv),fv({mode:n}),md(n===`dashboard`)}function xv(e){vv&&e.shadowRoot?.contains(vv)&&md(!1)}var Sv=null,Cv=new Set;function wv(e){Sv=e,Cv.forEach(t=>t(e))}function Tv(){return Sv}function Ev(e){return Cv.add(e),()=>Cv.delete(e)}function Dv(e,t){class n extends HTMLElement{route;panel;_narrow=!1;_hass=null;get hass(){return this._hass}set hass(e){this._hass=e,this.isConnected&&wv(e)}get narrow(){return this._narrow}set narrow(e){this._narrow=!!e,this.isConnected&&fv({narrow:this._narrow})}connectedCallback(){for(let e of[`narrow`,`hass`]){if(!Object.prototype.hasOwnProperty.call(this,e))continue;let t=this[e];delete this[e],this[e]=t}bv(this,{hassUrl:window.location.origin,embedded:!0},t),fv({narrow:this._narrow}),wv(this._hass)}disconnectedCallback(){xv(this)}}customElements.get(e)||customElements.define(e,n)}xd(globalThis.__betterWallDashboardEntry??import.meta.url),sv(),Dv(`better-wall-dashboard-panel`,`dashboard`),Dv(`better-wall-dashboard-editor`,`editor`);export{f as C,S,X as _,Qh as a,K as b,Wf as c,Cd as d,Td as f,ed as g,od as h,lv as i,Q as l,hd as m,Ev as n,uh as o,Sd as p,pv as r,Uf as s,Tv as t,jd as u,Z as v,c as w,B as x,G as y};

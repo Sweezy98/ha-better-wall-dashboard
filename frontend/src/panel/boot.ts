@@ -15,6 +15,7 @@ import { attach, detach } from './mount';
 import { setEntryUrl } from './entry';
 import { setModeState, type Mode } from './mode';
 import { setHassObject, type HassObject } from './hassObject';
+import { registerGlowProperties } from './glow';
 
 function define(tag: string, mode: Mode): void {
   class WallDashboardPanel extends HTMLElement {
@@ -70,5 +71,6 @@ declare global {
 }
 
 setEntryUrl(globalThis.__betterWallDashboardEntry ?? import.meta.url);
+registerGlowProperties();
 define('better-wall-dashboard-panel', 'dashboard');
 define('better-wall-dashboard-editor', 'editor');

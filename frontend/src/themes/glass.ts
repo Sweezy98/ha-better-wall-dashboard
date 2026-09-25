@@ -11,7 +11,10 @@ export const glass = (base: string, blur = 0) => css`
   /* The sheen is a fixed size from the top left corner, not a share of the
      surface: stretched over the tall sidebar, a proportional one made it
      lighter than the tiles beside it. */
-  background-image: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0) 190px);
+  /* Through a variable, so a hovered surface can lay the pointer's glow
+     over its sheen (see interaction.ts). Not inherited: see glow.ts. */
+  --own-sheen: radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0) 190px);
+  background-image: var(--own-sheen);
   ${blur ? `backdrop-filter: blur(${blur}px) saturate(140%); -webkit-backdrop-filter: blur(${blur}px) saturate(140%);` : ''}
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow:

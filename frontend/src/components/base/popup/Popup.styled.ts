@@ -28,6 +28,11 @@ export const StyledDialog = styled.dialog<{ $width: number; $full: boolean }>`
   color: ${({ theme }) => theme.text.primary};
   font-family: ${({ theme }) => theme.font};
   overflow: hidden;
+  /* Its own rule: a modal dialog does not take the dashboard's -- its text
+     came out selectable by a long press. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 
   &[open] {
     display: flex;
