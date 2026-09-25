@@ -7,7 +7,7 @@ import { useDashboardContext } from '../../config/DashboardProvider';
 import { useUnit } from '../../hooks/useUnit';
 import { useT } from '../../hooks/useHa';
 import { useBackgroundImage } from '../../hooks/useBackgroundImage';
-import { trackGlow } from '../../panel/glow';
+import { trackGlow, waveFrom } from '../../panel/glow';
 
 const Dashboard: React.FC = () => {
   const { view, error } = useDashboardContext();
@@ -25,7 +25,7 @@ export const DashboardLayout: React.FC = () => {
   const image = useBackgroundImage(background.image);
 
   return (
-    <StyledDashboardContainer ref={ref} onPointerMove={trackGlow}>
+    <StyledDashboardContainer ref={ref} onPointerMove={trackGlow} onPointerDown={waveFrom}>
       <StyledBackground $image={image} $dim={background.dim} $blur={background.blur} />
       <StyledDashboardGrid>
         <Sidebar />

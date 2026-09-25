@@ -16,6 +16,8 @@ const glowLayers = css`
  * over hovered, and a disabled button gets neither.
  */
 export const pressable = (hover: string, pressed: string) => css`
+  /* Marks it as one that glows, for the wave a press sends out (glow.ts). */
+  --glow: 1;
   transition: background-color 0.2s ease;
 
   @media (hover: hover) {
@@ -36,6 +38,7 @@ export const pressable = (hover: string, pressed: string) => css`
  * pointer is followed on it.
  */
 export const hoverable = (hover: string) => css`
+  --glow: 1;
   transition: background-color 0.2s ease;
 
   @media (hover: hover) {
