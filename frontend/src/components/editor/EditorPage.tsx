@@ -11,6 +11,7 @@ import EditorPreview from './EditorPreview';
 import UsersForm from './UsersForm';
 import AboutDialog from './AboutDialog';
 import { useConfirm } from './useConfirm';
+import { showHaToast } from '../../panel/toast';
 import GeneralScreen from './screens/GeneralScreen';
 import SidebarScreen from './screens/SidebarScreen';
 import JsonScreen from './screens/JsonScreen';
@@ -185,14 +186,17 @@ const EditorPage: React.FC = () => {
   const reloadTablets = async () => {
     setMenu(false);
     if (!connection || !draft) return;
+    // In Home Assistant's toast, like its own confirmations; in the footer
+    // only where there is no Home Assistant around the editor.
+    const say = (message: string) => showHaToast(message) || setStatus(message);
     try {
       const result = await connection.sendMessagePromise<{ reached: number }>({
         type: 'better_wall_dashboard/reload_tablets',
         dashboard_id: draft.id,
       });
-      setStatus(t('tablets_reloaded', { count: result.reached }));
+      say(t('tablets_reloaded', { count: result.reached }));
     } catch (error) {
-      setStatus(String((error as { message?: string })?.message ?? error));
+      say(String((error as { message?: string })?.message ?? error));
     }
   };
 

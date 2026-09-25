@@ -107,12 +107,13 @@ def websocket_subscribe(
         )
 
     @callback
-    def reload(dashboard_id: str | None, reached: list[str]) -> None:
+    def reload(dashboard_id: str | None, reached: set[int]) -> None:
         # Only the tablets showing that dashboard; each says it heard.
         shown = model.dashboard_for(store.document, connection.user.id, requested)
         if dashboard_id is not None and shown["id"] != dashboard_id:
             return
-        reached.append(connection.user.id)
+        # Per open page, not per subscription: one page counts once.
+        reached.add(id(connection))
         connection.send_message(
             websocket_api.event_message(msg["id"], {"reload": True})
         )
@@ -206,7 +207,7 @@ def websocket_reload_tablets(
     to it. Answers with how many were reached -- a tablet that is off, or
     frozen past answering, is not among them.
     """
-    reached: list[str] = []
+    reached: set[int] = set()
     # Dispatcher callbacks run here and now, so `reached` is filled on return.
     async_dispatcher_send(hass, SIGNAL_RELOAD_TABLETS, msg.get("dashboard_id"), reached)
     connection.send_result(msg["id"], {"reached": len(reached)})

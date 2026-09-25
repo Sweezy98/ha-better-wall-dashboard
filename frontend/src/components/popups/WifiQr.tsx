@@ -38,11 +38,11 @@ const INK = '#ffffff';
 const inEye = (x: number, y: number, size: number) => (x < 7 && y < 7) || (x >= size - 7 && y < 7) || (x < 7 && y >= size - 7);
 
 /**
- * A QR code in the dashboard's own style: softened white squares and rounded
- * eyes on the popup's dark glass, and the Wi-Fi symbol in the middle -- which
- * the highest error correction absorbs. Squares, not dots: white dots on dark
- * were no longer read reliably. Light on dark is read by the cameras of
- * current phones; some older scanner apps want dark on light.
+ * A QR code in the dashboard's own style: round white dots and rounded eyes
+ * on the popup's dark glass, and the Wi-Fi symbol in the middle -- which the
+ * highest error correction absorbs. The dots nearly touch on purpose: small
+ * ones on dark were no longer read reliably. Light on dark is read by the
+ * cameras of current phones; some older scanner apps want dark on light.
  */
 const WifiQr: React.FC<{ payload: string }> = ({ payload }) => {
   const { data, size } = useMemo(() => encode(payload, { ecc: 'H', border: 0 }), [payload]);
@@ -54,8 +54,7 @@ const WifiQr: React.FC<{ payload: string }> = ({ payload }) => {
   const dots: React.ReactNode[] = [];
   data.forEach((row, y) =>
     row.forEach((dark, x) => {
-      if (dark && !inEye(x, y, size) && !inBadge(x, y))
-        dots.push(<rect key={`${x}-${y}`} x={x + 0.05} y={y + 0.05} width={0.9} height={0.9} rx={0.3} />);
+      if (dark && !inEye(x, y, size) && !inBadge(x, y)) dots.push(<circle key={`${x}-${y}`} cx={x + 0.5} cy={y + 0.5} r={0.47} />);
     })
   );
   const eyes = [
