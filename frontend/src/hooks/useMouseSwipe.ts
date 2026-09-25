@@ -18,6 +18,11 @@ export function useMouseSwipe(ref: RefObject<HTMLElement | null>, count: number)
     const element = ref.current;
     if (!element) return;
     let drag: { id: number; x: number; left: number; moved: boolean; lastX: number; lastT: number; velocity: number } | null = null;
+    // Which drag a pending "snap back on" belongs to. A throw's settling can
+    // outlast it -- the next drag starts within its 700 ms -- and turning
+    // snapping on in the middle of that next drag made the page stop
+    // following the mouse and jump from snap to snap instead.
+    let generation = 0;
 
     const swallowClick = (event: MouseEvent) => {
       event.stopPropagation();
@@ -44,6 +49,7 @@ export function useMouseSwipe(ref: RefObject<HTMLElement | null>, count: number)
         // A few pixels of wobble in a click are not a drag.
         if (Math.abs(dx) < 6) return;
         drag.moved = true;
+        generation += 1;
         element.setPointerCapture(drag.id);
         element.style.scrollSnapType = 'none';
         element.style.cursor = 'grabbing';
@@ -66,7 +72,9 @@ export function useMouseSwipe(ref: RefObject<HTMLElement | null>, count: number)
       window.setTimeout(() => element.removeEventListener('click', swallowClick, { capture: true }), 0);
       const width = element.clientWidth;
       const target = swipeTarget(Math.round(finished.left / width), event.clientX - finished.x, width, count, finished.velocity);
+      const mine = generation;
       const restore = () => {
+        if (mine !== generation || drag?.moved) return;
         element.style.scrollSnapType = '';
       };
       element.addEventListener('scrollend', restore, { once: true });
