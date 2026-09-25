@@ -31,11 +31,16 @@ const StyledMap = styled.div`
   }
 `;
 
-/** On the popup's own glass: no card of its own around it, but its corners. */
+/**
+ * On the popup's own glass: no card of its own around it, but its corners --
+ * on the drawing alone, so a point's tooltip may reach out past them.
+ */
 const StyledGraph = styled.div`
   height: ${u(6)};
-  border-radius: ${u(1.2)};
-  overflow: hidden;
+
+  svg {
+    border-radius: ${u(1.2)};
+  }
 `;
 
 const StyledHint = styled.p`
