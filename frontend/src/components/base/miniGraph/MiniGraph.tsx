@@ -107,11 +107,11 @@ const StyledLabels = styled.div`
 `;
 
 /** A point's value and time, above it, in the labels' dark chip. */
-const StyledTooltip = styled.div<{ $below: boolean }>`
+/** Always above the point -- past the graph's top edge, if it must be: nothing clips it. */
+const StyledTooltip = styled.div`
   position: absolute;
   z-index: 2;
-  /* Above the point, or below it where above would leave the graph. */
-  transform: ${({ $below }) => ($below ? `translate(-50%, ${u(0.9)})` : `translate(-50%, calc(-100% - ${u(0.9)}))`)};
+  transform: translate(-50%, calc(-100% - ${u(0.9)}));
   padding: ${u(0.25)} ${u(0.6)};
   border-radius: ${u(0.6)};
   background: rgba(18, 18, 22, 0.85);
@@ -220,7 +220,6 @@ const MiniGraph: React.FC<MiniGraphProps> = ({
       )}
       {graph && shown && tooltip && (
         <StyledTooltip
-          $below={shown.y / graph.height < 0.33}
           style={{
             // Kept inside the graph at either end.
             left: `${Math.min(88, Math.max(12, (shown.x / GRAPH_WIDTH) * 100))}%`,
