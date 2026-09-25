@@ -54,6 +54,11 @@ const StyledHeader = styled.header`
     margin-right: ${u(0.9)};
   }
 
+  /* No readings after it: it runs to where they would have ended. */
+  .line:last-child {
+    margin-right: 0;
+  }
+
   /* Between two readings: the rule again, as a dot. */
   .dot {
     flex: none;
