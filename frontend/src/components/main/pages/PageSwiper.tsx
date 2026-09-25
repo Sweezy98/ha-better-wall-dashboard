@@ -58,16 +58,28 @@ const StyledTrack = styled.div`
   }
 `;
 
+/** One page's slot in the row of dots: a ring, and the space the filled dot slides through. */
+const DOT_STEP = u(1.6);
+
+/**
+ * A ring per page, and one filled dot that slides from ring to ring as the
+ * pages move -- following the swipe itself, not just where it ends up.
+ */
 const StyledDots = styled.div`
+  position: relative;
   display: flex;
   justify-content: center;
-  gap: ${u(0.2)};
   height: ${u(1.6)};
   align-items: center;
 
+  .rings {
+    position: relative;
+    display: flex;
+  }
+
   button {
-    width: ${u(1.4)};
-    height: ${u(1.4)};
+    width: ${DOT_STEP};
+    height: ${u(1.6)};
     display: flex;
     align-items: center;
     justify-content: center;
@@ -75,23 +87,31 @@ const StyledDots = styled.div`
 
   button::after {
     content: '';
-    width: ${u(0.45)};
-    height: ${u(0.45)};
+    width: ${u(0.8)};
+    height: ${u(0.8)};
+    box-sizing: border-box;
     border-radius: 50%;
-    background: ${({ theme }) => theme.text.muted};
-    transition:
-      background-color 0.2s ease,
-      transform 0.2s ease;
+    border: ${u(0.14)} solid rgba(255, 255, 255, 0.75);
   }
 
-  button[aria-current='true']::after {
-    background: ${({ theme }) => theme.colors.accent};
-    transform: scale(1.25);
+  .current {
+    position: absolute;
+    left: calc(${DOT_STEP} / 2);
+    top: 50%;
+    width: ${u(1)};
+    height: ${u(1)};
+    margin: calc(${u(-1)} / 2) 0 0 calc(${u(-1)} / 2);
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 ${u(0.5)} rgba(255, 255, 255, 0.35);
+    pointer-events: none;
+    will-change: transform;
   }
 `;
 
 const PageSwiper: React.FC<{ pages: PageConfig[] }> = ({ pages }) => {
   const track = useRef<HTMLDivElement>(null);
+  const current = useRef<HTMLSpanElement>(null);
   const [active, setActive] = useState(0);
   useMouseSwipe(track, pages.length);
 
@@ -99,12 +119,15 @@ const PageSwiper: React.FC<{ pages: PageConfig[] }> = ({ pages }) => {
     const element = track.current;
     if (!element) return;
     let frame = 0;
-    // The index only, and only when it changes: scrolling fires dozens of
-    // events a second, and only the dots care.
+    // The filled dot is moved directly, frame by frame, with the pages; React
+    // hears only when the page it is nearest changes -- scrolling fires dozens
+    // of events a second.
     const onScroll = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
-        const index = Math.round(element.scrollLeft / Math.max(1, element.clientWidth));
+        const position = element.scrollLeft / Math.max(1, element.clientWidth);
+        current.current?.style.setProperty('transform', `translateX(calc(${DOT_STEP} * ${position}))`);
+        const index = Math.round(position);
         setActive(previous => (previous === index ? previous : index));
       });
     };
@@ -167,10 +190,14 @@ const PageSwiper: React.FC<{ pages: PageConfig[] }> = ({ pages }) => {
         ))}
       </StyledTrack>
       <StyledDots>
-        {pages.length > 1 &&
-          pages.map((page, index) => (
-            <button key={page.id} type='button' aria-label={`${index + 1}`} aria-current={index === active} onClick={() => go(index)} />
-          ))}
+        {pages.length > 1 && (
+          <div className='rings'>
+            {pages.map((page, index) => (
+              <button key={page.id} type='button' aria-label={`${index + 1}`} aria-current={index === active} onClick={() => go(index)} />
+            ))}
+            <span ref={current} className='current' aria-hidden='true' />
+          </div>
+        )}
       </StyledDots>
     </StyledSwiper>
   );
