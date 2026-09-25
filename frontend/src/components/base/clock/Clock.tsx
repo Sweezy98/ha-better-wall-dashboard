@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useId } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import { useTick } from '../../../hooks/useNow';
@@ -94,28 +94,28 @@ const at = (fraction: number, radius: number) => {
   return { x: 50 + radius * Math.sin(angle), y: 50 - radius * Math.cos(angle) };
 };
 
-/** The sidebar's own near-black, for the outline that sets each hand apart. */
-const HALO = 'rgba(16, 17, 20, 0.85)';
-
 /**
  * One hand, drawn pointing at twelve and turned by a CSS animation of
  * `period` seconds, started `into` seconds in: the browser moves it smoothly,
  * every frame, on its own -- no re-render, no stepping.
  *
- * Outlined in the sidebar's near-black, so where hands cross, the upper one
- * cuts a gap into the one beneath and each reads on its own -- no colour.
+ * It casts a soft shadow, the same way for every hand -- the filter sits
+ * outside the turning group, so the light does not turn with it -- and
+ * where hands cross, the upper one floats over the one beneath.
  */
-const Hand: React.FC<{ period: number; into: number; length: number; width: number; tail?: number; opacity?: number }> = ({
-  period,
-  into,
-  length,
-  width,
-  tail = 7,
-  opacity = 1,
-}) => (
-  <g className='hand' style={{ animationDuration: `${period}s`, animationDelay: `-${into}s` }}>
-    <line x1={50} y1={50 + tail} x2={50} y2={50 - length} stroke={HALO} strokeWidth={width + 3} strokeLinecap='round' />
-    <line x1={50} y1={50 + tail} x2={50} y2={50 - length} stroke='#fff' strokeOpacity={opacity} strokeWidth={width} strokeLinecap='round' />
+const Hand: React.FC<{
+  period: number;
+  into: number;
+  length: number;
+  width: number;
+  tail?: number;
+  color: string;
+  shadow: string;
+}> = ({ period, into, length, width, tail = 7, color, shadow }) => (
+  <g filter={`url(#${shadow})`}>
+    <g className='hand' style={{ animationDuration: `${period}s`, animationDelay: `-${into}s` }}>
+      <line x1={50} y1={50 + tail} x2={50} y2={50 - length} stroke={color} strokeWidth={width} strokeLinecap='round' />
+    </g>
   </g>
 );
 
@@ -134,6 +134,8 @@ export const AnalogClock: React.FC<{ timeProps?: React.HTMLAttributes<HTMLDivEle
   seconds = false,
 }) => {
   const set = useTick(600_000);
+  // Usable in url(#…) as it is: React's ids contain colons.
+  const shadow = `clock-shadow-${useId().replace(/[^\w-]/g, '')}`;
   const now = new Date(set);
   const second = now.getSeconds() + now.getMilliseconds() / 1000;
   const minute = now.getMinutes() * 60 + second;
@@ -161,12 +163,21 @@ export const AnalogClock: React.FC<{ timeProps?: React.HTMLAttributes<HTMLDivEle
           const dot = at(index / 12, 40);
           return <circle key={index} cx={dot.x} cy={dot.y} r={1.9} fill='rgba(255, 255, 255, 0.35)' />;
         })}
+        <defs>
+          <filter id={shadow} x='-50%' y='-50%' width='200%' height='200%'>
+            <feDropShadow dx={0} dy={1} stdDeviation={1.3} floodColor='#000' floodOpacity={0.5} />
+          </filter>
+        </defs>
+        {/* Not coloured, but not all the same white: the hour hand a shade
+            darker than the minute hand, the second hand hair-thin. */}
         <g key={set}>
-          <Hand period={43_200} into={hour} length={23} width={6.5} tail={5} />
-          <Hand period={3_600} into={minute} length={36} width={3.8} tail={6} />
-          {seconds && <Hand period={60} into={second} length={40} width={1.3} tail={11} opacity={0.8} />}
+          <Hand period={43_200} into={hour} length={23} width={6.5} tail={5} color='#c9ccd1' shadow={shadow} />
+          <Hand period={3_600} into={minute} length={36} width={3.8} tail={6} color='#ffffff' shadow={shadow} />
+          {seconds && (
+            <Hand period={60} into={second} length={40} width={1.3} tail={11} color='rgba(255, 255, 255, 0.85)' shadow={shadow} />
+          )}
         </g>
-        <circle cx={50} cy={50} r={3.6} fill='#fff' stroke={HALO} strokeWidth={1.5} />
+        <circle cx={50} cy={50} r={3.4} fill='#fff' filter={`url(#${shadow})`} />
       </svg>
     </StyledDial>
   );
