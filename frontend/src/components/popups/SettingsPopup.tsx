@@ -65,6 +65,12 @@ const StyledUpdate = styled.span`
   }
 `;
 
+/** Set apart from the buttons above, at the right: a detail, not a control. */
+const StyledVersion = styled(StyledNote)`
+  margin-top: ${u(0.8)};
+  text-align: right;
+`;
+
 const StyledSelect = styled.select`
   width: 100%;
   padding: ${u(0.6)};
@@ -179,10 +185,10 @@ const SettingsContent: React.FC<{ config: SidebarConfig }> = ({ config }) => {
           </>
         )}
         {version && (
-          <StyledNote>
+          <StyledVersion>
             {t('version')} {version.version}
             {loaded ? ` · ${loaded}` : ''}
-          </StyledNote>
+          </StyledVersion>
         )}
       </StyledSection>
     </>
