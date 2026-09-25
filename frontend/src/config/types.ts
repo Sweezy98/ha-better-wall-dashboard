@@ -83,6 +83,8 @@ export interface SidebarConfig {
   calendar: { entities: EntityId[]; days: number };
   weather: { entity: EntityId; temperature: EntityId };
   notifications: { enabled: boolean; prefix: string };
+  /** Missing from a backend older than this page. */
+  settings?: { enabled: boolean };
   system: NamedEntity[];
 }
 

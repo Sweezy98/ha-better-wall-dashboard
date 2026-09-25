@@ -89,3 +89,12 @@ describe('numericRange', () => {
     expect(numericRange([NaN])).toBeNull();
   });
 });
+
+describe('graph point times', () => {
+  it('dates each point at the middle of the hours it averages', () => {
+    const now = Date.UTC(2026, 8, 25, 12);
+    const samples = [0, 1, 2, 3].map(h => ({ t: now - (3.5 - h) * HOUR, v: h }));
+    const graph = buildGraph(samples, { hours: 4, pointsPerHour: 1, lineWidth: 2, fill: false, smoothing: false, now });
+    expect(graph!.points.map(point => (now - point.t) / HOUR)).toEqual([3.5, 2.5, 1.5, 0.5]);
+  });
+});

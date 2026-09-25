@@ -35,6 +35,8 @@ export interface GraphPoint {
   x: number;
   y: number;
   v: number;
+  /** When, in milliseconds: the middle of the stretch of time the point averages. */
+  t: number;
 }
 
 export interface GraphGeometry {
@@ -92,24 +94,27 @@ export function buildGraph(samples: Sample[], options: GraphOptions): GraphGeome
   // Empty buckets repeat the last value seen, so a sensor that reports only
   // on change draws a flat line rather than a gap.
   let last = groups.find(Boolean) as Sample[];
-  const raw: [number, number][] = [];
+  const start = now - options.hours * HOUR;
+  const bucketMs = HOUR / options.pointsPerHour;
+  const raw: [number, number, number][] = [];
   for (let i = 0; i < groups.length; i += 1) {
     const x = xRatio * i + marginX;
+    const t = start + (i + 0.5) * bucketMs;
     const group = groups[i];
     if (group) {
       last = group;
-      raw.push([x, average(group)]);
+      raw.push([x, average(group), t]);
     } else {
-      raw.push([x, last[last.length - 1].v]);
+      raw.push([x, last[last.length - 1].v, t]);
     }
   }
-  if (raw.length === 1) raw.push([innerWidth + marginX, raw[0][1]]);
+  if (raw.length === 1) raw.push([innerWidth + marginX, raw[0][1], now]);
 
   const values = raw.map(([, v]) => v);
   const min = Math.min(...values);
   const max = Math.max(...values);
   const yRatio = (max - min) / innerHeight || 1;
-  const coords: GraphPoint[] = raw.map(([x, v]) => ({ x, y: innerHeight - (v - min) / yRatio + marginY * 2, v }));
+  const coords: GraphPoint[] = raw.map(([x, v, t]) => ({ x, y: innerHeight - (v - min) / yRatio + marginY * 2, v, t }));
 
   const mid = (a: GraphPoint, b: GraphPoint) => ({ x: (a.x - b.x) / 2 + b.x, y: (a.y - b.y) / 2 + b.y });
   const fmt = (n: number) => Math.round(n * 100) / 100;
@@ -127,7 +132,9 @@ export function buildGraph(samples: Sample[], options: GraphOptions): GraphGeome
 
   // With smoothing the markers sit on the curve, at the midpoints it passes
   // through, carrying the average of the two values either side.
-  const points = smoothing ? coords.slice(1).map((point, i) => ({ ...mid(coords[i], point), v: (coords[i].v + point.v) / 2 })) : coords;
+  const points = smoothing
+    ? coords.slice(1).map((point, i) => ({ ...mid(coords[i], point), v: (coords[i].v + point.v) / 2, t: (coords[i].t + point.t) / 2 }))
+    : coords;
 
   return { width, height, line: path, fill, points, min, max };
 }

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useRef } from 'react';
 import styled from 'styled-components';
 import { u } from '../../themes/default.theme';
 import Popup from '../base/popup/Popup';
@@ -12,20 +12,28 @@ import { useLightning } from '../../hooks/useLightning';
 import { useEntity, useIsNight, useLanguage, useT } from '../../hooks/useHa';
 import { useForecast, type ForecastEntry } from '../../hooks/useForecast';
 import { useTick } from '../../hooks/useNow';
-import { formatNumber, formatTime, formatWeekday } from '../../lib/format';
+import { formatNumber, formatTime, formatWeekday, startOfDay } from '../../lib/format';
+import { useDragScroll } from '../../hooks/useDragScroll';
 import { compassPoint, conditionLabel } from '../../lib/weather';
-import { smoothPath } from '../../lib/graph';
 
+/** Now: the sky, the reading with today's range beside it, and today's hours to the right. */
 const StyledNow = styled.div`
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto auto minmax(0, 1fr);
   align-items: center;
   gap: ${u(1.4)};
+
+  .reading {
+    display: flex;
+    align-items: center;
+    gap: ${u(1)};
+  }
 
   .temperature {
     font-size: ${u(4)};
     font-weight: 300;
     line-height: 1;
+    white-space: nowrap;
   }
 
   .condition {
@@ -43,7 +51,6 @@ const StyledNow = styled.div`
   .today {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
     gap: ${u(0.2)};
     font-size: ${u(1.2)};
   }
@@ -66,33 +73,36 @@ const StyledHeading = styled.h3`
   font-weight: 600;
 `;
 
-/** Width of one hour's column, in units. The curve is drawn in these. */
-const HOUR_WIDTH = 5.2;
-
+/**
+ * Today's hours in a strip to the right of now: time, sky, temperature, and
+ * the chance of rain where there is one. Scrolls sideways by finger or mouse.
+ */
 const StyledHours = styled.div`
+  min-width: 0;
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
-  border-radius: ${u(1.2)};
-  background: ${({ theme }) => theme.bubble.inset};
+  /* Fades out at the right, so a strip longer than the room reads as more. */
+  mask-image: linear-gradient(to right, black calc(100% - ${u(2)}), transparent);
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - ${u(2)}), transparent);
 
   &::-webkit-scrollbar {
     display: none;
   }
 
   .strip {
-    position: relative;
     display: grid;
     grid-auto-flow: column;
-    grid-auto-columns: ${u(HOUR_WIDTH)};
+    grid-auto-columns: ${u(4.6)};
     width: max-content;
-    padding: ${u(0.6)} 0;
+    padding-right: ${u(2)};
   }
 
   .hour {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: ${u(0.15)};
     font-size: ${u(0.95)};
   }
 
@@ -103,42 +113,12 @@ const StyledHours = styled.div`
   .temp {
     font-size: ${u(1.15)};
     font-weight: 600;
-    margin-top: ${u(0.2)};
-  }
-
-  /* The band the temperature curve is drawn across. */
-  .curve-space {
-    height: ${u(4)};
   }
 
   .rain {
-    width: ${u(1.1)};
-    height: ${u(2.4)};
-    border-radius: ${u(0.3)};
-    background: rgba(3, 169, 244, 0.12);
-    display: flex;
-    align-items: flex-end;
-    overflow: hidden;
-  }
-
-  .rain > span {
-    display: block;
-    width: 100%;
-    background: ${({ theme }) => theme.colors.temperature};
-  }
-
-  .rain-label {
+    min-height: 1.2em;
     font-size: ${u(0.8)};
     color: ${({ theme }) => theme.colors.temperature};
-    min-height: 1.2em;
-    margin-top: ${u(0.15)};
-  }
-
-  svg {
-    position: absolute;
-    left: 0;
-    pointer-events: none;
-    overflow: visible;
   }
 `;
 
@@ -220,39 +200,20 @@ const WeatherPopup: React.FC<WeatherPopupProps> = ({ open, onClose, entityId, te
 
 const degrees = (value: number | undefined, language: string) => (value === undefined ? '–' : `${formatNumber(value, language, 0)}°`);
 
-/** The next hours: a column each, one temperature curve drawn across all of them. */
+/** Today's hours, beside now. */
 const Hours: React.FC<{ hours: ForecastEntry[] }> = ({ hours }) => {
   const language = useLanguage();
-  const key = hours.map(entry => entry.temperature ?? 0).join(',');
-  const path = useMemo(() => {
-    const temps = key.split(',').map(Number);
-    const min = Math.min(...temps);
-    const max = Math.max(...temps);
-    // x in hour columns and y in 0..1 of the band, so the curve lines up
-    // with the columns whatever the unit is on this screen.
-    return smoothPath(temps.map((value, index) => ({ x: index + 0.5, y: max === min ? 0.5 : 1 - (value - min) / (max - min) })));
-  }, [key]);
+  const strip = useRef<HTMLDivElement>(null);
+  useDragScroll(strip, true, 'x');
   return (
-    <StyledHours>
+    <StyledHours ref={strip}>
       <div className='strip'>
-        <svg
-          style={{ top: `calc(var(--u) * 6.3)`, width: `calc(var(--u) * ${HOUR_WIDTH * hours.length})`, height: `calc(var(--u) * 2.8)` }}
-          viewBox={`0 0 ${hours.length} 1`}
-          preserveAspectRatio='none'
-          aria-hidden='true'
-        >
-          <path d={path} fill='none' stroke='#ffc768' strokeWidth={3} vectorEffect='non-scaling-stroke' strokeLinecap='round' />
-        </svg>
         {hours.map(entry => (
           <div className='hour' key={entry.datetime}>
             <span className='time'>{formatTime(new Date(entry.datetime), language)}</span>
             <WeatherIcon condition={entry.condition} night={entry.is_daytime === false} size={u(2.6)} />
             <span className='temp'>{degrees(entry.temperature, language)}</span>
-            <span className='curve-space' />
-            <span className='rain' aria-hidden='true'>
-              <span style={{ height: `${entry.precipitation_probability ?? 0}%` }} />
-            </span>
-            <span className='rain-label'>{entry.precipitation_probability ? `${entry.precipitation_probability} %` : ''}</span>
+            <span className='rain'>{entry.precipitation_probability ? `${entry.precipitation_probability} %` : ''}</span>
           </div>
         ))}
       </div>
@@ -299,7 +260,11 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
   const now = useTick(600_000);
   const a = weather?.attributes ?? {};
 
-  const hours = (hourly.forecast ?? []).filter(entry => new Date(entry.datetime).getTime() > now - 3_600_000).slice(0, 24);
+  // The rest of today; late in the evening, the next few hours instead.
+  const upcoming = (hourly.forecast ?? []).filter(entry => new Date(entry.datetime).getTime() > now - 3_600_000);
+  const endOfToday = startOfDay(new Date(now)).getTime() + 86_400_000;
+  const todays = upcoming.filter(entry => new Date(entry.datetime).getTime() < endOfToday);
+  const hours = todays.length >= 6 ? todays : upcoming.slice(0, 8);
   const days = (daily.forecast ?? []).slice(0, 7);
   const today = days[0];
   const rainChance = today?.precipitation_probability ?? hours[0]?.precipitation_probability;
@@ -343,7 +308,21 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
       <StyledNow>
         <WeatherIcon condition={weather?.state} night={night} size={u(7.5)} />
         <div>
-          <div className='temperature'>{temperature}</div>
+          <div className='reading'>
+            <span className='temperature'>{temperature}</span>
+            {today && (
+              <div className='today'>
+                <div title={t('high_short')}>
+                  <Icon className='icon' icon='mdi:arrow-up-thin' />
+                  {degrees(today.temperature, language)}
+                </div>
+                <div title={t('low_short')}>
+                  <Icon className='icon' icon='mdi:arrow-down-thin' />
+                  {degrees(today.templow, language)}
+                </div>
+              </div>
+            )}
+          </div>
           <div className='condition'>{conditionLabel(weather?.state, language)}</div>
           {typeof a.apparent_temperature === 'number' && (
             <div className='feels'>
@@ -351,18 +330,7 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
             </div>
           )}
         </div>
-        {today && (
-          <div className='today'>
-            <div title={t('high_short')}>
-              <Icon className='icon' icon='mdi:arrow-up-thin' />
-              {degrees(today.temperature, language)}
-            </div>
-            <div title={t('low_short')}>
-              <Icon className='icon' icon='mdi:arrow-down-thin' />
-              {degrees(today.templow, language)}
-            </div>
-          </div>
-        )}
+        {hours.length > 1 ? <Hours hours={hours} /> : <span />}
       </StyledNow>
 
       {(facts.length > 0 || pressure) && (
@@ -383,13 +351,6 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
         <>
           <StyledHeading>{t('thunderstorm')}</StyledHeading>
           <LightningFacts lightning={storm} />
-        </>
-      )}
-
-      {hours.length > 1 && (
-        <>
-          <StyledHeading>{t('forecast_hourly')}</StyledHeading>
-          <Hours hours={hours} />
         </>
       )}
 

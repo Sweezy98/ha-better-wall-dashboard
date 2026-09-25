@@ -4,7 +4,8 @@ import { useEffect, type RefObject } from 'react';
 const claimed = new WeakSet<Event>();
 
 /**
- * Scroll a list up and down by dragging it with a mouse, as a finger does.
+ * Scroll a list by dragging it with a mouse, as a finger does -- up and
+ * down, or sideways for a strip.
  *
  * Fingers need nothing: the list is a native scroller. A mouse cannot drag
  * one, so for pointers of type "mouse" only this follows the drag and, on
@@ -16,11 +17,15 @@ const claimed = new WeakSet<Event>();
  * scroll. `active` re-arms it for an element
  * that is rendered only some of the time.
  */
-export function useDragScroll(ref: RefObject<HTMLElement | null>, active = true): void {
+export function useDragScroll(ref: RefObject<HTMLElement | null>, active = true, axis: 'x' | 'y' = 'y'): void {
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
-    let drag: { id: number; y: number; top: number; moved: boolean; lastY: number; lastT: number; velocity: number } | null = null;
+    // One axis, read the same way whichever it is.
+    const at = (event: PointerEvent) => (axis === 'x' ? event.clientX : event.clientY);
+    const scrolled = () => (axis === 'x' ? element.scrollLeft : element.scrollTop);
+    const room = () => (axis === 'x' ? element.scrollWidth - element.clientWidth : element.scrollHeight - element.clientHeight);
+    let drag: { id: number; from: number; start: number; moved: boolean; last: number; lastT: number; velocity: number } | null = null;
 
     const swallowClick = (event: MouseEvent) => {
       event.stopPropagation();
@@ -29,14 +34,14 @@ export function useDragScroll(ref: RefObject<HTMLElement | null>, active = true)
 
     const onDown = (event: PointerEvent) => {
       if (event.pointerType !== 'mouse' || event.button !== 0 || claimed.has(event)) return;
-      if (element.scrollHeight <= element.clientHeight) return;
+      if (room() <= 0) return;
       claimed.add(event);
       drag = {
         id: event.pointerId,
-        y: event.clientY,
-        top: element.scrollTop,
+        from: at(event),
+        start: scrolled(),
         moved: false,
-        lastY: event.clientY,
+        last: at(event),
         lastT: event.timeStamp,
         velocity: 0,
       };
@@ -44,19 +49,20 @@ export function useDragScroll(ref: RefObject<HTMLElement | null>, active = true)
 
     const onMove = (event: PointerEvent) => {
       if (!drag || event.pointerId !== drag.id) return;
-      const dy = event.clientY - drag.y;
+      const delta = at(event) - drag.from;
       if (!drag.moved) {
         // A few pixels of wobble in a click are not a drag.
-        if (Math.abs(dy) < 6) return;
+        if (Math.abs(delta) < 6) return;
         drag.moved = true;
         element.setPointerCapture(drag.id);
         element.style.cursor = 'grabbing';
       }
       const dt = event.timeStamp - drag.lastT;
-      if (dt > 0) drag.velocity = (event.clientY - drag.lastY) / dt;
-      drag.lastY = event.clientY;
+      if (dt > 0) drag.velocity = (at(event) - drag.last) / dt;
+      drag.last = at(event);
       drag.lastT = event.timeStamp;
-      element.scrollTop = drag.top - dy;
+      if (axis === 'x') element.scrollLeft = drag.start - delta;
+      else element.scrollTop = drag.start - delta;
     };
 
     const onUp = (event: PointerEvent) => {
@@ -69,7 +75,8 @@ export function useDragScroll(ref: RefObject<HTMLElement | null>, active = true)
       // The click comes straight after pointerup, or not at all.
       window.setTimeout(() => element.removeEventListener('click', swallowClick, { capture: true }), 0);
       // A throw coasts on for about a quarter of a second's worth of its speed.
-      element.scrollBy({ top: -finished.velocity * 250, behavior: 'smooth' });
+      const coast = -finished.velocity * 250;
+      element.scrollBy(axis === 'x' ? { left: coast, behavior: 'smooth' } : { top: coast, behavior: 'smooth' });
     };
 
     const onDragStart = (event: DragEvent) => event.preventDefault();
@@ -86,5 +93,5 @@ export function useDragScroll(ref: RefObject<HTMLElement | null>, active = true)
       element.removeEventListener('pointercancel', onUp);
       element.removeEventListener('dragstart', onDragStart);
     };
-  }, [ref, active]);
+  }, [ref, active, axis]);
 }

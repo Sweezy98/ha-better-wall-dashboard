@@ -40,11 +40,9 @@ const StyledRanges = styled.div`
   }
 `;
 
+/** On the popup's own glass: no card of its own around it. */
 const StyledGraph = styled.div`
   height: ${u(11)};
-  border-radius: ${u(1.2)};
-  background: ${({ theme }) => theme.bubble.inset};
-  overflow: hidden;
 `;
 
 const StyledExtrema = styled.div`
@@ -157,6 +155,7 @@ const HistoryContent: React.FC<{ entityId: string; color: string }> = ({ entityI
           color={color}
           showPoints
           labels={format}
+          tooltip={point => `${format(point.v)} · ${when(point.t)}`}
         />
       </StyledGraph>
       {range && (

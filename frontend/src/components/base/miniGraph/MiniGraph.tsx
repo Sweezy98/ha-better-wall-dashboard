@@ -1,6 +1,6 @@
 import { memo, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
-import { buildGraph, GRAPH_WIDTH, type Sample } from '../../../lib/graph';
+import { buildGraph, GRAPH_WIDTH, type GraphPoint, type Sample } from '../../../lib/graph';
 import { u } from '../../../themes/default.theme';
 
 interface MiniGraphProps {
@@ -15,6 +15,11 @@ interface MiniGraphProps {
   showPoints?: boolean;
   /** Max at the top left, min at the bottom left, as `show.labels`. */
   labels?: (value: number) => string;
+  /**
+   * What a point says when hovered or tapped -- the big graphs in popups.
+   * Without it the graph shows nothing more than its line.
+   */
+  tooltip?: (point: GraphPoint) => string;
   className?: string;
 }
 
@@ -39,6 +44,16 @@ const StyledGraph = styled.div`
   width: 100%;
   height: 100%;
   min-height: 0;
+
+  /* A graph that answers a finger keeps vertical swipes for the popup. */
+  &[data-inspectable] {
+    touch-action: pan-y;
+    cursor: crosshair;
+  }
+
+  .inspect {
+    pointer-events: none;
+  }
 
   svg {
     position: absolute;
@@ -92,6 +107,22 @@ const StyledLabels = styled.div`
   }
 `;
 
+/** A point's value and time, above it, in the labels' dark chip. */
+const StyledTooltip = styled.div`
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, calc(-100% - ${u(0.9)}));
+  padding: ${u(0.25)} ${u(0.6)};
+  border-radius: ${u(0.6)};
+  background: rgba(18, 18, 22, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: ${({ theme }) => theme.text.primary};
+  font-size: ${u(0.9)};
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+`;
+
 /**
  * mini-graph-card's graph, as a React component.
  *
@@ -109,10 +140,12 @@ const MiniGraph: React.FC<MiniGraphProps> = ({
   fill = true,
   showPoints = false,
   labels,
+  tooltip,
   className,
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [aspect, setAspect] = useState(0.25);
+  const [active, setActive] = useState<number | null>(null);
   const id = useId();
 
   useLayoutEffect(() => {
@@ -134,8 +167,30 @@ const MiniGraph: React.FC<MiniGraphProps> = ({
     [samples, hours, pointsPerHour, lineWidth, fill, height]
   );
 
+  // The point nearest the pointer, by time along the graph.
+  const inspect = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!graph || !tooltip || !graph.points.length) return;
+    const box = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - box.left) / box.width) * GRAPH_WIDTH;
+    let nearest = 0;
+    graph.points.forEach((point, index) => {
+      if (Math.abs(point.x - x) < Math.abs(graph.points[nearest].x - x)) nearest = index;
+    });
+    setActive(nearest);
+  };
+  const shown = graph && active !== null ? graph.points[active] : undefined;
+
   return (
-    <StyledGraph ref={ref} className={className}>
+    <StyledGraph
+      ref={ref}
+      className={className}
+      data-inspectable={tooltip ? '' : undefined}
+      onPointerMove={tooltip ? inspect : undefined}
+      onPointerDown={tooltip ? inspect : undefined}
+      // A mouse that leaves takes the tooltip with it; a finger's stays
+      // until the next tap.
+      onPointerLeave={tooltip ? event => event.pointerType === 'mouse' && setActive(null) : undefined}
+    >
       {graph && (
         <svg viewBox={`0 0 ${GRAPH_WIDTH} ${graph.height}`} preserveAspectRatio='none' aria-hidden='true'>
           {fill && <path className='fill' d={graph.fill} fill={color} />}
@@ -147,7 +202,32 @@ const MiniGraph: React.FC<MiniGraphProps> = ({
               ))}
             </g>
           )}
+          {shown && (
+            <g className='inspect'>
+              <line
+                x1={shown.x}
+                x2={shown.x}
+                y1={0}
+                y2={graph.height}
+                stroke='rgba(255, 255, 255, 0.25)'
+                strokeWidth={1}
+                vectorEffect='non-scaling-stroke'
+              />
+              <circle cx={shown.x} cy={shown.y} r={lineWidth * 1.6} fill={color} stroke='#fff' strokeWidth={lineWidth / 2} />
+            </g>
+          )}
         </svg>
+      )}
+      {graph && shown && tooltip && (
+        <StyledTooltip
+          style={{
+            // Kept inside the graph at either end.
+            left: `${Math.min(88, Math.max(12, (shown.x / GRAPH_WIDTH) * 100))}%`,
+            top: `${(shown.y / graph.height) * 100}%`,
+          }}
+        >
+          {tooltip(shown)}
+        </StyledTooltip>
       )}
       {graph && labels && (
         <StyledLabels>

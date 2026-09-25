@@ -5,7 +5,7 @@ import Popup from '../base/popup/Popup';
 import MiniGraph from '../base/miniGraph/MiniGraph';
 import { useEntity, useLanguage, useT } from '../../hooks/useHa';
 import { useHistory } from '../../hooks/useHistory';
-import { durationToMinutes, formatMinutes } from '../../lib/format';
+import { durationToMinutes, formatMinutes, formatTime } from '../../lib/format';
 import { mapEmbedUrl } from '../../lib/travel';
 import TravelMap from './TravelMap';
 
@@ -31,11 +31,9 @@ const StyledMap = styled.div`
   }
 `;
 
+/** On the popup's own glass: no card of its own around it. */
 const StyledGraph = styled.div`
   height: ${u(6)};
-  border-radius: ${u(1.2)};
-  background: ${({ theme }) => theme.bubble.inset};
-  overflow: hidden;
 `;
 
 const StyledHint = styled.p`
@@ -102,6 +100,7 @@ const TravelContent: React.FC<{ config: SidebarConfig['travel'] }> = ({ config }
           lineWidth={3}
           color={theme.colors.accent}
           labels={v => formatMinutes(v, language)}
+          tooltip={point => `${formatMinutes(point.v, language)} · ${formatTime(new Date(point.t), language)}`}
         />
       </StyledGraph>
     </>

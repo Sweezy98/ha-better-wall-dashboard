@@ -243,6 +243,15 @@ const SidebarScreen: React.FC<ScreenProps & { part: SidebarPart }> = ({ draft, u
               onChange={prefix => set('notifications', { prefix })}
             />
           </StyledFieldset>
+          <StyledFieldset>
+            <h3>{t('settings')}</h3>
+            <CheckField
+              label={t('settings_enabled')}
+              hint={t('settings_enabled_hint')}
+              value={value.settings?.enabled !== false}
+              onChange={enabled => set('settings', { enabled })}
+            />
+          </StyledFieldset>
         </>
       );
     case 'system':

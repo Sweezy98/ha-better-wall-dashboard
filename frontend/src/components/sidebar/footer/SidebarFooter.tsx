@@ -142,7 +142,7 @@ const SidebarFooter: React.FC<{ config: SidebarConfig }> = ({ config }) => {
         {config.notifications.enabled && (
           <IconButton icon='mdi:bell' label={t('notifications')} badge={notifications.length} onClick={() => setPanel('notifications')} />
         )}
-        <IconButton icon='mdi:cog' label={t('settings')} onClick={() => setPanel('settings')} />
+        {config.settings?.enabled !== false && <IconButton icon='mdi:cog' label={t('settings')} onClick={() => setPanel('settings')} />}
       </StyledButtons>
       <NotificationsPopup
         open={panel === 'notifications'}

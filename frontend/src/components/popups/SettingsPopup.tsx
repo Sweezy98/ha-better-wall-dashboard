@@ -131,8 +131,7 @@ const SettingsContent: React.FC<{ config: SidebarConfig }> = ({ config }) => {
           iconColor={outdated ? theme.colors.warm : undefined}
           onClick={reload}
         />
-        {view?.kiosk && <StyledNote>{t('kiosk_hint')}</StyledNote>}
-        {view?.is_admin ? (
+        {view?.is_admin && (
           <>
             <Bubble name={t('edit_dashboard')} state={t('edit_elsewhere')} icon='mdi:view-dashboard-edit' onClick={openEditor} />
             {view.dashboards.length > 1 && (
@@ -149,8 +148,6 @@ const SettingsContent: React.FC<{ config: SidebarConfig }> = ({ config }) => {
               </label>
             )}
           </>
-        ) : (
-          <StyledNote>{t('edit_hint')}</StyledNote>
         )}
         {version && (
           <StyledNote>

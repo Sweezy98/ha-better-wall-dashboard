@@ -283,6 +283,7 @@ def _sidebar(raw: Any, assign: Callable[[Any], str]) -> dict:
     calendar = _dict(raw.get("calendar"))
     weather = _dict(raw.get("weather"))
     notifications = _dict(raw.get("notifications"))
+    settings = _dict(raw.get("settings"))
     return {
         "status": {
             "absence": _entity(status.get("absence")),
@@ -333,6 +334,9 @@ def _sidebar(raw: Any, assign: Callable[[Any], str]) -> dict:
             # thermometer on the balcony.
             "temperature": _entity(weather.get("temperature")),
         },
+        # The cog in the footer. Hidden, the tablet has no settings of its own
+        # to open: an admin reloads it from the editor instead.
+        "settings": {"enabled": _bool(settings.get("enabled"), True)},
         "notifications": {
             "enabled": _bool(notifications.get("enabled"), True),
             # Only persistent notifications whose id starts with this, so the
