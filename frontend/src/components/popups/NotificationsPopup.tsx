@@ -5,7 +5,7 @@ import Icon from '../base/icon/Icon';
 import { useLanguage, useT } from '../../hooks/useHa';
 import type { Notification } from '../../hooks/useNotifications';
 import { formatRelative } from '../../lib/format';
-import { pressable } from '../../themes/interaction';
+import { hoverable, pressable } from '../../themes/interaction';
 import { useSwipeDismiss } from '../../hooks/useSwipeDismiss';
 
 const StyledItem = styled.article`
@@ -17,6 +17,7 @@ const StyledItem = styled.article`
   user-select: none;
   border-radius: ${u(1.2)};
   background: ${({ theme }) => theme.bubble.background};
+  ${({ theme }) => hoverable(theme.bubble.hover)}
 
   h4 {
     margin: 0;
@@ -85,7 +86,7 @@ const NotificationCard: React.FC<{ item: Notification; onDismiss: () => void }> 
   const language = useLanguage();
   const swipe = useSwipeDismiss(onDismiss);
   return (
-    <StyledItem style={swipe.style} {...swipe.handlers}>
+    <StyledItem style={swipe.style} {...swipe.handlers} data-glow>
       <h4>{item.title || t('notifications')}</h4>
       <button type='button' onClick={onDismiss} aria-label={t('dismiss')} title={t('dismiss')}>
         <Icon icon='mdi:close' />

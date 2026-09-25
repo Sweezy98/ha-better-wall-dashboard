@@ -72,7 +72,7 @@ export function useSwipeDismiss(onDismiss: () => void) {
   const style: React.CSSProperties = {
     transform: offset ? `translateX(${offset}px)` : undefined,
     opacity: leaving ? 0 : 1 - Math.min(0.6, Math.abs(offset) / 600),
-    transition: dragging ? 'none' : 'transform 0.22s ease, opacity 0.22s ease',
+    transition: dragging ? 'none' : 'transform 0.22s ease, opacity 0.22s ease, background-color 0.2s ease',
     touchAction: 'pan-y',
   };
 

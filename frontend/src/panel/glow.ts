@@ -8,7 +8,7 @@
  */
 export function trackGlow(event: React.PointerEvent): void {
   if (event.pointerType !== 'mouse') return;
-  const target = (event.target as Element).closest?.('button, [role="button"]') as HTMLElement | null;
+  const target = (event.target as Element).closest?.('button, [role="button"], [data-glow]') as HTMLElement | null;
   if (!target) return;
   const box = target.getBoundingClientRect();
   target.style.setProperty('--glow-x', `${event.clientX - box.left}px`);
