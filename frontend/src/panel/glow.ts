@@ -72,7 +72,7 @@ export function waveFrom(event: React.PointerEvent): void {
         { transform: 'scale(1)', opacity: 0.8, offset: 0.7 },
         { transform: 'scale(1)', opacity: 0 },
       ],
-      { duration: 650, easing: 'cubic-bezier(0.2, 0, 0.2, 1)' }
+      { duration: 800, easing: 'cubic-bezier(0.2, 0, 0.2, 1)' }
     )
     .finished.catch(() => undefined)
     .finally(() => frame.remove());
