@@ -48,7 +48,6 @@ const StyledGraph = styled.div`
   /* A graph that answers a finger keeps vertical swipes for the popup. */
   &[data-inspectable] {
     touch-action: pan-y;
-    cursor: crosshair;
   }
 
   .inspect {
