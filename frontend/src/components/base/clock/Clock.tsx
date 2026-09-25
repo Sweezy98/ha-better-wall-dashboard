@@ -94,20 +94,28 @@ const at = (fraction: number, radius: number) => {
   return { x: 50 + radius * Math.sin(angle), y: 50 - radius * Math.cos(angle) };
 };
 
+/** The sidebar's own near-black, for the outline that sets each hand apart. */
+const HALO = 'rgba(16, 17, 20, 0.85)';
+
 /**
  * One hand, drawn pointing at twelve and turned by a CSS animation of
  * `period` seconds, started `into` seconds in: the browser moves it smoothly,
  * every frame, on its own -- no re-render, no stepping.
+ *
+ * Outlined in the sidebar's near-black, so where hands cross, the upper one
+ * cuts a gap into the one beneath and each reads on its own -- no colour.
  */
-const Hand: React.FC<{ period: number; into: number; length: number; width: number; opacity?: number }> = ({
+const Hand: React.FC<{ period: number; into: number; length: number; width: number; tail?: number; opacity?: number }> = ({
   period,
   into,
   length,
   width,
+  tail = 7,
   opacity = 1,
 }) => (
   <g className='hand' style={{ animationDuration: `${period}s`, animationDelay: `-${into}s` }}>
-    <line x1={50} y1={57} x2={50} y2={50 - length} stroke='#fff' strokeOpacity={opacity} strokeWidth={width} strokeLinecap='round' />
+    <line x1={50} y1={50 + tail} x2={50} y2={50 - length} stroke={HALO} strokeWidth={width + 3} strokeLinecap='round' />
+    <line x1={50} y1={50 + tail} x2={50} y2={50 - length} stroke='#fff' strokeOpacity={opacity} strokeWidth={width} strokeLinecap='round' />
   </g>
 );
 
@@ -154,11 +162,11 @@ export const AnalogClock: React.FC<{ timeProps?: React.HTMLAttributes<HTMLDivEle
           return <circle key={index} cx={dot.x} cy={dot.y} r={1.9} fill='rgba(255, 255, 255, 0.35)' />;
         })}
         <g key={set}>
-          <Hand period={43_200} into={hour} length={24} width={6} />
-          <Hand period={3_600} into={minute} length={35} width={4} />
-          {seconds && <Hand period={60} into={second} length={39} width={1.6} opacity={0.75} />}
+          <Hand period={43_200} into={hour} length={23} width={6.5} tail={5} />
+          <Hand period={3_600} into={minute} length={36} width={3.8} tail={6} />
+          {seconds && <Hand period={60} into={second} length={40} width={1.3} tail={11} opacity={0.8} />}
         </g>
-        <circle cx={50} cy={50} r={3.4} fill='#fff' />
+        <circle cx={50} cy={50} r={3.6} fill='#fff' stroke={HALO} strokeWidth={1.5} />
       </svg>
     </StyledDial>
   );
