@@ -22,13 +22,15 @@ const StyledHeader = styled.header`
   min-width: 0;
   padding: 0 ${u(0.3)};
 
+  /* One gap throughout: icon, name, rule and readings as evenly apart as
+     the readings are from their dots. */
   .icon {
     font-size: ${u(1.35)};
-    margin-right: ${u(1.2)};
+    margin-right: ${u(0.9)};
   }
 
   h2 {
-    margin: 0 ${u(1.6)} 0 0;
+    margin: 0 ${u(0.9)} 0 0;
     font-size: ${u(1.2)};
     font-weight: 600;
     white-space: nowrap;
