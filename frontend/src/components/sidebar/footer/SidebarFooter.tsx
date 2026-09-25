@@ -29,7 +29,10 @@ const StyledFooter = styled.div`
 const StyledWeather = styled.button`
   flex: 1 1 auto;
   display: grid;
-  grid-template-columns: auto auto minmax(0, 1fr);
+  /* The text gives way to the high and low, cut short, rather than pushing
+     them out over the buttons beside it. */
+  grid-template-columns: auto minmax(0, max-content) auto;
+  justify-content: start;
   grid-template-rows: auto auto;
   column-gap: ${u(1)};
   align-items: center;
