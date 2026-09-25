@@ -29,11 +29,16 @@ function glowingSurface(event: React.PointerEvent): HTMLElement | null {
 /**
  * A press on something that glows sends a wave out from the point pressed
  * to its farthest corner: a light circle, clipped to the surface's own
- * shape, that grows and fades. Finger or mouse alike; not at all when the
- * system asks for less motion.
+ * shape, that grows and fades. Finger or mouse alike -- brighter under a
+ * finger, which covers where it starts and lifts before it has spread.
+ *
+ * Not skipped for "reduce motion": wall tablets are often set up with
+ * Android's animations off, which reports exactly that, and the wave is
+ * the only sign a tap landed.
  */
 export function waveFrom(event: React.PointerEvent): void {
-  if (event.button !== 0 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (event.button !== 0) return;
+  const touch = event.pointerType !== 'mouse';
   const surface = glowingSurface(event);
   if (!surface) return;
   const box = surface.getBoundingClientRect();
@@ -55,14 +60,15 @@ export function waveFrom(event: React.PointerEvent): void {
     `width:${radius * 2}px`,
     `height:${radius * 2}px`,
     'border-radius:50%',
-    'background:radial-gradient(circle closest-side, rgba(255,255,255,0.14) 75%, rgba(255,255,255,0) 100%)',
+    `background:radial-gradient(circle closest-side, rgba(255,255,255,${touch ? 0.24 : 0.14}) 75%, rgba(255,255,255,0) 100%)`,
   ].join(';');
   frame.append(wave);
   surface.append(frame);
   wave
     .animate(
       [
-        { transform: 'scale(0)', opacity: 1 },
+        // Under a finger it starts as a small circle already, not a point.
+        { transform: `scale(${touch ? 0.15 : 0})`, opacity: 1 },
         { transform: 'scale(1)', opacity: 0.8, offset: 0.7 },
         { transform: 'scale(1)', opacity: 0 },
       ],
