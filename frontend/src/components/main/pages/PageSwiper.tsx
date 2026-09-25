@@ -58,27 +58,26 @@ const StyledTrack = styled.div`
   }
 `;
 
-/** One page's slot in the row of dots: a ring, and the space the filled dot slides through. */
-const DOT_STEP = u(1.6);
+/** A dot's size, in whole pixels: a dot 8.16 px wide is drawn as an egg. */
+const DOT = 'round(nearest, calc(var(--u) * 0.6), 2px)';
 
 /**
- * A ring per page, and one filled dot that slides from ring to ring as the
- * pages move -- following the swipe itself, not just where it ends up.
+ * A ring per page. The page on screen fills its ring from the edge inward,
+ * in the accent colour, while the one it replaces empties back to a ring.
+ *
+ * Each dot is a disc with a round hole masked out of it; the hole closing is
+ * the ring filling. Its size is a registered property (see panel/glow.ts),
+ * so it animates smoothly -- a border's width moves in whole pixels, which
+ * made the fill step, and could leave a pinhole in a "full" dot.
  */
 const StyledDots = styled.div`
-  position: relative;
   display: flex;
   justify-content: center;
   height: ${u(1.6)};
   align-items: center;
 
-  .rings {
-    position: relative;
-    display: flex;
-  }
-
   button {
-    width: ${DOT_STEP};
+    width: ${u(1.2)};
     height: ${u(1.6)};
     display: flex;
     align-items: center;
@@ -87,31 +86,29 @@ const StyledDots = styled.div`
 
   button::after {
     content: '';
-    width: ${u(0.8)};
-    height: ${u(0.8)};
-    box-sizing: border-box;
+    width: ${DOT};
+    height: ${DOT};
     border-radius: 50%;
-    border: ${u(0.14)} solid rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.45);
+    /* An empty ring: the hole reaches to within a sixth of the edge. */
+    --dot-hole: 70%;
+    mask-image: radial-gradient(circle closest-side, transparent var(--dot-hole), #000 calc(var(--dot-hole) + 0.5px));
+    -webkit-mask-image: radial-gradient(circle closest-side, transparent var(--dot-hole), #000 calc(var(--dot-hole) + 0.5px));
+    transition:
+      --dot-hole 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+      background-color 0.4s ease;
   }
 
-  .current {
-    position: absolute;
-    left: calc(${DOT_STEP} / 2);
-    top: 50%;
-    width: ${u(1)};
-    height: ${u(1)};
-    margin: calc(${u(-1)} / 2) 0 0 calc(${u(-1)} / 2);
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 0 ${u(0.5)} rgba(255, 255, 255, 0.35);
-    pointer-events: none;
-    will-change: transform;
+  /* No hole at all: completely filled. Past zero, or the mask's own edge
+     leaves a pinhole in the middle. */
+  button[aria-current='true']::after {
+    --dot-hole: -10%;
+    background: ${({ theme }) => theme.colors.accent};
   }
 `;
 
 const PageSwiper: React.FC<{ pages: PageConfig[] }> = ({ pages }) => {
   const track = useRef<HTMLDivElement>(null);
-  const current = useRef<HTMLSpanElement>(null);
   const [active, setActive] = useState(0);
   useMouseSwipe(track, pages.length);
 
@@ -119,15 +116,12 @@ const PageSwiper: React.FC<{ pages: PageConfig[] }> = ({ pages }) => {
     const element = track.current;
     if (!element) return;
     let frame = 0;
-    // The filled dot is moved directly, frame by frame, with the pages; React
-    // hears only when the page it is nearest changes -- scrolling fires dozens
-    // of events a second.
+    // The index only, and only when it changes: scrolling fires dozens of
+    // events a second, and only the dots care.
     const onScroll = () => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
-        const position = element.scrollLeft / Math.max(1, element.clientWidth);
-        current.current?.style.setProperty('transform', `translateX(calc(${DOT_STEP} * ${position}))`);
-        const index = Math.round(position);
+        const index = Math.round(element.scrollLeft / Math.max(1, element.clientWidth));
         setActive(previous => (previous === index ? previous : index));
       });
     };
@@ -190,14 +184,10 @@ const PageSwiper: React.FC<{ pages: PageConfig[] }> = ({ pages }) => {
         ))}
       </StyledTrack>
       <StyledDots>
-        {pages.length > 1 && (
-          <div className='rings'>
-            {pages.map((page, index) => (
-              <button key={page.id} type='button' aria-label={`${index + 1}`} aria-current={index === active} onClick={() => go(index)} />
-            ))}
-            <span ref={current} className='current' aria-hidden='true' />
-          </div>
-        )}
+        {pages.length > 1 &&
+          pages.map((page, index) => (
+            <button key={page.id} type='button' aria-label={`${index + 1}`} aria-current={index === active} onClick={() => go(index)} />
+          ))}
       </StyledDots>
     </StyledSwiper>
   );

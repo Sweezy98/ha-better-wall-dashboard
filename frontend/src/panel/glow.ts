@@ -22,8 +22,14 @@ export function trackGlow(event: React.PointerEvent): void {
  * cannot register it, the bubble merely gets a faint corner sheen on hover.
  */
 export function registerGlowProperties(): void {
+  register({ name: '--own-sheen', syntax: '*', inherits: false });
+  // The page dots' hole: typed, so it animates rather than jumps.
+  register({ name: '--dot-hole', syntax: '<percentage>', inherits: false, initialValue: '70%' });
+}
+
+function register(definition: PropertyDefinition): void {
   try {
-    CSS.registerProperty({ name: '--own-sheen', syntax: '*', inherits: false });
+    CSS.registerProperty(definition);
   } catch {
     // Registered already (a second copy of the app), or not supported.
   }

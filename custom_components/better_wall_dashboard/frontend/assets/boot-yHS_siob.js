@@ -650,20 +650,14 @@ function print() { __p += __j.call(arguments, '') }
     scroll-snap-align: start;
     scroll-snap-stop: always;
   }
-`,cp=q(1.6),lp=K.div`
-  position: relative;
+`,cp=`round(nearest, calc(var(--u) * 0.6), 2px)`,lp=K.div`
   display: flex;
   justify-content: center;
   height: ${q(1.6)};
   align-items: center;
 
-  .rings {
-    position: relative;
-    display: flex;
-  }
-
   button {
-    width: ${cp};
+    width: ${q(1.2)};
     height: ${q(1.6)};
     display: flex;
     align-items: center;
@@ -672,27 +666,26 @@ function print() { __p += __j.call(arguments, '') }
 
   button::after {
     content: '';
-    width: ${q(.8)};
-    height: ${q(.8)};
-    box-sizing: border-box;
+    width: ${cp};
+    height: ${cp};
     border-radius: 50%;
-    border: ${q(.14)} solid rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.45);
+    /* An empty ring: the hole reaches to within a sixth of the edge. */
+    --dot-hole: 70%;
+    mask-image: radial-gradient(circle closest-side, transparent var(--dot-hole), #000 calc(var(--dot-hole) + 0.5px));
+    -webkit-mask-image: radial-gradient(circle closest-side, transparent var(--dot-hole), #000 calc(var(--dot-hole) + 0.5px));
+    transition:
+      --dot-hole 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+      background-color 0.4s ease;
   }
 
-  .current {
-    position: absolute;
-    left: calc(${cp} / 2);
-    top: 50%;
-    width: ${q(1)};
-    height: ${q(1)};
-    margin: calc(${q(-1)} / 2) 0 0 calc(${q(-1)} / 2);
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 0 ${q(.5)} rgba(255, 255, 255, 0.35);
-    pointer-events: none;
-    will-change: transform;
+  /* No hole at all: completely filled. Past zero, or the mask's own edge
+     leaves a pinhole in the middle. */
+  button[aria-current='true']::after {
+    --dot-hole: -10%;
+    background: ${({theme:e})=>e.colors.accent};
   }
-`,up=(0,v.memo)(({pages:e})=>{let t=(0,v.useRef)(null),n=(0,v.useRef)(null),[r,i]=(0,v.useState)(0);Ld(t,e.length),(0,v.useEffect)(()=>{let e=t.current;if(!e)return;let r=0,a=()=>{cancelAnimationFrame(r),r=requestAnimationFrame(()=>{let t=e.scrollLeft/Math.max(1,e.clientWidth);n.current?.style.setProperty(`transform`,`translateX(calc(${cp} * ${t}))`);let r=Math.round(t);i(e=>e===r?e:r)})};return e.addEventListener(`scroll`,a,{passive:!0}),()=>{e.removeEventListener(`scroll`,a),cancelAnimationFrame(r)}},[]),(0,v.useLayoutEffect)(()=>{let e=t.current;if(!e)return;let n=()=>{let t=Pd([...e.querySelectorAll(`[data-cell-grid]`)].map(e=>{let t=e.clientWidth,n=e.clientHeight,r=e.firstElementChild;return{width:t,height:n,gap:r&&parseFloat(getComputedStyle(r).columnGap)||0,columns:Number(e.dataset.columns),rows:Number(e.dataset.rows)}}));t?(e.style.setProperty(`--cell-w`,`${t.width}px`),e.style.setProperty(`--cell-h`,`${t.height}px`)):(e.style.removeProperty(`--cell-w`),e.style.removeProperty(`--cell-h`))};n();let r=new ResizeObserver(n);return r.observe(e),()=>r.disconnect()},[e]);let a=e=>{let n=t.current;n?.scrollTo({left:e*n.clientWidth,behavior:`smooth`})},{focusPage:o}=Md();return(0,v.useEffect)(()=>{let e=t.current;o!==void 0&&e&&e.scrollTo({left:o*e.clientWidth,behavior:`smooth`})},[o]),(0,C.jsxs)(ap,{children:[(0,C.jsx)(sp,{ref:t,children:e.map(e=>(0,C.jsx)(ip,{page:e},e.id))}),(0,C.jsx)(lp,{children:e.length>1&&(0,C.jsxs)(`div`,{className:`rings`,children:[e.map((e,t)=>(0,C.jsx)(`button`,{type:`button`,"aria-label":`${t+1}`,"aria-current":t===r,onClick:()=>a(t)},e.id)),(0,C.jsx)(`span`,{ref:n,className:`current`,"aria-hidden":`true`})]})})]})}),dp=K.nav`
+`,up=(0,v.memo)(({pages:e})=>{let t=(0,v.useRef)(null),[n,r]=(0,v.useState)(0);Ld(t,e.length),(0,v.useEffect)(()=>{let e=t.current;if(!e)return;let n=0,i=()=>{cancelAnimationFrame(n),n=requestAnimationFrame(()=>{let t=Math.round(e.scrollLeft/Math.max(1,e.clientWidth));r(e=>e===t?e:t)})};return e.addEventListener(`scroll`,i,{passive:!0}),()=>{e.removeEventListener(`scroll`,i),cancelAnimationFrame(n)}},[]),(0,v.useLayoutEffect)(()=>{let e=t.current;if(!e)return;let n=()=>{let t=Pd([...e.querySelectorAll(`[data-cell-grid]`)].map(e=>{let t=e.clientWidth,n=e.clientHeight,r=e.firstElementChild;return{width:t,height:n,gap:r&&parseFloat(getComputedStyle(r).columnGap)||0,columns:Number(e.dataset.columns),rows:Number(e.dataset.rows)}}));t?(e.style.setProperty(`--cell-w`,`${t.width}px`),e.style.setProperty(`--cell-h`,`${t.height}px`)):(e.style.removeProperty(`--cell-w`),e.style.removeProperty(`--cell-h`))};n();let r=new ResizeObserver(n);return r.observe(e),()=>r.disconnect()},[e]);let i=e=>{let n=t.current;n?.scrollTo({left:e*n.clientWidth,behavior:`smooth`})},{focusPage:a}=Md();return(0,v.useEffect)(()=>{let e=t.current;a!==void 0&&e&&e.scrollTo({left:a*e.clientWidth,behavior:`smooth`})},[a]),(0,C.jsxs)(ap,{children:[(0,C.jsx)(sp,{ref:t,children:e.map(e=>(0,C.jsx)(ip,{page:e},e.id))}),(0,C.jsx)(lp,{children:e.length>1&&e.map((e,t)=>(0,C.jsx)(`button`,{type:`button`,"aria-label":`${t+1}`,"aria-current":t===n,onClick:()=>i(t)},e.id))})]})}),dp=K.nav`
   display: grid;
   grid-template-columns: repeat(${({$count:e})=>e}, minmax(0, 1fr));
   column-gap: ${q(.7)};
@@ -1887,7 +1880,7 @@ function print() { __p += __j.call(arguments, '') }
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
   }
-`;function nv(e,t){let n=t>e,r=8+.007*(n?e:t),i=n?e/58:e/94;return Math.max(11,Math.min(22,r,i))}function rv(e){(0,v.useLayoutEffect)(()=>{let t=e.current;if(!t)return;let n=()=>{let e=t.offsetWidth,n=t.offsetHeight;e&&n&&(t.style.setProperty(`--u`,`${nv(e,n).toFixed(2)}px`),t.dataset.orientation=n>e?`portrait`:`landscape`)};n();let r=new ResizeObserver(n);return r.observe(t),()=>r.disconnect()},[e])}var iv=new URL(`background-D0ndr4z6.jpg`,import.meta.url).href,av=`media-source://`,ov=604800,sv=216e5;function cv(e){let t=ed(),n=id(),[r,i]=(0,v.useState)(null),a=e.startsWith(av);return(0,v.useEffect)(()=>{if(!a||!t)return;let n=!0,r=()=>t.sendMessagePromise({type:`media_source/resolve_media`,media_content_id:e,expires:ov}).then(t=>n&&i({id:e,url:t.url})).catch(t=>{console.warn(`Better Wall Dashboard: background picture not found`,e,t),n&&i({id:e,url:``})});r();let o=window.setInterval(r,sv);return()=>{n=!1,window.clearInterval(o)}},[e,a,t]),e?a?r?.id===e?r.url?n(r.url):iv:``:e.startsWith(`/`)?n(e):e:iv}function lv(e){if(e.pointerType!==`mouse`)return;let t=e.target.closest?.(`button, [role="button"], [data-glow]`);if(!t)return;let n=t.getBoundingClientRect();t.style.setProperty(`--glow-x`,`${e.clientX-n.left}px`),t.style.setProperty(`--glow-y`,`${e.clientY-n.top}px`)}function uv(){try{CSS.registerProperty({name:`--own-sheen`,syntax:`*`,inherits:!1})}catch{}}var dv=()=>{let{view:e,error:t}=Md(),n=Z();return t?(0,C.jsx)(Q_,{message:t===`not_loaded`||t===`unknown_command`?n(`not_loaded`):t}):e?(0,C.jsx)(fv,{}):(0,C.jsx)(Q_,{message:n(`loading`)})},fv=()=>{let e=(0,v.useRef)(null),{view:t}=Md();rv(e);let n=t.dashboard.background,r=cv(n.image);return(0,C.jsxs)($_,{ref:e,onPointerMove:lv,children:[(0,C.jsx)(ev,{$image:r,$dim:n.dim,$blur:n.blur}),(0,C.jsxs)(tv,{children:[(0,C.jsx)(Y_,{}),(0,C.jsx)(vp,{})]})]})},pv={mode:`dashboard`,narrow:!1},mv=new Set;function hv(e){let t={...pv,...e};(t.mode!==pv.mode||t.narrow!==pv.narrow)&&(pv=t,mv.forEach(e=>e()))}function gv(){return(0,v.useSyncExternalStore)(e=>(mv.add(e),()=>mv.delete(e)),()=>pv)}function _v(e,t=3){return(0,v.lazy)(async()=>{for(let n=1;;n+=1)try{return await e()}catch(e){if(n>=t)throw e;await new Promise(e=>setTimeout(e,1e3*n))}})}var vv=_v(()=>M(()=>import(`./EditorPage-BunAWKcv.js`),[],import.meta.url)),yv=()=>{let{mode:e}=gv();return e===`editor`?(0,C.jsx)(v.Suspense,{fallback:(0,C.jsx)(Q_,{}),children:(0,C.jsx)(vv,{})}):(0,C.jsx)(Ad,{children:(0,C.jsx)(dv,{})})},bv=({hassUrl:e,hassToken:t,embedded:n,styleTarget:r})=>{let i=(0,v.useMemo)(()=>ct({key:`bwd`,container:r,speedy:!1}),[r]);return(0,C.jsx)(Pu,{target:r,disableCSSOMInjection:!0,children:(0,C.jsx)(ui,{value:i,children:(0,C.jsxs)(Lu,{theme:Zu,children:[(0,C.jsx)(Qu,{}),(0,C.jsx)(Hs,{hassUrl:e,hassToken:t,loading:(0,C.jsx)(Q_,{}),wrapperProps:{className:`bwd-connect`},options:{handleResumeOptions:{suspendWhenHidden:!n}},children:(0,C.jsx)(yv,{})})]})})})},xv=null,Sv=`
+`;function nv(e,t){let n=t>e,r=8+.007*(n?e:t),i=n?e/58:e/94;return Math.max(11,Math.min(22,r,i))}function rv(e){(0,v.useLayoutEffect)(()=>{let t=e.current;if(!t)return;let n=()=>{let e=t.offsetWidth,n=t.offsetHeight;e&&n&&(t.style.setProperty(`--u`,`${nv(e,n).toFixed(2)}px`),t.dataset.orientation=n>e?`portrait`:`landscape`)};n();let r=new ResizeObserver(n);return r.observe(t),()=>r.disconnect()},[e])}var iv=new URL(`background-D0ndr4z6.jpg`,import.meta.url).href,av=`media-source://`,ov=604800,sv=216e5;function cv(e){let t=ed(),n=id(),[r,i]=(0,v.useState)(null),a=e.startsWith(av);return(0,v.useEffect)(()=>{if(!a||!t)return;let n=!0,r=()=>t.sendMessagePromise({type:`media_source/resolve_media`,media_content_id:e,expires:ov}).then(t=>n&&i({id:e,url:t.url})).catch(t=>{console.warn(`Better Wall Dashboard: background picture not found`,e,t),n&&i({id:e,url:``})});r();let o=window.setInterval(r,sv);return()=>{n=!1,window.clearInterval(o)}},[e,a,t]),e?a?r?.id===e?r.url?n(r.url):iv:``:e.startsWith(`/`)?n(e):e:iv}function lv(e){if(e.pointerType!==`mouse`)return;let t=e.target.closest?.(`button, [role="button"], [data-glow]`);if(!t)return;let n=t.getBoundingClientRect();t.style.setProperty(`--glow-x`,`${e.clientX-n.left}px`),t.style.setProperty(`--glow-y`,`${e.clientY-n.top}px`)}function uv(){dv({name:`--own-sheen`,syntax:`*`,inherits:!1}),dv({name:`--dot-hole`,syntax:`<percentage>`,inherits:!1,initialValue:`70%`})}function dv(e){try{CSS.registerProperty(e)}catch{}}var fv=()=>{let{view:e,error:t}=Md(),n=Z();return t?(0,C.jsx)(Q_,{message:t===`not_loaded`||t===`unknown_command`?n(`not_loaded`):t}):e?(0,C.jsx)(pv,{}):(0,C.jsx)(Q_,{message:n(`loading`)})},pv=()=>{let e=(0,v.useRef)(null),{view:t}=Md();rv(e);let n=t.dashboard.background,r=cv(n.image);return(0,C.jsxs)($_,{ref:e,onPointerMove:lv,children:[(0,C.jsx)(ev,{$image:r,$dim:n.dim,$blur:n.blur}),(0,C.jsxs)(tv,{children:[(0,C.jsx)(Y_,{}),(0,C.jsx)(vp,{})]})]})},mv={mode:`dashboard`,narrow:!1},hv=new Set;function gv(e){let t={...mv,...e};(t.mode!==mv.mode||t.narrow!==mv.narrow)&&(mv=t,hv.forEach(e=>e()))}function _v(){return(0,v.useSyncExternalStore)(e=>(hv.add(e),()=>hv.delete(e)),()=>mv)}function vv(e,t=3){return(0,v.lazy)(async()=>{for(let n=1;;n+=1)try{return await e()}catch(e){if(n>=t)throw e;await new Promise(e=>setTimeout(e,1e3*n))}})}var yv=vv(()=>M(()=>import(`./EditorPage-SFQLvhjn.js`),[],import.meta.url)),bv=()=>{let{mode:e}=_v();return e===`editor`?(0,C.jsx)(v.Suspense,{fallback:(0,C.jsx)(Q_,{}),children:(0,C.jsx)(yv,{})}):(0,C.jsx)(Ad,{children:(0,C.jsx)(fv,{})})},xv=({hassUrl:e,hassToken:t,embedded:n,styleTarget:r})=>{let i=(0,v.useMemo)(()=>ct({key:`bwd`,container:r,speedy:!1}),[r]);return(0,C.jsx)(Pu,{target:r,disableCSSOMInjection:!0,children:(0,C.jsx)(ui,{value:i,children:(0,C.jsxs)(Lu,{theme:Zu,children:[(0,C.jsx)(Qu,{}),(0,C.jsx)(Hs,{hassUrl:e,hassToken:t,loading:(0,C.jsx)(Q_,{}),wrapperProps:{className:`bwd-connect`},options:{handleResumeOptions:{suspendWhenHidden:!n}},children:(0,C.jsx)(bv,{})})]})})})},Sv=null,Cv=`
   :host {
     display: block;
     position: relative;
@@ -1898,4 +1891,4 @@ function print() { __p += __j.call(arguments, '') }
     background: #111;
   }
   .bwd-host, .bwd-root { width: 100%; height: 100%; }
-`;function Cv(e,t,n=`dashboard`){let r=e.shadowRoot??e.attachShadow({mode:`open`});if(!r.querySelector(`style[data-host]`)){let e=document.createElement(`style`);e.dataset.host=``,e.textContent=Sv,r.append(e)}if(!xv){xv=document.createElement(`div`),xv.className=`bwd-host`;let e=document.createElement(`div`),n=document.createElement(`div`);n.className=`bwd-root`,xv.append(e,n),(0,y.createRoot)(n).render((0,C.jsx)(bv,{...t,styleTarget:e}))}r.append(xv),hv({mode:n}),md(n===`dashboard`)}function wv(e){xv&&e.shadowRoot?.contains(xv)&&md(!1)}var Tv=null,Ev=new Set;function Dv(e){Tv=e,Ev.forEach(t=>t(e))}function Ov(){return Tv}function kv(e){return Ev.add(e),()=>Ev.delete(e)}function Av(e,t){class n extends HTMLElement{route;panel;_narrow=!1;_hass=null;get hass(){return this._hass}set hass(e){this._hass=e,this.isConnected&&Dv(e)}get narrow(){return this._narrow}set narrow(e){this._narrow=!!e,this.isConnected&&hv({narrow:this._narrow})}connectedCallback(){for(let e of[`narrow`,`hass`]){if(!Object.prototype.hasOwnProperty.call(this,e))continue;let t=this[e];delete this[e],this[e]=t}Cv(this,{hassUrl:window.location.origin,embedded:!0},t),hv({narrow:this._narrow}),Dv(this._hass)}disconnectedCallback(){wv(this)}}customElements.get(e)||customElements.define(e,n)}xd(globalThis.__betterWallDashboardEntry??import.meta.url),uv(),Av(`better-wall-dashboard-panel`,`dashboard`),Av(`better-wall-dashboard-editor`,`editor`);export{f as C,S,X as _,tg as a,K as b,Kf as c,Cd as d,Td as f,ed as g,od as h,fv as i,Q as l,hd as m,kv as n,ph as o,Sd as p,gv as r,Gf as s,Ov as t,jd as u,Z as v,c as w,B as x,G as y};
+`;function wv(e,t,n=`dashboard`){let r=e.shadowRoot??e.attachShadow({mode:`open`});if(!r.querySelector(`style[data-host]`)){let e=document.createElement(`style`);e.dataset.host=``,e.textContent=Cv,r.append(e)}if(!Sv){Sv=document.createElement(`div`),Sv.className=`bwd-host`;let e=document.createElement(`div`),n=document.createElement(`div`);n.className=`bwd-root`,Sv.append(e,n),(0,y.createRoot)(n).render((0,C.jsx)(xv,{...t,styleTarget:e}))}r.append(Sv),gv({mode:n}),md(n===`dashboard`)}function Tv(e){Sv&&e.shadowRoot?.contains(Sv)&&md(!1)}var Ev=null,Dv=new Set;function Ov(e){Ev=e,Dv.forEach(t=>t(e))}function kv(){return Ev}function Av(e){return Dv.add(e),()=>Dv.delete(e)}function jv(e,t){class n extends HTMLElement{route;panel;_narrow=!1;_hass=null;get hass(){return this._hass}set hass(e){this._hass=e,this.isConnected&&Ov(e)}get narrow(){return this._narrow}set narrow(e){this._narrow=!!e,this.isConnected&&gv({narrow:this._narrow})}connectedCallback(){for(let e of[`narrow`,`hass`]){if(!Object.prototype.hasOwnProperty.call(this,e))continue;let t=this[e];delete this[e],this[e]=t}wv(this,{hassUrl:window.location.origin,embedded:!0},t),gv({narrow:this._narrow}),Ov(this._hass)}disconnectedCallback(){Tv(this)}}customElements.get(e)||customElements.define(e,n)}xd(globalThis.__betterWallDashboardEntry??import.meta.url),uv(),jv(`better-wall-dashboard-panel`,`dashboard`),jv(`better-wall-dashboard-editor`,`editor`);export{f as C,S,X as _,tg as a,K as b,Kf as c,Cd as d,Td as f,ed as g,od as h,pv as i,Q as l,hd as m,Av as n,ph as o,Sd as p,_v as r,Gf as s,kv as t,jd as u,Z as v,c as w,B as x,G as y};
