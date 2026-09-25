@@ -162,7 +162,7 @@ const en = {
   notifications_enabled: 'Show notifications',
   notifications_prefix: 'ID prefix',
   notifications_prefix_hint:
-    'For example wall_all_ for every tablet and wall_living_ for this one. Empty shows every persistent notification.',
+    'Only notifications whose ID starts with one of these: for example wall_all_ for every tablet and wall_living_ for this one. None shows every persistent notification.',
   system_stats: 'System statistics',
   page: 'Page',
   add_page: 'Add page',
@@ -431,7 +431,7 @@ const de: Record<TranslationKey, string> = {
   notifications_enabled: 'Benachrichtigungen anzeigen',
   notifications_prefix: 'ID-Präfix',
   notifications_prefix_hint:
-    'Zum Beispiel wall_all_ für alle Tablets und wall_living_ für dieses. Leer zeigt alle dauerhaften Benachrichtigungen.',
+    'Nur Benachrichtigungen, deren ID mit einem davon beginnt: zum Beispiel wall_all_ für alle Tablets und wall_living_ für dieses. Keiner zeigt alle dauerhaften Benachrichtigungen.',
   system_stats: 'Systemstatistik',
   page: 'Seite',
   add_page: 'Seite hinzufügen',

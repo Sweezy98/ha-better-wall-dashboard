@@ -53,16 +53,32 @@ export const TextField: React.FC<Base<string> & { placeholder?: string; type?: '
 };
 
 /**
- * Several short texts: Home Assistant's text field with a row per value and
- * a button to add one; typed separated by commas without it.
+ * Several short texts as chips, as Better Lighting shows its lists: Home
+ * Assistant's multi-select with custom values -- a chip per value, each with
+ * its own remove, and a box to type a new one into. Typed separated by
+ * commas where Home Assistant's controls are not to be had.
  */
-export const TextListField: React.FC<Base<string[]>> = ({ label, hint, value, onChange }) => {
+export const ChipListField: React.FC<Base<string[]> & { suggestions?: string[] }> = ({
+  label,
+  hint,
+  value,
+  onChange,
+  suggestions = [],
+}) => {
   const ha = useHaControls();
-  const clean = (items: unknown[]) => items.filter((item): item is string => typeof item === 'string').map(item => item.trim());
+  const clean = (items: unknown[]) => [
+    ...new Set(
+      items
+        .filter((item): item is string => typeof item === 'string')
+        .map(item => item.trim())
+        .filter(Boolean)
+    ),
+  ];
   if (ha) {
+    const options = [...new Set([...value, ...suggestions])];
     return (
       <HaSelector
-        selector={{ text: { multiple: true } }}
+        selector={{ select: { multiple: true, custom_value: true, mode: 'dropdown', sort: false, options } }}
         value={value}
         label={label}
         helper={hint}
@@ -73,7 +89,7 @@ export const TextListField: React.FC<Base<string[]>> = ({ label, hint, value, on
   return (
     <StyledField>
       <span className='label'>{label}</span>
-      <input type='text' value={value.join(', ')} onChange={event => onChange(clean(event.target.value.split(',')).filter(Boolean))} />
+      <input type='text' value={value.join(', ')} onChange={event => onChange(clean(event.target.value.split(',')))} />
       {hint && <small>{hint}</small>}
     </StyledField>
   );

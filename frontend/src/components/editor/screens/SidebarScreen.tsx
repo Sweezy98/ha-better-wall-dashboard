@@ -3,7 +3,7 @@ import { LIMITS } from '../../../config/types';
 import { useT } from '../../../hooks/useHa';
 import { SIDEBAR_PARTS, type SidebarPart } from '../../../lib/editorNav';
 import { notificationPrefixes } from '../../../lib/notifications';
-import { CheckField, EntityField, EntityListField, NumberField, SelectField, TextField, TextListField } from '../fields';
+import { CheckField, EntityField, EntityListField, NumberField, SelectField, TextField, ChipListField } from '../fields';
 import { StyledRow } from '../fields.styled';
 import { StyledFieldset } from '../editor.styled';
 import NamedEntityList from './NamedEntityList';
@@ -255,11 +255,10 @@ const SidebarScreen: React.FC<ScreenProps & { part: SidebarPart }> = ({ draft, u
               value={value.notifications.enabled}
               onChange={enabled => set('notifications', { enabled })}
             />
-            <TextListField
+            <ChipListField
               label={t('notifications_prefix')}
               hint={t('notifications_prefix_hint')}
               value={notificationPrefixes(value.notifications)}
-              // Empty rows stay while editing -- a row just added is empty -- and are dropped when saved.
               onChange={prefixes => set('notifications', { prefixes })}
             />
           </StyledFieldset>
