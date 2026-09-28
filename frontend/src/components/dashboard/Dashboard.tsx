@@ -9,6 +9,8 @@ import { useT } from '../../hooks/useHa';
 import { useBackgroundImage } from '../../hooks/useBackgroundImage';
 import { trackGlow, waveFrom } from '../../panel/glow';
 import { bouncePress } from '../../panel/bounce';
+import ConnectionLost from '../base/connectionLost/ConnectionLost';
+import { useConnectionLost } from '../../hooks/useConnectionLost';
 
 const Dashboard: React.FC = () => {
   const { view, error } = useDashboardContext();
@@ -25,6 +27,7 @@ export const DashboardLayout: React.FC = () => {
   const background = view!.dashboard.background;
   const image = useBackgroundImage(background.image);
   const plain = background.mode === 'color';
+  const lostSince = useConnectionLost();
 
   return (
     <StyledDashboardContainer ref={ref} onPointerMove={trackGlow} onPointerDown={waveFrom} onClick={bouncePress}>
@@ -37,6 +40,7 @@ export const DashboardLayout: React.FC = () => {
         <Sidebar />
         <Main />
       </StyledDashboardGrid>
+      {lostSince !== null && <ConnectionLost since={lostSince} />}
     </StyledDashboardContainer>
   );
 };

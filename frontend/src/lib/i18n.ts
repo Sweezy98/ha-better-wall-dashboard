@@ -14,6 +14,9 @@
 
 const en = {
   loading: 'Connecting to Home Assistant…',
+  connection_lost: 'No connection to Home Assistant',
+  connection_lost_hint: 'Home Assistant may be restarting. The dashboard reconnects by itself as soon as it is back.',
+  connection_lost_since: 'Gone for {time}',
   not_loaded: 'Better Wall Dashboard is not set up. Add the integration under Settings → Devices & services.',
   temperature: 'Temperature',
   humidity: 'Humidity',
@@ -397,6 +400,10 @@ export type TranslationKey = keyof typeof en;
 
 const de: Record<TranslationKey, string> = {
   loading: 'Verbindung zu Home Assistant wird hergestellt…',
+  connection_lost: 'Keine Verbindung zu Home Assistant',
+  connection_lost_hint:
+    'Home Assistant startet vielleicht gerade neu. Das Dashboard verbindet sich von selbst wieder, sobald es zurück ist.',
+  connection_lost_since: 'Seit {time} getrennt',
   not_loaded: 'Better Wall Dashboard ist nicht eingerichtet. Die Integration unter Einstellungen → Geräte & Dienste hinzufügen.',
   temperature: 'Temperatur',
   humidity: 'Luftfeuchtigkeit',

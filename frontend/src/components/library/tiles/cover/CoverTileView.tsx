@@ -17,14 +17,42 @@ const STATES: Record<string, TranslationKey> = {
   closing: 'cover_closing',
 };
 
-/** Moving, the icon travels through its circle the way the cover goes, and again. */
-const travel = (from: string, to: string) => keyframes`
-  0% { transform: translateY(${from}); opacity: 0; }
-  30%, 70% { opacity: 1; }
-  100% { transform: translateY(${to}); opacity: 0; }
+/**
+ * Moving, the icon holds still and its shade runs: slats sliding up under
+ * the head rail while it opens, down while it closes, and again.
+ */
+const shade = (from: number, to: number) => keyframes`
+  0% { transform: translateY(${from}px); }
+  85%, 100% { transform: translateY(${to}px); }
 `;
-const rising = travel('35%', '-35%');
-const sinking = travel('-35%', '35%');
+const opening = shade(0, -12);
+const closing = shade(-12, 0);
+
+const StyledShade = styled.svg<{ $direction: 'up' | 'down' }>`
+  width: 1em;
+  height: 1em;
+
+  .slats {
+    animation: ${({ $direction }) => ($direction === 'up' ? opening : closing)} 1.4s ease-in-out infinite;
+  }
+`;
+
+/** A window shutter drawn as mdi:window-shutter is, its slats a group of their own to move. */
+const MovingShade: React.FC<{ direction: 'up' | 'down' }> = ({ direction }) => (
+  <StyledShade $direction={direction} viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'>
+    <rect x={3} y={3} width={18} height={3} rx={0.6} />
+    <clipPath id={`shade-${direction}`}>
+      <rect x={4} y={6} width={16} height={15} />
+    </clipPath>
+    <g clipPath={`url(#shade-${direction})`}>
+      <g className='slats'>
+        {[0, 1, 2, 3, 4].map(slat => (
+          <rect key={slat} x={5} y={7 + slat * 3} width={14} height={2} rx={0.4} />
+        ))}
+      </g>
+    </g>
+  </StyledShade>
+);
 
 const StyledCover = styled(StyledTile)<{ $color: string }>`
   padding: ${u(0.8)};
@@ -74,18 +102,6 @@ const StyledCover = styled(StyledTile)<{ $color: string }>`
     transition:
       background 0.3s ease,
       color 0.3s ease;
-  }
-
-  &[data-moving] .icon {
-    overflow: hidden;
-  }
-
-  &[data-moving='up'] .icon > * {
-    animation: ${rising} 1.2s ease-in-out infinite;
-  }
-
-  &[data-moving='down'] .icon > * {
-    animation: ${sinking} 1.2s ease-in-out infinite;
   }
 
   &[data-on='true'] .icon {
@@ -268,13 +284,12 @@ const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, signs, action, onDe
   const call = (service: string) => void callService('cover', service, undefined, { entity_id: tile.entity });
   const tap = useTaps(() => call('toggle'), onDetails);
   const active = coverActive(view, tile.options.active_when, Boolean(entity));
+  const moving = entity?.state === 'opening' ? 'up' : entity?.state === 'closing' ? 'down' : null;
   const lit = { '--on-color': theme.colors.cover } as React.CSSProperties;
 
   const head = (
     <>
-      <span className='icon'>
-        <Icon icon={icon} />
-      </span>
+      <span className='icon'>{moving ? <MovingShade direction={moving} /> : <Icon icon={icon} />}</span>
       <span className='text'>
         <span className='name'>{name}</span>
         <span className='state'>
@@ -290,7 +305,6 @@ const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, signs, action, onDe
     <StyledCover
       $color={theme.colors.cover}
       data-on={active}
-      data-moving={entity?.state === 'opening' ? 'up' : entity?.state === 'closing' ? 'down' : undefined}
       data-press
       style={lit}
       role='button'
