@@ -44,6 +44,14 @@ export function useMouseSwipe(ref: RefObject<HTMLElement | null>, count: number)
 
     const onMove = (event: PointerEvent) => {
       if (!drag || event.pointerId !== drag.id) return;
+      // Released where this never heard of it -- over the sidebar, outside
+      // the window: end it here. Left open, the next plain move of the
+      // mouse became a drag and swallowed the click after it, and the
+      // tiles seemed stuck.
+      if (event.buttons === 0) {
+        onUp(event);
+        return;
+      }
       const dx = event.clientX - drag.x;
       if (!drag.moved) {
         // A few pixels of wobble in a click are not a drag.

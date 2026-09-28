@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import styled, { useTheme } from 'styled-components';
+import styled, { keyframes, useTheme } from 'styled-components';
 import { u } from '../../../../themes/default.theme';
 import { hoverable, pressable } from '../../../../themes/interaction';
 import type { Tile } from '../../../../config/types';
@@ -17,6 +17,15 @@ const STATES: Record<string, TranslationKey> = {
   closing: 'cover_closing',
 };
 
+/** Moving, the icon travels through its circle the way the cover goes, and again. */
+const travel = (from: string, to: string) => keyframes`
+  0% { transform: translateY(${from}); opacity: 0; }
+  30%, 70% { opacity: 1; }
+  100% { transform: translateY(${to}); opacity: 0; }
+`;
+const rising = travel('35%', '-35%');
+const sinking = travel('-35%', '35%');
+
 const StyledCover = styled(StyledTile)<{ $color: string }>`
   padding: ${u(0.8)};
   /* Asked how tall it came out, in units (one to the em): see the end. */
@@ -26,6 +35,9 @@ const StyledCover = styled(StyledTile)<{ $color: string }>`
      pointer and gives when pressed (bounce.ts, by data-press). */
   cursor: pointer;
   ${({ theme }) => hoverable(theme.bubble.hover)}
+  /* A double tap opens the details: the browser must not take it for a
+     zoom, which ends as one click -- and moves the cover or switches the room. */
+  touch-action: manipulation;
 
   &:focus-visible {
     outline: 2px solid ${({ theme }) => theme.colors.accent};
@@ -64,9 +76,38 @@ const StyledCover = styled(StyledTile)<{ $color: string }>`
       color 0.3s ease;
   }
 
+  &[data-moving] .icon {
+    overflow: hidden;
+  }
+
+  &[data-moving='up'] .icon > * {
+    animation: ${rising} 1.2s ease-in-out infinite;
+  }
+
+  &[data-moving='down'] .icon > * {
+    animation: ${sinking} 1.2s ease-in-out infinite;
+  }
+
   &[data-on='true'] .icon {
     background: color-mix(in srgb, ${({ $color }) => $color} 22%, transparent);
     color: ${({ $color }) => $color};
+  }
+
+  /* At the head's right end, as the Better Lighting card's "back to
+     adaptive": a round button in the warm tint. */
+  .round {
+    flex: none;
+    margin-left: auto;
+    width: ${u(2.8)};
+    height: ${u(2.8)};
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: ${u(1.35)};
+    background-color: color-mix(in srgb, ${({ theme }) => theme.colors.warm} 16%, transparent);
+    color: ${({ theme }) => theme.colors.warm};
+    ${({ theme }) => pressable(theme.bubble.hover, theme.bubble.pressed)}
   }
 
   .text {
@@ -158,6 +199,12 @@ const StyledCover = styled(StyledTile)<{ $color: string }>`
       gap: ${u(0.25)};
     }
 
+    .round {
+      width: ${u(2.2)};
+      height: ${u(2.2)};
+      font-size: ${u(1.1)};
+    }
+
     .state .sign {
       font-size: ${u(0.95)};
     }
@@ -188,6 +235,8 @@ interface CoverTileViewProps {
   tile: Tile;
   /** Small signs after where it stands, e.g. what Adaptive Cover Pro is doing. */
   signs?: React.ReactNode;
+  /** A round button at the head's right end, e.g. back to automatic control. */
+  action?: React.ReactNode;
   /** What a double tap opens, if anything. */
   onDetails?: () => void;
 }
@@ -202,7 +251,7 @@ interface CoverTileViewProps {
  * Options: `active_when` -- lit when `open` (the default), when `closed`,
  * or `never`.
  */
-const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, signs, onDetails }) => {
+const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, signs, action, onDetails }) => {
   const t = useT();
   const theme = useTheme();
   const entity = useEntity(tile.entity || undefined);
@@ -241,6 +290,7 @@ const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, signs, onDetails })
     <StyledCover
       $color={theme.colors.cover}
       data-on={active}
+      data-moving={entity?.state === 'opening' ? 'up' : entity?.state === 'closing' ? 'down' : undefined}
       data-press
       style={lit}
       role='button'
@@ -258,7 +308,10 @@ const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, signs, onDetails })
       }}
     >
       <div className='body'>
-        <div className='head'>{head}</div>
+        <div className='head'>
+          {head}
+          {action}
+        </div>
         <div className='controls'>
           <div className='buttons'>
             <button

@@ -49,6 +49,12 @@ export function useDragScroll(ref: RefObject<HTMLElement | null>, active = true,
 
     const onMove = (event: PointerEvent) => {
       if (!drag || event.pointerId !== drag.id) return;
+      // Released where this never heard of it: end it here, or the next
+      // plain move becomes a drag and swallows a click (see useMouseSwipe).
+      if (event.buttons === 0) {
+        onUp(event);
+        return;
+      }
       const delta = at(event) - drag.from;
       if (!drag.moved) {
         // A few pixels of wobble in a click are not a drag.

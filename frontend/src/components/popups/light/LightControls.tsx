@@ -95,11 +95,14 @@ interface SliderProps {
   reported: unknown;
 }
 
-/** Brightness, from the foot of the column up. */
-export const BrightnessColumn: React.FC<SliderProps & { percent: number; color: string; onChange: (percent: number) => void }> = memo(
-  ({ label, reported, percent, color, onChange }) => {
+/**
+ * A level, 0 to 100, from the foot of the column up: a light's brightness
+ * (at least 1 -- 0 would be off), a cover's position or tilt (from 0).
+ */
+export const LevelColumn: React.FC<SliderProps & { percent: number; color: string; min?: number; onChange: (percent: number) => void }> =
+  memo(({ label, reported, percent, color, min = 1, onChange }) => {
     const { ref, value, dragging } = useDragValue<HTMLDivElement, number>(
-      (event, box) => Math.max(1, Math.round(fractionAlong(event, box, 'y') * 100)),
+      (event, box) => Math.max(min, Math.round(fractionAlong(event, box, 'y') * 100)),
       onChange,
       reported
     );
@@ -112,20 +115,19 @@ export const BrightnessColumn: React.FC<SliderProps & { percent: number; color: 
         tabIndex={0}
         aria-label={label}
         aria-orientation='vertical'
-        aria-valuemin={1}
+        aria-valuemin={min}
         aria-valuemax={100}
         aria-valuenow={shown}
         data-dragging={dragging}
         onKeyDown={event => {
           if (event.key === 'ArrowUp' || event.key === 'ArrowRight') onChange(Math.min(100, shown + 5));
-          if (event.key === 'ArrowDown' || event.key === 'ArrowLeft') onChange(Math.max(1, shown - 5));
+          if (event.key === 'ArrowDown' || event.key === 'ArrowLeft') onChange(Math.max(min, shown - 5));
         }}
       >
         <span className='fill' data-empty={shown === 0} style={{ height: `${shown}%` }} />
       </StyledColumn>
     );
-  }
-);
+  });
 
 /** The white, warm at the top and cold at the foot, over its own colours. */
 export const TemperatureColumn: React.FC<

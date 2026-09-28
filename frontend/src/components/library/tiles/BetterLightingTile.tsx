@@ -49,6 +49,9 @@ const StyledRoom = styled(StyledTile)<{ $glow: string }>`
      the pointer, and gives when pressed (bounce.ts, by data-press). */
   cursor: pointer;
   ${({ theme }) => hoverable(theme.bubble.hover)}
+  /* A double tap opens the details: the browser must not take it for a
+     zoom, which ends as one click -- and moves the cover or switches the room. */
+  touch-action: manipulation;
 
   &:focus-visible {
     outline: 2px solid ${({ theme }) => theme.colors.accent};
@@ -283,31 +286,9 @@ const Scenes: React.FC<SceneProps> = ({ selectId, hidden, on, title }) => {
   };
   const stepping = on && options.length > 1;
   return (
-    <div className='scenes'>
-      <button
-        type='button'
-        className='round'
-        aria-label={t('bl_previous_scene')}
-        disabled={!stepping}
-        onClick={() => choose(neighbourScene(options, current, -1))}
-      >
-        <Icon icon='mdi:chevron-left' />
-      </button>
-      {/* Named even when hidden from the list: it is what the room is in. */}
-      <button type='button' className='scene' onClick={() => setOpen(true)}>
-        <Icon className='lead' icon={icons[current] ?? 'mdi:palette'} />
-        <span className='label'>{current}</span>
-        <Icon icon='mdi:chevron-down' />
-      </button>
-      <button
-        type='button'
-        className='round'
-        aria-label={t('bl_next_scene')}
-        disabled={!stepping}
-        onClick={() => choose(neighbourScene(options, current, 1))}
-      >
-        <Icon icon='mdi:chevron-right' />
-      </button>
+    <>
+      {/* The list beside the row, not in it: a short card hides the row, and a
+          modal hidden with it would still hold every tap on the page. */}
       <Popup open={open} onClose={close} title={title} subtitle={t('bl_scenes')} icon='mdi:palette-outline' width={46}>
         <StyledSceneList>
           {options.map(option => (
@@ -325,7 +306,33 @@ const Scenes: React.FC<SceneProps> = ({ selectId, hidden, on, title }) => {
           ))}
         </StyledSceneList>
       </Popup>
-    </div>
+      <div className='scenes'>
+        <button
+          type='button'
+          className='round'
+          aria-label={t('bl_previous_scene')}
+          disabled={!stepping}
+          onClick={() => choose(neighbourScene(options, current, -1))}
+        >
+          <Icon icon='mdi:chevron-left' />
+        </button>
+        {/* Named even when hidden from the list: it is what the room is in. */}
+        <button type='button' className='scene' onClick={() => setOpen(true)}>
+          <Icon className='lead' icon={icons[current] ?? 'mdi:palette'} />
+          <span className='label'>{current}</span>
+          <Icon icon='mdi:chevron-down' />
+        </button>
+        <button
+          type='button'
+          className='round'
+          aria-label={t('bl_next_scene')}
+          disabled={!stepping}
+          onClick={() => choose(neighbourScene(options, current, 1))}
+        >
+          <Icon icon='mdi:chevron-right' />
+        </button>
+      </div>
+    </>
   );
 };
 

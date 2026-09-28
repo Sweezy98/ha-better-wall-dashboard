@@ -6,7 +6,7 @@ import Popup from '../../base/popup/Popup';
 import Icon from '../../base/icon/Icon';
 import Bubble from '../../base/bubble/Bubble';
 import BrightnessBar from '../../base/brightnessBar/BrightnessBar';
-import { BrightnessColumn, ColorWheel, TemperatureColumn } from './LightControls';
+import { LevelColumn, ColorWheel, TemperatureColumn } from './LightControls';
 import { useCallService, useEntity, useT } from '../../../hooks/useHa';
 import { COLOR_PRESETS, WHITE_PRESETS, brightnessPercent, kelvinToRgb, lightColor, lightFeatures } from '../../../lib/light';
 
@@ -228,7 +228,7 @@ const LightPanel: React.FC<{ entityId: string; presets: boolean }> = ({ entityId
           />
         ) : (
           features.brightness && (
-            <BrightnessColumn
+            <LevelColumn
               label={t('brightness')}
               reported={entity.last_updated}
               percent={percent}

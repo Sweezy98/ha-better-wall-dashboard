@@ -3,9 +3,10 @@ import { coverActive, coverFeatures, coverView } from './cover';
 
 describe('cover', () => {
   it('reads what a cover can do from its feature bits', () => {
-    expect(coverFeatures(15)).toEqual({ open: true, close: true, position: true, stop: true });
-    expect(coverFeatures(3)).toEqual({ open: true, close: true, position: false, stop: false });
-    expect(coverFeatures(undefined)).toEqual({ open: false, close: false, position: false, stop: false });
+    expect(coverFeatures(15)).toEqual({ open: true, close: true, position: true, stop: true, tilt: false });
+    expect(coverFeatures(143).tilt).toBe(true);
+    expect(coverFeatures(3)).toEqual({ open: true, close: true, position: false, stop: false, tilt: false });
+    expect(coverFeatures(undefined)).toEqual({ open: false, close: false, position: false, stop: false, tilt: false });
   });
 
   it('offers only the way a cover can still go, and both while it moves', () => {

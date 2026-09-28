@@ -4,6 +4,7 @@ import CoverTileView from './cover/CoverTileView';
 import AdaptiveCoverPopup from '../../popups/adaptiveCover/AdaptiveCoverPopup';
 import { useAdaptiveCover } from '../../../hooks/useAdaptiveCover';
 import AcpSigns from '../../popups/adaptiveCover/AcpSigns';
+import AcpResume from '../../popups/adaptiveCover/AcpResume';
 
 /**
  * A cover Adaptive Cover Pro steers: the cover tile, with signs of what is
@@ -20,6 +21,7 @@ const AdaptiveCoverTile: React.FC<TileProps> = ({ tile }) => {
       <CoverTileView
         tile={tile}
         signs={entities && <AcpSigns entities={entities} />}
+        action={entities && <AcpResume entities={entities} />}
         onDetails={entities ? () => setOpen(true) : undefined}
       />
       {entities && (

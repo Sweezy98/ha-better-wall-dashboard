@@ -9,17 +9,25 @@ const OPEN = 1;
 const CLOSE = 2;
 const SET_POSITION = 4;
 const STOP = 8;
+const SET_TILT_POSITION = 128;
 
 export interface CoverFeatures {
   open: boolean;
   close: boolean;
   position: boolean;
   stop: boolean;
+  tilt: boolean;
 }
 
 export function coverFeatures(supported: number | undefined): CoverFeatures {
   const bits = supported ?? 0;
-  return { open: (bits & OPEN) !== 0, close: (bits & CLOSE) !== 0, position: (bits & SET_POSITION) !== 0, stop: (bits & STOP) !== 0 };
+  return {
+    open: (bits & OPEN) !== 0,
+    close: (bits & CLOSE) !== 0,
+    position: (bits & SET_POSITION) !== 0,
+    stop: (bits & STOP) !== 0,
+    tilt: (bits & SET_TILT_POSITION) !== 0,
+  };
 }
 
 export interface CoverView {

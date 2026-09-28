@@ -1,7 +1,11 @@
 import { useEffect, useRef } from 'react';
 
-/** How long a first tap waits to see whether a second follows: Home Assistant's own. */
-const DOUBLE_TAP_MS = 250;
+/**
+ * How long a first tap waits to see whether a second follows. A little over
+ * Home Assistant's 250 ms: a finger on a wall tablet taps slower than a
+ * mouse clicks, and a double tap read as one tap moves a cover.
+ */
+const DOUBLE_TAP_MS = 300;
 
 /**
  * A click handler telling a tap from a double tap. With no double-tap
