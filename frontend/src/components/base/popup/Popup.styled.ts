@@ -34,6 +34,12 @@ export const StyledDialog = styled.dialog<{ $width: number; $full: boolean }>`
   -webkit-user-select: none;
   -webkit-touch-callout: none;
 
+  /* Showing something that is on: the corner shine of a tile that is on,
+     in its colour (--on-color), spread for the bigger glass. */
+  &[data-on='true'] {
+    --own-sheen: radial-gradient(circle at 0 0, color-mix(in srgb, var(--on-color) 22%, transparent), transparent 360px);
+  }
+
   &[open] {
     display: flex;
     flex-direction: column;

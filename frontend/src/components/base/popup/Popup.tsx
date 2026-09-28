@@ -10,6 +10,8 @@ interface PopupProps {
   subtitle?: React.ReactNode;
   icon?: string;
   iconColor?: string;
+  /** What it shows is on, lit in this colour: its glass shines as the tile's does. */
+  glow?: string;
   /** In units. Wide by default: a wall tablet is read at arm's length. */
   width?: number;
   /**
@@ -48,6 +50,7 @@ const Popup: React.FC<PopupProps> = ({
   subtitle,
   icon,
   iconColor,
+  glow,
   width = 50,
   idleMs = 120_000,
   full = false,
@@ -105,6 +108,8 @@ const Popup: React.FC<PopupProps> = ({
       tabIndex={-1}
       $width={width}
       $full={full}
+      data-on={Boolean(glow)}
+      style={glow ? ({ '--on-color': glow } as React.CSSProperties) : undefined}
       // Escape closes a dialog by itself; route it through onClose so React
       // state and the element agree about whether it is open.
       // However the dialog was closed -- by us, by the browser, by a script --

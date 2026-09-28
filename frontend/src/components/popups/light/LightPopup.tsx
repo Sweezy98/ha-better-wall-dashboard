@@ -152,6 +152,7 @@ const MemberLight: React.FC<{ entityId: string }> = memo(({ entityId }) => {
         state={on ? (features.brightness ? `${percent} %` : t('on')) : t('off')}
         icon={(attributes.icon as string | undefined) ?? 'mdi:lightbulb'}
         active={on}
+        lit={on}
         iconColor={on ? color : undefined}
         onClick={() => void callService('light', 'toggle', undefined, { entity_id: entityId })}
       />
@@ -342,19 +343,12 @@ const LightPopup: React.FC<LightPopupProps> = ({ open, onClose, entityId, name, 
   const on = entity?.state === 'on';
   const features = lightFeatures(attributes.supported_color_modes as string[] | undefined);
   const percent = brightnessPercent(on, attributes.brightness as number | undefined);
+  const glow = on ? (lightColor(attributes as Parameters<typeof lightColor>[0]) ?? theme.colors.warm) : undefined;
   const subtitle = !entity ? t('not_found') : on ? (features.brightness ? `${t('on')} · ${percent} %` : t('on')) : t('off');
   // Beside the controls, a group's or a room's lamps; a single light keeps to one column.
   const wide = ((attributes.entity_id as string[] | undefined) ?? []).some(id => id.startsWith('light.') && id !== entityId);
   return (
-    <Popup
-      open={open}
-      onClose={onClose}
-      title={name}
-      subtitle={subtitle}
-      icon={icon}
-      iconColor={on ? (lightColor(attributes as Parameters<typeof lightColor>[0]) ?? theme.colors.warm) : undefined}
-      width={wide ? 68 : 34}
-    >
+    <Popup open={open} onClose={onClose} title={name} subtitle={subtitle} icon={icon} iconColor={glow} glow={glow} width={wide ? 68 : 34}>
       <LightPanel entityId={entityId} presets={presets} />
     </Popup>
   );
