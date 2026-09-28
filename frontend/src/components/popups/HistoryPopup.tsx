@@ -165,26 +165,28 @@ const HistoryContent: React.FC<{ entityId: string; color: string }> = ({ entityI
           tooltip={point => `${format(point.v)} · ${when(point.t)}`}
         />
       </StyledGraph>
-      {range && (
-        <StyledExtrema>
-          <div>
-            <span>
-              {t('lowest')} · {when(range.min.t)}
-            </span>
-            <strong>{format(range.min.v)}</strong>
-          </div>
-          <div>
-            <span>{t('average')}</span>
-            <strong>{mean !== undefined ? format(mean) : '–'}</strong>
-          </div>
-          <div>
-            <span>
-              {t('highest')} · {when(range.max.t)}
-            </span>
-            <strong>{format(range.max.v)}</strong>
-          </div>
-        </StyledExtrema>
-      )}
+      {/* Always there, a dash while another range loads: gone for that
+          moment, the popup would shrink and grow again. */}
+      <StyledExtrema>
+        <div>
+          <span>
+            {t('lowest')}
+            {range ? ` · ${when(range.min.t)}` : ''}
+          </span>
+          <strong>{range ? format(range.min.v) : '–'}</strong>
+        </div>
+        <div>
+          <span>{t('average')}</span>
+          <strong>{range && mean !== undefined ? format(mean) : '–'}</strong>
+        </div>
+        <div>
+          <span>
+            {t('highest')}
+            {range ? ` · ${when(range.max.t)}` : ''}
+          </span>
+          <strong>{range ? format(range.max.v) : '–'}</strong>
+        </div>
+      </StyledExtrema>
     </>
   );
 };

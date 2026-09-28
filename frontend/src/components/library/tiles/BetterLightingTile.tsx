@@ -1,7 +1,7 @@
 import { memo, useCallback, useState } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { u } from '../../../themes/default.theme';
-import { pressable } from '../../../themes/interaction';
+import { hoverable, pressable } from '../../../themes/interaction';
 import type { TileProps } from '../registry';
 import { StyledTile } from './Tile.styled';
 import Icon from '../../base/icon/Icon';
@@ -45,6 +45,14 @@ const StyledRoom = styled(StyledTile)<{ $glow: string }>`
      so the query below reads in the same units as the rows it adds up. */
   container-type: size;
   font-size: ${u(1)};
+  /* The card is the button that switches the room: glass that glows under
+     the pointer, and gives when pressed (bounce.ts, by data-press). */
+  cursor: pointer;
+  ${({ theme }) => hoverable(theme.bubble.hover)}
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.accent};
+  }
 
   .head {
     display: flex;
@@ -53,18 +61,12 @@ const StyledRoom = styled(StyledTile)<{ $glow: string }>`
     min-width: 0;
   }
 
-  /* The icon and name together: one big target that switches the room. */
   .power {
     flex: 1 1 auto;
     display: flex;
     align-items: center;
     gap: ${u(0.8)};
     min-width: 0;
-    margin: ${u(-0.4)};
-    padding: ${u(0.4)};
-    border-radius: ${u(1.4)};
-    text-align: left;
-    ${({ theme }) => pressable(theme.bubble.hover, theme.bubble.pressed)}
   }
 
   .icon {
@@ -84,7 +86,7 @@ const StyledRoom = styled(StyledTile)<{ $glow: string }>`
   }
 
   /* On: the icon in the room's own colour, on a wash of it -- as a light's tile. */
-  .power[aria-pressed='true'] .icon {
+  &[data-on='true'] .power .icon {
     background: color-mix(in srgb, ${({ $glow }) => $glow} 22%, transparent);
     color: ${({ $glow }) => $glow};
   }
@@ -344,7 +346,7 @@ const BetterLightingTile: React.FC<TileProps> = ({ tile }) => {
   const attributes = (entity?.attributes ?? {}) as RoomAttributes & Record<string, unknown>;
   const on = entity?.state === 'on';
   const [details, setDetails] = useState(false);
-  // A tap switches the room; a double tap opens it and its lamps up close.
+  // A tap on the card switches the room; a double tap opens it and its lamps up close.
   const tap = useTaps(
     () => void callService('light', 'toggle', undefined, { entity_id: tile.entity }),
     () => setDetails(true)
@@ -380,9 +382,28 @@ const BetterLightingTile: React.FC<TileProps> = ({ tile }) => {
         icon={icon}
         presets={tile.options.hide_presets !== true}
       />
-      <StyledRoom $glow={glow} data-on={on} style={{ '--on-color': glow } as React.CSSProperties}>
+      <StyledRoom
+        $glow={glow}
+        data-on={on}
+        data-press
+        style={{ '--on-color': glow } as React.CSSProperties}
+        role='button'
+        tabIndex={0}
+        aria-pressed={on}
+        aria-label={name}
+        onClick={event => {
+          // Its own controls do their own thing; anywhere else switches the room.
+          if ((event.target as Element).closest('button, [role="slider"], dialog')) return;
+          tap();
+        }}
+        onKeyDown={event => {
+          if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' ')) return;
+          event.preventDefault();
+          tap();
+        }}
+      >
         <div className='head'>
-          <button type='button' className='power' aria-pressed={on} onClick={tap}>
+          <span className='power'>
             <span className='icon'>
               <Icon icon={icon} />
             </span>
@@ -398,7 +419,7 @@ const BetterLightingTile: React.FC<TileProps> = ({ tile }) => {
                 {attributes.bl_off_at && <Countdown offAt={attributes.bl_off_at} />}
               </div>
             </span>
-          </button>
+          </span>
           {on && attributes.bl_adaptive === false && (
             <button
               type='button'

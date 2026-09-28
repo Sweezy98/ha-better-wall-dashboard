@@ -3,6 +3,8 @@ import type { TranslationKey } from '../../lib/i18n';
 import EntityTile from './tiles/EntityTile';
 import SensorTile from './tiles/SensorTile';
 import BetterLightingTile from './tiles/BetterLightingTile';
+import CoverTile from './tiles/CoverTile';
+import AdaptiveCoverTile from './tiles/AdaptiveCoverTile';
 
 export interface TileProps {
   tile: Tile;
@@ -19,8 +21,10 @@ export interface LibraryEntry {
   domains: string[];
   /** Cells it takes when first added. */
   size: [number, number];
-  /** Offered only where this integration is installed, and its entities only in the picker. */
+  /** Offered only where this integration is installed. */
   integration?: string;
+  /** The entity picker offers only this integration's entities. */
+  pickerIntegration?: string;
 }
 
 /**
@@ -52,6 +56,15 @@ export const LIBRARY: LibraryEntry[] = [
     size: [2, 1],
   },
   {
+    type: 'cover',
+    label: 'tile_cover',
+    icon: 'mdi:window-shutter',
+    component: CoverTile,
+    needsEntity: true,
+    domains: ['cover'],
+    size: [2, 1],
+  },
+  {
     type: 'better_lighting',
     label: 'tile_better_lighting',
     icon: 'mdi:lightbulb-group',
@@ -60,6 +73,18 @@ export const LIBRARY: LibraryEntry[] = [
     domains: ['light'],
     size: [2, 2],
     integration: 'better_lighting',
+    pickerIntegration: 'better_lighting',
+  },
+  {
+    // Given the cover it steers, which people know, not the instance.
+    type: 'adaptive_cover',
+    label: 'tile_adaptive_cover',
+    icon: 'mdi:window-shutter-auto',
+    component: AdaptiveCoverTile,
+    needsEntity: true,
+    domains: ['cover'],
+    size: [2, 2],
+    integration: 'adaptive_cover_pro',
   },
 ];
 

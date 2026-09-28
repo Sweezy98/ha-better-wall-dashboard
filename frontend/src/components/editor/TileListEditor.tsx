@@ -123,7 +123,7 @@ const TileListEditor: React.FC<TileListEditorProps> = ({ tiles, columns, rows, o
                   label={t('entity')}
                   value={tile.entity}
                   domains={entry?.domains}
-                  integration={entry?.integration}
+                  integration={entry?.pickerIntegration}
                   onChange={entity => set(index, { entity })}
                 />
               )}

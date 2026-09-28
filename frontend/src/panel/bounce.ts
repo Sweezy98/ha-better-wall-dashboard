@@ -18,7 +18,8 @@ const KEYFRAMES: Keyframe[] = [
  */
 export function bouncePress(event: React.MouseEvent): void {
   const target = event.target as Element;
-  const button = target.closest('button');
+  // A button, or a surface that is one (`data-press`): a card with its own controls in it.
+  const button = target.closest('button, [data-press]');
   if (!button || target.closest('[role="slider"]')) return;
   const tile = target.closest('[data-tile]');
   const region = tile ?? target.closest('[data-bounce]');

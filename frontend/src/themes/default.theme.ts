@@ -40,6 +40,9 @@ const theme: DefaultTheme = {
     accent: '#4aa8e0',
     warm: '#ffb43c',
     calendar: '#03a9f4',
+    // A cover that is open, as Home Assistant's own state colour has it.
+    cover: '#b388ff',
+    success: '#5fce7e',
   },
   popup: {
     backdrop: 'rgba(0, 0, 0, 0.62)',

@@ -50,6 +50,13 @@ and why (presence, night, by hand or automatically, the countdown to switching o
 bar in the room's own colour, its scenes a step either way or all of them a tap away, back to
 adaptive in one press, and one extra button of your choice.
 
+A **cover** tile shows where a blind stands, with up, stop and down. Where
+[Adaptive Cover Pro] steers it, the **Adaptive Cover Pro** tile adds what is steering it — auto,
+solar tracking, cloudy, climate, a hand's hold with its end time and a press to give it back —
+and a double tap opens the details: target and position, its switches, each step of its
+decision, the window and the sun (a sky compass and today's sun curve), today's plan and the
+last day's history.
+
 A **double tap on a light** — an entity tile or a room — opens it up close: on and off,
 brightness, colour and white in one tall control, colour presets (hidden per tile if you like),
 and each lamp of a group or room on its own row. A tap gives the tile a little bounce, and a
@@ -190,3 +197,4 @@ MIT
 [UniFi]: https://www.home-assistant.io/integrations/unifi/
 [Google Travel Time]: https://www.home-assistant.io/integrations/google_travel_time/
 [Better Lighting]: https://github.com/Sweezy98/ha-better-lighting
+[Adaptive Cover Pro]: https://github.com/jrhubott/adaptive-cover-pro
