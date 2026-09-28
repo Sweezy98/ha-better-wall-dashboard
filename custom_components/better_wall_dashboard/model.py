@@ -116,7 +116,9 @@ def _choice(value: Any, choices: Iterable[str], default: str) -> str:
 
 
 def _hex_color(value: Any, default: str) -> str:
-    return value.lower() if isinstance(value, str) and _HEX_COLOR.match(value) else default
+    return (
+        value.lower() if isinstance(value, str) and _HEX_COLOR.match(value) else default
+    )
 
 
 def _pin(value: Any) -> str:
