@@ -41,6 +41,7 @@ MAX_QUICK_ACTIONS: Final = 6
 MAX_STATUS_ICONS: Final = 6
 MAX_NOTIFICATION_PREFIXES: Final = 16
 CLOCK_STYLES: Final = ("digital", "analog")
+BACKGROUND_MODES: Final = ("image", "color")
 MAX_BUTTONS: Final = 5
 MAX_SECTION_STATUS: Final = 2
 MAX_SYSTEM_STATS: Final = 8
@@ -55,6 +56,7 @@ GUEST_WIFI_SECURITY: Final = ("WPA", "WEP", "nopass")
 _ID = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 _PIN = re.compile(r"^[0-9]{4,8}$")
 _ENTITY_ID = re.compile(r"^[a-z0-9_]+\.[a-z0-9_]+$")
+_HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 
 def new_id() -> str:
@@ -111,6 +113,10 @@ def _entities(value: Any, limit: int = MAX_LIST) -> list[str]:
 
 def _choice(value: Any, choices: Iterable[str], default: str) -> str:
     return value if isinstance(value, str) and value in choices else default
+
+
+def _hex_color(value: Any, default: str) -> str:
+    return value.lower() if isinstance(value, str) and _HEX_COLOR.match(value) else default
 
 
 def _pin(value: Any) -> str:
@@ -396,6 +402,10 @@ def normalize_dashboard(
             "image": _text(background.get("image"), "", MAX_URL),
             "dim": _float(background.get("dim"), 0.8, 0.0, 0.95),
             "blur": _int(background.get("blur"), 0, 0, 40),
+            # A plain colour instead of a picture. Added later: a dashboard
+            # stored before it reads as the picture it always had.
+            "mode": _choice(background.get("mode"), BACKGROUND_MODES, "image"),
+            "color": _hex_color(background.get("color"), "#131313"),
         },
         # Asked for before the tablet opens Home Assistant's own sidebar, where
         # anyone could reach every setting. Empty: no PIN, a long press opens it.

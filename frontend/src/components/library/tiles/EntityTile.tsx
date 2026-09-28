@@ -1,10 +1,13 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import type { TileProps } from '../registry';
 import { StyledTile, tileButton } from './Tile.styled';
 import Icon from '../../base/icon/Icon';
 import { domainIcon, toggleService, useCallService, useEntity, useT } from '../../../hooks/useHa';
+import { useTaps } from '../../../hooks/useTaps';
+import { lightColor } from '../../../lib/light';
+import LightPopup from '../../popups/light/LightPopup';
 
 const ACTIVE = new Set(['on', 'open', 'opening', 'unlocked', 'playing', 'heat', 'cool', 'heat_cool', 'auto', 'home']);
 
@@ -49,37 +52,56 @@ const StyledButton = styled(StyledTile).attrs({ as: 'button', type: 'button' })<
 `;
 
 /**
- * Any entity, as a tile that toggles it.
- *
- * Deliberately generic: the dedicated device controls come later, as their
- * own library entries. A light shows the colour it is actually lit in.
+ * Any entity, as a tile that toggles it. A light shows the colour it is lit
+ * in, and a double tap opens it up close.
  */
 const EntityTile: React.FC<TileProps> = ({ tile }) => {
   const entity = useEntity(tile.entity || undefined);
   const callService = useCallService();
   const t = useT();
+  const [open, setOpen] = useState(false);
+  const isLight = tile.entity.startsWith('light.');
   const active = entity ? ACTIVE.has(entity.state) : false;
-  const rgb = entity?.attributes.rgb_color as [number, number, number] | undefined;
-  const glow = active && rgb ? `rgb(${rgb.join(',')})` : undefined;
+  const glow = active ? lightColor(entity?.attributes as Parameters<typeof lightColor>[0]) : undefined;
   const state = !entity ? t('not_found') : entity.state === 'on' ? t('on') : entity.state === 'off' ? t('off') : entity.state;
+  const name = tile.name || (entity?.attributes.friendly_name as string) || tile.entity;
+  const icon = tile.icon || (entity?.attributes.icon as string | undefined) || domainIcon(tile.entity);
+  const tap = useTaps(
+    () => {
+      const [domain, service] = toggleService(tile.entity);
+      void callService(domain, service, undefined, { entity_id: tile.entity });
+    },
+    isLight ? () => setOpen(true) : undefined
+  );
   return (
-    <StyledButton
-      $active={active}
-      $glow={glow}
-      disabled={!entity}
-      onClick={() => {
-        const [domain, service] = toggleService(tile.entity);
-        void callService(domain, service, undefined, { entity_id: tile.entity });
-      }}
-    >
-      <span className='icon'>
-        <Icon icon={tile.icon || (entity?.attributes.icon as string | undefined) || domainIcon(tile.entity)} />
-      </span>
-      <span>
-        <div className='name'>{tile.name || (entity?.attributes.friendly_name as string) || tile.entity}</div>
-        <div className='state'>{state}</div>
-      </span>
-    </StyledButton>
+    <>
+      <StyledButton
+        $active={active}
+        $glow={glow}
+        data-on={active}
+        style={glow ? ({ '--on-color': glow } as React.CSSProperties) : undefined}
+        disabled={!entity}
+        onClick={tap}
+      >
+        <span className='icon'>
+          <Icon icon={icon} />
+        </span>
+        <span>
+          <div className='name'>{name}</div>
+          <div className='state'>{state}</div>
+        </span>
+      </StyledButton>
+      {isLight && (
+        <LightPopup
+          open={open}
+          onClose={() => setOpen(false)}
+          entityId={tile.entity}
+          name={name}
+          icon={icon}
+          presets={tile.options.hide_presets !== true}
+        />
+      )}
+    </>
   );
 };
 

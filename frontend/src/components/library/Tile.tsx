@@ -12,7 +12,7 @@ const Tile: React.FC<{ tile: TileConfig }> = ({ tile }) => {
   const Component = LIBRARY_BY_TYPE[tile.type]?.component;
   if (!Component) return null;
   return (
-    <div style={{ gridColumn: `span ${tile.w}`, gridRow: `span ${tile.h}`, minWidth: 0, minHeight: 0 }}>
+    <div data-tile style={{ gridColumn: `span ${tile.w}`, gridRow: `span ${tile.h}`, minWidth: 0, minHeight: 0 }}>
       <Component tile={tile} />
     </div>
   );

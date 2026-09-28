@@ -27,6 +27,7 @@ const QuickAction: React.FC<{ action: NamedEntity }> = ({ action }) => {
       state={state}
       icon={action.icon || (entity?.attributes.icon as string | undefined) || domainIcon(action.entity)}
       active={active}
+      lit={active}
       onClick={
         entity
           ? () => {

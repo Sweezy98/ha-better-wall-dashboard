@@ -21,6 +21,16 @@ export const StyledBubble = styled.button<{ $interactive: boolean; $compact?: bo
   /* A bubble that is part of a bigger button -- a graph card's header -- keeps that button's hand. */
   cursor: ${({ $interactive }) => ($interactive ? 'pointer' : 'inherit')};
   ${({ $interactive, theme }) => $interactive && pressable(theme.bubble.hover, theme.bubble.pressed)}
+
+  /* What it switches is on: as a tile that is on, a shade clearer, with a
+     shine in its icon's colour (--on-color) -- from the left, the pill's
+     round end, where the tile's comes from its corner. */
+  &[data-on='true'] {
+    background-color: ${({ theme }) => theme.bubble.on};
+    /* Most of the way along the pill, so on reads at a glance. */
+    --own-sheen: radial-gradient(ellipse 85% 180% at 0 50%, color-mix(in srgb, var(--on-color, #fff) 22%, transparent), transparent);
+    background-image: var(--own-sheen);
+  }
 `;
 
 export const StyledBubbleIcon = styled.span<{ $active: boolean; $color?: string }>`

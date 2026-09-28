@@ -1,14 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  brightnessPercent,
-  formatCountdown,
-  isRoomLight,
-  kelvinToRgb,
-  neighbourScene,
-  roomBadges,
-  roomColor,
-  secondsUntilOff,
-} from './betterLighting';
+import { brightnessPercent } from './light';
+import { formatCountdown, isRoomLight, neighbourScene, roomBadges, secondsUntilOff } from './betterLighting';
 
 describe('better lighting room', () => {
   it('knows a room light by its room id', () => {
@@ -22,15 +14,6 @@ describe('better lighting room', () => {
     expect(brightnessPercent(true, 128)).toBe(50);
     expect(brightnessPercent(false, 255)).toBe(0);
     expect(brightnessPercent(true, null)).toBe(0);
-  });
-
-  it('tints by colour first, then by white', () => {
-    expect(roomColor({ rgb_color: [255, 0, 0], color_temp_kelvin: 2700 })).toBe('rgb(255, 0, 0)');
-    expect(roomColor({ color_temp_kelvin: 6600 })).toBe(`rgb(${kelvinToRgb(6600).join(', ')})`);
-    expect(roomColor({})).toBeUndefined();
-    const [red, , blue] = kelvinToRgb(2700);
-    expect(red).toBe(255);
-    expect(blue).toBeLessThan(200);
   });
 
   it('counts down to a switch-off in the future only', () => {

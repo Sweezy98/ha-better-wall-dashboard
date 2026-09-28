@@ -96,7 +96,14 @@ export interface Dashboard {
   name: string;
   /** Four to eight digits guarding Home Assistant's sidebar; empty for none. Only the editor is sent it. */
   pin?: string;
-  background: { image: string; dim: number; blur: number };
+  background: {
+    image: string;
+    dim: number;
+    blur: number;
+    /** A plain colour instead of the picture; missing from a backend older than this page. */
+    mode?: 'image' | 'color';
+    color?: string;
+  };
   sidebar: SidebarConfig;
   pages: Page[];
   buttons: BarButton[];

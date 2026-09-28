@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import { pressable } from '../../../themes/interaction';
@@ -7,16 +7,18 @@ import { StyledTile } from './Tile.styled';
 import Icon from '../../base/icon/Icon';
 import Bubble from '../../base/bubble/Bubble';
 import Popup from '../../base/popup/Popup';
+import BrightnessBar from '../../base/brightnessBar/BrightnessBar';
+import { brightnessPercent, lightColor } from '../../../lib/light';
 import { domainIcon, toggleService, useCallService, useEntity, useT } from '../../../hooks/useHa';
 import { useRoomSelect } from '../../../hooks/useBetterLighting';
 import { useTick } from '../../../hooks/useNow';
+import { useTaps } from '../../../hooks/useTaps';
+import LightPopup from '../../popups/light/LightPopup';
 import type { TranslationKey } from '../../../lib/i18n';
 import {
-  brightnessPercent,
   formatCountdown,
   neighbourScene,
   roomBadges,
-  roomColor,
   secondsUntilOff,
   type RoomAttributes,
   type RoomBadge,
@@ -39,6 +41,10 @@ const StyledRoom = styled(StyledTile)<{ $glow: string }>`
   flex-direction: column;
   gap: ${u(0.6)};
   padding: ${u(0.8)};
+  /* Sized by its cells, and asked how tall it came out: one unit to the em,
+     so the query below reads in the same units as the rows it adds up. */
+  container-type: size;
+  font-size: ${u(1)};
 
   .head {
     display: flex;
@@ -145,48 +151,6 @@ const StyledRoom = styled(StyledTile)<{ $glow: string }>`
     gap: ${u(0.5)};
   }
 
-  .bar {
-    position: relative;
-    height: ${u(2.8)};
-    border-radius: ${u(1.4)};
-    background: ${({ theme }) => theme.bubble.icon};
-    overflow: hidden;
-    cursor: pointer;
-    /* The bar takes the finger, or the page would swipe instead. */
-    touch-action: none;
-  }
-
-  .bar:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.accent};
-  }
-
-  .fill {
-    position: absolute;
-    inset: 0 auto 0 0;
-    background: color-mix(in srgb, ${({ $glow }) => $glow} 45%, transparent);
-    transition: width 0.3s ease;
-  }
-
-  .bar[data-dragging='true'] .fill {
-    transition: none;
-  }
-
-  /* A grip at the end of the fill, so the level reads as something to drag. */
-  .fill::after {
-    content: '';
-    position: absolute;
-    top: 30%;
-    bottom: 30%;
-    right: ${u(0.6)};
-    width: ${u(0.25)};
-    border-radius: ${u(0.2)};
-    background: ${({ $glow }) => $glow};
-  }
-
-  .fill[data-empty='true']::after {
-    display: none;
-  }
-
   .scenes {
     display: grid;
     grid-template-columns: ${u(2.8)} minmax(0, 1fr) ${u(2.8)};
@@ -225,6 +189,29 @@ const StyledRoom = styled(StyledTile)<{ $glow: string }>`
   button:disabled {
     opacity: 0.4;
   }
+
+  /* Too short for the scenes under the bar (three rows of 2.8 and their
+     gaps, measured inside the padding): the bar and the scenes share one
+     row, as a 2x1 tile has room for across. Only a tile short and narrow
+     both, a 1x1, leaves the scenes out. Last, so it wins over the rows' own
+     layout above. */
+  @container (height < 9.6em) {
+    .controls {
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .controls > * {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+  }
+
+  @container (height < 9.6em) and (width < 18em) {
+    .scenes {
+      display: none;
+    }
+  }
 `;
 
 const StyledSceneList = styled.div`
@@ -232,84 +219,6 @@ const StyledSceneList = styled.div`
   grid-template-columns: repeat(auto-fill, minmax(${u(14)}, 1fr));
   gap: ${u(0.6)};
 `;
-
-/**
- * Dragging the brightness: follows the pointer and sends only on release,
- * as the card does -- a light asked for every pixel falls behind. The level
- * let go at stays drawn until the room reports it, so the bar does not jump
- * back to where it was in between.
- */
-function useBrightnessDrag(onRelease: (percent: number) => void, reported: unknown) {
-  const ref = useRef<HTMLDivElement>(null);
-  // The level held, and what the room had reported when it was let go.
-  const [held, setHeld] = useState<{ percent: number; since: unknown } | null>(null);
-  const [dragging, setDragging] = useState(false);
-  const release = useRef(onRelease);
-  const latest = useRef(reported);
-
-  useEffect(() => {
-    release.current = onRelease;
-    latest.current = reported;
-  });
-
-  useEffect(() => {
-    const bar = ref.current;
-    if (!bar) return;
-    let pointer: number | null = null;
-    let last = 0;
-    let settle = 0;
-    const at = (x: number) => {
-      const box = bar.getBoundingClientRect();
-      return Math.min(100, Math.max(1, Math.round(((x - box.left) / box.width) * 100)));
-    };
-    const onDown = (event: PointerEvent) => {
-      if (event.button !== 0) return;
-      // Natively, before the page's own mouse swipe sees it on the way up.
-      event.stopPropagation();
-      pointer = event.pointerId;
-      bar.setPointerCapture(pointer);
-      window.clearTimeout(settle);
-      last = at(event.clientX);
-      setHeld({ percent: last, since: latest.current });
-      setDragging(true);
-    };
-    const onMove = (event: PointerEvent) => {
-      if (event.pointerId !== pointer) return;
-      last = at(event.clientX);
-      setHeld({ percent: last, since: latest.current });
-    };
-    const onUp = (event: PointerEvent) => {
-      if (event.pointerId !== pointer) return;
-      pointer = null;
-      setDragging(false);
-      setHeld({ percent: last, since: latest.current });
-      release.current(last);
-      // Unchanged, the room reports nothing; let go of the value anyway.
-      settle = window.setTimeout(() => setHeld(null), 4000);
-    };
-    const onCancel = (event: PointerEvent) => {
-      if (event.pointerId !== pointer) return;
-      pointer = null;
-      setDragging(false);
-      setHeld(null);
-    };
-    bar.addEventListener('pointerdown', onDown);
-    bar.addEventListener('pointermove', onMove);
-    bar.addEventListener('pointerup', onUp);
-    bar.addEventListener('pointercancel', onCancel);
-    return () => {
-      window.clearTimeout(settle);
-      bar.removeEventListener('pointerdown', onDown);
-      bar.removeEventListener('pointermove', onMove);
-      bar.removeEventListener('pointerup', onUp);
-      bar.removeEventListener('pointercancel', onCancel);
-    };
-  }, []);
-
-  // Once the room reports again, its own level is the one to draw.
-  const value = held && (dragging || held.since === reported) ? held.percent : null;
-  return { ref, value, dragging };
-}
 
 /** The room's countdown to switching itself off, ticking only while there is one. */
 const Countdown: React.FC<{ offAt: string }> = ({ offAt }) => {
@@ -434,21 +343,19 @@ const BetterLightingTile: React.FC<TileProps> = ({ tile }) => {
   const callService = useCallService();
   const attributes = (entity?.attributes ?? {}) as RoomAttributes & Record<string, unknown>;
   const on = entity?.state === 'on';
-  const {
-    ref: barRef,
-    value: dragged,
-    dragging,
-  } = useBrightnessDrag(
-    percent => void callService('light', 'turn_on', { brightness_pct: percent }, { entity_id: tile.entity }),
-    entity?.last_updated
+  const [details, setDetails] = useState(false);
+  // A tap switches the room; a double tap opens it and its lamps up close.
+  const tap = useTaps(
+    () => void callService('light', 'toggle', undefined, { entity_id: tile.entity }),
+    () => setDetails(true)
   );
-
   const hidden = Array.isArray(tile.options.hidden_scenes) ? (tile.options.hidden_scenes as string[]) : [];
   const buttonEntity = typeof tile.options.button_entity === 'string' ? tile.options.button_entity : '';
   const buttonIcon = typeof tile.options.button_icon === 'string' ? tile.options.button_icon : '';
   const name = tile.name || (attributes.friendly_name as string | undefined) || tile.entity;
-  const glow = roomColor(attributes) ?? theme.colors.warm;
-  const percent = dragged ?? brightnessPercent(on, attributes.brightness);
+  const icon = tile.icon || (attributes.icon as string | undefined) || 'mdi:lightbulb-group';
+  const glow = lightColor(attributes) ?? theme.colors.warm;
+  const percent = brightnessPercent(on, attributes.brightness);
   // Cleared by the room itself once nothing is waiting to switch it off.
   const countingDown = Boolean(attributes.bl_off_at);
   const badges = roomBadges(attributes, on, countingDown);
@@ -462,68 +369,61 @@ const BetterLightingTile: React.FC<TileProps> = ({ tile }) => {
     );
   }
 
-  const step = (delta: number) =>
-    void callService('light', 'turn_on', { brightness_pct: Math.min(100, Math.max(1, percent + delta)) }, { entity_id: tile.entity });
-
   return (
-    <StyledRoom $glow={glow}>
-      <div className='head'>
-        <button
-          type='button'
-          className='power'
-          aria-pressed={on}
-          onClick={() => void callService('light', 'toggle', undefined, { entity_id: tile.entity })}
-        >
-          <span className='icon'>
-            <Icon icon={tile.icon || (attributes.icon as string | undefined) || 'mdi:lightbulb-group'} />
-          </span>
-          <span className='text'>
-            <div className='name'>{name}</div>
-            <div className='state'>
-              <span>{on || dragged !== null ? `${percent} %` : t('off')}</span>
-              {badges.map(badge => (
-                <span key={badge} className='badge' title={t(BADGES[badge].label)} aria-label={t(BADGES[badge].label)}>
-                  <Icon icon={BADGES[badge].icon} />
-                </span>
-              ))}
-              {attributes.bl_off_at && <Countdown offAt={attributes.bl_off_at} />}
-            </div>
-          </span>
-        </button>
-        {on && attributes.bl_adaptive === false && (
-          <button
-            type='button'
-            className='round adaptive'
-            title={t('bl_back_to_adaptive')}
-            aria-label={t('bl_back_to_adaptive')}
-            onClick={() => void callService('better_lighting', 'set_adaptive', { entity_id: tile.entity })}
-          >
-            <Icon icon='mdi:white-balance-sunny' />
+    <>
+      {/* Beside the tile, not in it: its class rules (.power, .icon) would reach into the popup. */}
+      <LightPopup
+        open={details}
+        onClose={() => setDetails(false)}
+        entityId={tile.entity}
+        name={name}
+        icon={icon}
+        presets={tile.options.hide_presets !== true}
+      />
+      <StyledRoom $glow={glow} data-on={on} style={{ '--on-color': glow } as React.CSSProperties}>
+        <div className='head'>
+          <button type='button' className='power' aria-pressed={on} onClick={tap}>
+            <span className='icon'>
+              <Icon icon={icon} />
+            </span>
+            <span className='text'>
+              <div className='name'>{name}</div>
+              <div className='state'>
+                <span>{on ? `${percent} %` : t('off')}</span>
+                {badges.map(badge => (
+                  <span key={badge} className='badge' title={t(BADGES[badge].label)} aria-label={t(BADGES[badge].label)}>
+                    <Icon icon={BADGES[badge].icon} />
+                  </span>
+                ))}
+                {attributes.bl_off_at && <Countdown offAt={attributes.bl_off_at} />}
+              </div>
+            </span>
           </button>
-        )}
-        {buttonEntity && <ExtraButton entityId={buttonEntity} icon={buttonIcon} />}
-      </div>
-      <div className='controls'>
-        <div
-          ref={barRef}
-          className='bar'
-          role='slider'
-          tabIndex={0}
-          aria-label={t('bl_brightness')}
-          aria-valuemin={1}
-          aria-valuemax={100}
-          aria-valuenow={percent}
-          data-dragging={dragging}
-          onKeyDown={event => {
-            if (event.key === 'ArrowRight' || event.key === 'ArrowUp') step(5);
-            if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') step(-5);
-          }}
-        >
-          <span className='fill' data-empty={percent === 0} style={{ width: `${percent}%` }} />
+          {on && attributes.bl_adaptive === false && (
+            <button
+              type='button'
+              className='round adaptive'
+              title={t('bl_back_to_adaptive')}
+              aria-label={t('bl_back_to_adaptive')}
+              onClick={() => void callService('better_lighting', 'set_adaptive', { entity_id: tile.entity })}
+            >
+              <Icon icon='mdi:white-balance-sunny' />
+            </button>
+          )}
+          {buttonEntity && <ExtraButton entityId={buttonEntity} icon={buttonIcon} />}
         </div>
-        {selectId && tile.h > 1 && <Scenes selectId={selectId} hidden={hidden} on={on} title={name} />}
-      </div>
-    </StyledRoom>
+        <div className='controls'>
+          <BrightnessBar
+            percent={percent}
+            color={glow}
+            label={t('brightness')}
+            reported={entity.last_updated}
+            onChange={brightness_pct => void callService('light', 'turn_on', { brightness_pct }, { entity_id: tile.entity })}
+          />
+          {selectId && <Scenes selectId={selectId} hidden={hidden} on={on} title={name} />}
+        </div>
+      </StyledRoom>
+    </>
   );
 };
 

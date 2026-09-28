@@ -70,7 +70,7 @@ const ButtonBar: React.FC<{ buttons: BarButton[] }> = ({ buttons }) => {
   const close = useCallback(() => setOpen(null), []);
   if (!buttons.length) return null;
   return (
-    <StyledButtonBarContainer $count={buttons.length}>
+    <StyledButtonBarContainer $count={buttons.length} data-bounce>
       {buttons.map(button => (
         <StyledBarButton key={button.id} type='button' onClick={() => setOpen(button.id)}>
           {button.icon && <Icon className='icon' icon={button.icon} />}

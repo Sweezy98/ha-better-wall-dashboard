@@ -7,8 +7,6 @@
  * older version, and `null` there means "does not apply", never "no".
  */
 
-export const BETTER_LIGHTING = 'better_lighting';
-
 export interface RoomAttributes {
   bl_room_id?: string;
   brightness?: number | null;
@@ -25,27 +23,6 @@ export interface RoomAttributes {
 /** A light Better Lighting draws a room with, rather than one of its members. */
 export function isRoomLight(entityId: string, attributes: Record<string, unknown> | undefined): boolean {
   return entityId.startsWith('light.') && attributes?.bl_room_id !== undefined;
-}
-
-/** How bright, 0 to 100; a room that is off is 0 whatever it last was. */
-export function brightnessPercent(on: boolean, brightness: number | null | undefined): number {
-  return on && brightness ? Math.round((brightness / 255) * 100) : 0;
-}
-
-/** Tanner Helland's approximation: good enough to tint a bar the way the room glows. */
-export function kelvinToRgb(kelvin: number): [number, number, number] {
-  const t = kelvin / 100;
-  const clamp = (value: number) => Math.round(Math.min(255, Math.max(0, value)));
-  const red = t <= 66 ? 255 : 329.698727446 * (t - 60) ** -0.1332047592;
-  const green = t <= 66 ? 99.4708025861 * Math.log(t) - 161.1195681661 : 288.1221695283 * (t - 60) ** -0.0755148492;
-  const blue = t >= 66 ? 255 : t <= 19 ? 0 : 138.5177312231 * Math.log(t - 10) - 305.0447927307;
-  return [clamp(red), clamp(green), clamp(blue)];
-}
-
-/** The colour the room is lit in, if it says: its colour, else its white. */
-export function roomColor(attributes: RoomAttributes): string | undefined {
-  const rgb = attributes.rgb_color ?? (attributes.color_temp_kelvin ? kelvinToRgb(attributes.color_temp_kelvin) : null);
-  return rgb ? `rgb(${rgb.join(', ')})` : undefined;
 }
 
 /** Seconds until the room switches itself off, or null when it is not about to. */

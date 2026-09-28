@@ -31,6 +31,12 @@ const BetterLightingOptions: React.FC<{ tile: Tile; onChange: (options: Record<s
           ))}
         </StyledField>
       )}
+      <CheckField
+        label={t('light_hide_presets')}
+        hint={t('light_hide_presets_hint')}
+        value={tile.options.hide_presets === true}
+        onChange={hide_presets => set({ hide_presets })}
+      />
       <StyledRow>
         <EntityField
           label={t('bl_button_entity')}

@@ -264,3 +264,19 @@ def test_notification_prefixes_are_a_list_read_from_the_old_single_one() -> None
         "wall_living_",
     ]
     assert model.normalize_dashboard({})["sidebar"]["notifications"]["prefixes"] == []
+
+
+def test_a_stored_background_stays_a_picture_and_a_colour_is_a_hex_one() -> None:
+    old = model.normalize_dashboard({"background": {"image": "/local/wall.jpg", "dim": 0.5}})
+    assert old["background"] == {
+        "image": "/local/wall.jpg",
+        "dim": 0.5,
+        "blur": 0,
+        "mode": "image",
+        "color": "#131313",
+    }
+    plain = model.normalize_dashboard({"background": {"mode": "color", "color": "#1A2B3C"}})
+    assert plain["background"]["mode"] == "color"
+    assert plain["background"]["color"] == "#1a2b3c"
+    odd = model.normalize_dashboard({"background": {"mode": "video", "color": "red"}})
+    assert (odd["background"]["mode"], odd["background"]["color"]) == ("image", "#131313")

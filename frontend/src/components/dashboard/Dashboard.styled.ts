@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { u } from '../../themes/default.theme';
 
 export const StyledDashboardContainer = styled.div`
@@ -16,30 +16,35 @@ export const StyledDashboardContainer = styled.div`
   -webkit-touch-callout: none;
 `;
 
-export const StyledBackground = styled.div<{ $image: string; $dim: number; $blur: number }>`
+/** The picture, blurred and darkened as set -- or, without one, a plain colour as it is. */
+export const StyledBackground = styled.div<{ $image?: string; $dim?: number; $blur?: number; $color?: string }>`
   position: absolute;
   inset: 0;
   z-index: -1;
-  background-color: #131313;
+  background-color: ${({ $color }) => $color ?? '#131313'};
   overflow: hidden;
 
-  &::before {
-    content: '';
-    position: absolute;
-    /* Blur pulls the edges in; oversize so the corners stay covered. */
-    inset: ${({ $blur }) => `-${$blur * 2}px`};
-    background-image: url('${({ $image }) => $image}');
-    background-size: cover;
-    background-position: center;
-    filter: ${({ $blur }) => ($blur ? `blur(${$blur}px)` : 'none')};
-  }
+  ${({ $image, $dim = 0, $blur = 0 }) =>
+    $image &&
+    css`
+      &::before {
+        content: '';
+        position: absolute;
+        /* Blur pulls the edges in; oversize so the corners stay covered. */
+        inset: -${$blur * 2}px;
+        background-image: url('${$image}');
+        background-size: cover;
+        background-position: center;
+        filter: ${$blur ? `blur(${$blur}px)` : 'none'};
+      }
 
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: ${({ $dim }) => `rgba(10, 10, 10, ${$dim})`};
-  }
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(10, 10, 10, ${$dim});
+      }
+    `}
 `;
 
 export const StyledDashboardGrid = styled.div`

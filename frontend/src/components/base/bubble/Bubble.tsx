@@ -18,6 +18,8 @@ interface BubbleProps {
   /** Full-opacity icon; Bubble Card dims the icon of anything that is off. */
   active?: boolean;
   iconColor?: string;
+  /** What it switches is on: drawn lit, as a tile that is on. */
+  lit?: boolean;
   background?: string;
   trailing?: React.ReactNode;
   onClick?: () => void;
@@ -38,6 +40,7 @@ const Bubble: React.FC<BubbleProps> = ({
   picture,
   active = true,
   iconColor,
+  lit = false,
   background,
   trailing,
   onClick,
@@ -49,6 +52,8 @@ const Bubble: React.FC<BubbleProps> = ({
     onClick={onClick}
     $interactive={Boolean(onClick)}
     $background={background}
+    data-on={lit}
+    style={lit && iconColor ? ({ '--on-color': iconColor } as React.CSSProperties) : undefined}
     className={className}
   >
     <StyledBubbleIcon $active={active || Boolean(picture)} $color={iconColor}>

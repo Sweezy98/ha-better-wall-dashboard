@@ -15,10 +15,13 @@ const theme: DefaultTheme = {
   font: 'var(--ha-font-family-body, Roboto, Noto, sans-serif)',
   card: {
     border: '0.5px solid rgba(255, 255, 255, 0.05)',
+    // A tile whose entity is on: its glass a shade clearer than the rest.
+    on: 'rgba(255, 255, 255, 0.018)',
   },
   bubble: {
     // Bubble Card's button, as the reference config themed it.
     background: 'rgba(255, 255, 255, 0.05)',
+    on: 'rgba(255, 255, 255, 0.03)',
     inset: 'rgba(255, 255, 255, 0.035)',
     header: 'rgba(255, 255, 255, 0.1)',
     icon: 'rgba(255, 255, 255, 0.08)',

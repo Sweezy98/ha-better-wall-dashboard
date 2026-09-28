@@ -7,7 +7,7 @@ import { useOfferedTiles } from './useOfferedTiles';
 import BetterLightingOptions from './BetterLightingOptions';
 import Icon from '../base/icon/Icon';
 import HaButton from './ha/HaButton';
-import { EntityField, IconField, ListControls, NumberField, SelectField, TextField } from './fields';
+import { CheckField, EntityField, IconField, ListControls, NumberField, SelectField, TextField } from './fields';
 import { StyledField, StyledRow } from './fields.styled';
 import { StyledDetails, StyledEmpty } from './editor.styled';
 import { move, newId, replaceAt } from '../../lib/editing';
@@ -148,6 +148,14 @@ const TileListEditor: React.FC<TileListEditorProps> = ({ tiles, columns, rows, o
                 />
               </StyledRow>
               {tile.type === 'sensor' && <OptionsField value={tile.options} onChange={options => set(index, { options })} />}
+              {tile.type === 'entity' && tile.entity.startsWith('light.') && (
+                <CheckField
+                  label={t('light_hide_presets')}
+                  hint={t('light_hide_presets_hint')}
+                  value={tile.options.hide_presets === true}
+                  onChange={hide_presets => set(index, { options: { ...tile.options, hide_presets } })}
+                />
+              )}
               {tile.type === 'better_lighting' && <BetterLightingOptions tile={tile} onChange={options => set(index, { options })} />}
             </div>
           </StyledDetails>

@@ -50,6 +50,14 @@ and why (presence, night, by hand or automatically, the countdown to switching o
 bar in the room's own colour, its scenes a step either way or all of them a tap away, back to
 adaptive in one press, and one extra button of your choice.
 
+A **double tap on a light** — an entity tile or a room — opens it up close: on and off,
+brightness, colour and white in one tall control, colour presets (hidden per tile if you like),
+and each lamp of a group or room on its own row. A tap gives the tile a little bounce, and a
+tile that is on wears a shine in its own colour.
+
+The background is a picture — the built-in one, your own, or one from the media library — or a
+plain colour.
+
 **The button bar** along the bottom: up to five buttons, each opening a popup of tiles. The first
 is the **Intercom** — where the doorbell's camera, talk-back, door opener and canned spoken replies
 are going, opening by itself when somebody rings.

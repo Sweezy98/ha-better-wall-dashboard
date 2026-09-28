@@ -17,7 +17,7 @@ import SidebarFooter from './footer/SidebarFooter';
 const Sidebar: React.FC = () => {
   const { sidebar } = useDashboard();
   return (
-    <StyledSidebarContainer as='aside'>
+    <StyledSidebarContainer as='aside' data-bounce>
       <StyledArea $area='header' data-area='header'>
         <SidebarHeader config={sidebar} />
       </StyledArea>

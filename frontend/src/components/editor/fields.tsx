@@ -195,6 +195,45 @@ export const CheckField: React.FC<Base<boolean>> = ({ label, hint, value, onChan
   );
 };
 
+const toHex = (rgb: unknown): string | null =>
+  Array.isArray(rgb) && rgb.length === 3 && rgb.every(part => typeof part === 'number')
+    ? `#${rgb
+        .map(part =>
+          Math.round(Math.min(255, Math.max(0, part)))
+            .toString(16)
+            .padStart(2, '0')
+        )
+        .join('')}`
+    : null;
+
+const toRgb = (hex: string): number[] => [1, 3, 5].map(start => parseInt(hex.slice(start, start + 2), 16) || 0);
+
+/** A colour, stored as `#rrggbb`: Home Assistant's own picker hands it over as red, green and blue. */
+export const ColorField: React.FC<Base<string>> = ({ label, hint, value, onChange }) => {
+  const ha = useHaControls();
+  if (ha) {
+    return (
+      <HaSelector
+        selector={{ color_rgb: {} }}
+        value={toRgb(value)}
+        label={label}
+        helper={hint}
+        onChange={next => {
+          const hex = toHex(next);
+          if (hex) onChange(hex);
+        }}
+      />
+    );
+  }
+  return (
+    <StyledField>
+      <span className='label'>{label}</span>
+      <input type='color' value={value} onChange={event => onChange(event.target.value)} />
+      {hint && <small>{hint}</small>}
+    </StyledField>
+  );
+};
+
 export const SelectField: React.FC<Base<string> & { options: { value: string; label: string }[] }> = ({
   label,
   hint,
