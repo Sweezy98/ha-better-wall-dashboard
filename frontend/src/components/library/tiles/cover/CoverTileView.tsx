@@ -1,13 +1,13 @@
 import { memo } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { u } from '../../../../themes/default.theme';
-import { pressable } from '../../../../themes/interaction';
+import { hoverable, pressable } from '../../../../themes/interaction';
 import type { Tile } from '../../../../config/types';
 import { StyledTile } from '../Tile.styled';
 import Icon from '../../../base/icon/Icon';
 import { domainIcon, useCallService, useEntity, useT } from '../../../../hooks/useHa';
 import { useTaps } from '../../../../hooks/useTaps';
-import { coverFeatures, coverView } from '../../../../lib/cover';
+import { coverActive, coverFeatures, coverView } from '../../../../lib/cover';
 import type { TranslationKey } from '../../../../lib/i18n';
 
 const STATES: Record<string, TranslationKey> = {
@@ -22,6 +22,14 @@ const StyledCover = styled(StyledTile)<{ $color: string }>`
   /* Asked how tall it came out, in units (one to the em): see the end. */
   container-type: size;
   font-size: ${u(1)};
+  /* The tile is the button, as a light's is: glass that glows under the
+     pointer and gives when pressed (bounce.ts, by data-press). */
+  cursor: pointer;
+  ${({ theme }) => hoverable(theme.bubble.hover)}
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.accent};
+  }
 
   /* The rows in a box of their own: a size query styles what is inside the
      container, never the container itself, so the gap has to live here. */
@@ -38,14 +46,6 @@ const StyledCover = styled(StyledTile)<{ $color: string }>`
     gap: ${u(0.8)};
     min-width: 0;
     text-align: left;
-  }
-
-  /* With details behind it, the head is the button that opens them. */
-  button.head {
-    margin: ${u(-0.4)};
-    padding: ${u(0.4)};
-    border-radius: ${u(1.4)};
-    ${({ theme }) => pressable(theme.bubble.hover, theme.bubble.pressed)}
   }
 
   .icon {
@@ -84,10 +84,20 @@ const StyledCover = styled(StyledTile)<{ $color: string }>`
     text-overflow: ellipsis;
   }
 
+  /* Where it stands, then small grey signs of what is steering it -- as the
+     Better Lighting card has them. */
   .state {
+    display: flex;
+    align-items: center;
+    gap: ${u(0.4)};
     font-size: ${u(0.95)};
     color: ${({ theme }) => theme.text.secondary};
     white-space: nowrap;
+    min-width: 0;
+  }
+
+  .state .full,
+  .state .short {
     overflow: hidden;
     text-overflow: ellipsis;
   }
@@ -96,10 +106,10 @@ const StyledCover = styled(StyledTile)<{ $color: string }>`
     display: none;
   }
 
-  .chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: ${u(0.35)};
+  .state .sign {
+    display: inline-flex;
+    flex: none;
+    font-size: ${u(1.05)};
   }
 
   .controls {
@@ -130,14 +140,26 @@ const StyledCover = styled(StyledTile)<{ $color: string }>`
     opacity: 0.35;
   }
 
-  /* Short, as a 2x1 with badges is (head 2.8, badges 1.8, buttons 2.8 and
-     their gaps, inside the padding): the gaps close up and the buttons come
-     down a little. Last, so it wins over the layout above. */
-  /* Narrow, as a 1x1 is: the badges by their icons alone, where the cover
-     stands by its number alone. */
+  /* Narrow, as a 1x1 is: where the cover stands by its number alone, and a
+     smaller icon to leave it and its signs room. Last, as the query below,
+     so they win over the layout above. */
   @container (width < 13em) {
-    .chips .chip-label {
-      display: none;
+    .head {
+      gap: ${u(0.5)};
+    }
+
+    .icon {
+      width: ${u(2.2)};
+      height: ${u(2.2)};
+      font-size: ${u(1.15)};
+    }
+
+    .state {
+      gap: ${u(0.25)};
+    }
+
+    .state .sign {
+      font-size: ${u(0.95)};
     }
 
     .state .full {
@@ -149,17 +171,11 @@ const StyledCover = styled(StyledTile)<{ $color: string }>`
     }
   }
 
-  @container (height < 8.8em) {
+  /* Short, as a 1x1 is (head 2.8, buttons 2.8 and their gap, inside the
+     padding): the buttons come down a little. */
+  @container (height < 6.4em) {
     .body {
-      gap: ${u(0.25)};
-    }
-
-    .text {
-      gap: ${u(0.05)};
-    }
-
-    .chips > * {
-      height: ${u(1.55)};
+      gap: ${u(0.3)};
     }
 
     .buttons button {
@@ -170,18 +186,23 @@ const StyledCover = styled(StyledTile)<{ $color: string }>`
 
 interface CoverTileViewProps {
   tile: Tile;
-  /** Small named states under the head, e.g. what Adaptive Cover Pro is doing. */
-  chips?: React.ReactNode;
-  /** What a double tap on the head opens, if anything. */
+  /** Small signs after where it stands, e.g. what Adaptive Cover Pro is doing. */
+  signs?: React.ReactNode;
+  /** What a double tap opens, if anything. */
   onDetails?: () => void;
 }
 
 /**
  * A cover as a tile: what it is, where it stands, and up, stop and down.
- * The plain cover tile is exactly this; the Adaptive Cover Pro tile adds
- * its chips and its details.
+ * A tap anywhere else on it moves the cover the other way -- or stops it
+ * while it moves -- as a light's tile switches the light. The plain cover
+ * tile is exactly this; the Adaptive Cover Pro tile adds its signs and, on
+ * a double tap, its details.
+ *
+ * Options: `active_when` -- lit when `open` (the default), when `closed`,
+ * or `never`.
  */
-const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, chips, onDetails }) => {
+const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, signs, onDetails }) => {
   const t = useT();
   const theme = useTheme();
   const entity = useEntity(tile.entity || undefined);
@@ -196,9 +217,8 @@ const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, chips, onDetails })
     ? t('not_found')
     : [stateKey ? t(stateKey) : entity.state, view.position !== undefined ? `${view.position} %` : ''].filter(Boolean).join(' · ');
   const call = (service: string) => void callService('cover', service, undefined, { entity_id: tile.entity });
-  // A single tap on the head does nothing -- the buttons move the cover --
-  // but waits, when there are details, to see whether a second follows.
-  const headTap = useTaps(() => undefined, onDetails);
+  const tap = useTaps(() => call('toggle'), onDetails);
+  const active = coverActive(view, tile.options.active_when, Boolean(entity));
   const lit = { '--on-color': theme.colors.cover } as React.CSSProperties;
 
   const head = (
@@ -211,23 +231,34 @@ const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, chips, onDetails })
         <span className='state'>
           <span className='full'>{stateText}</span>
           <span className='short'>{view.position !== undefined ? `${view.position} %` : stateText}</span>
+          {signs}
         </span>
       </span>
     </>
   );
 
   return (
-    <StyledCover $color={theme.colors.cover} data-on={view.open} style={lit}>
+    <StyledCover
+      $color={theme.colors.cover}
+      data-on={active}
+      data-press
+      style={lit}
+      role='button'
+      tabIndex={0}
+      aria-label={name}
+      onClick={event => {
+        // Its own buttons do their own thing; anywhere else moves the cover.
+        if (!entity || (event.target as Element).closest('button, dialog')) return;
+        tap();
+      }}
+      onKeyDown={event => {
+        if (!entity || event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' ')) return;
+        event.preventDefault();
+        tap();
+      }}
+    >
       <div className='body'>
-        {onDetails ? (
-          <button type='button' className='head' onClick={headTap}>
-            {head}
-          </button>
-        ) : (
-          <div className='head'>{head}</div>
-        )}
-        {/* Beside the head, not in it: a chip may be a button of its own. */}
-        {chips && <div className='chips'>{chips}</div>}
+        <div className='head'>{head}</div>
         <div className='controls'>
           <div className='buttons'>
             <button

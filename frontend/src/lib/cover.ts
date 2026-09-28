@@ -51,3 +51,20 @@ export function coverView(state: string | undefined, position: number | undefine
     open: known !== undefined ? known > 0 : state === 'open' || moving,
   };
 }
+
+/** When a cover's tile is drawn lit: the tile's `active_when` option. */
+export type CoverActiveWhen = 'open' | 'closed' | 'never';
+
+export const COVER_ACTIVE_WHEN: CoverActiveWhen[] = ['open', 'closed', 'never'];
+
+/**
+ * Whether the tile is lit. Open by default -- light is coming in -- but for
+ * a shutter that matters when it is down, closed; or never, for one that is
+ * only ever moved and never worth pointing out.
+ */
+export function coverActive(view: CoverView, when: unknown, known: boolean): boolean {
+  if (!known) return false;
+  if (when === 'never') return false;
+  if (when === 'closed') return !view.open && !view.moving;
+  return view.open;
+}

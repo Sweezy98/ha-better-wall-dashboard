@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { coverFeatures, coverView } from './cover';
+import { coverActive, coverFeatures, coverView } from './cover';
 
 describe('cover', () => {
   it('reads what a cover can do from its feature bits', () => {
@@ -18,5 +18,17 @@ describe('cover', () => {
   it('goes by its state when it reports no position', () => {
     expect(coverView('open', undefined)).toMatchObject({ canOpen: false, canClose: true, open: true, position: undefined });
     expect(coverView('closed', undefined)).toMatchObject({ canOpen: true, canClose: false, open: false });
+  });
+
+  it('is lit when open, when closed, or never, as the tile is set', () => {
+    const open = coverView('open', 40);
+    const closed = coverView('closed', 0);
+    expect(coverActive(open, undefined, true)).toBe(true);
+    expect(coverActive(closed, undefined, true)).toBe(false);
+    expect(coverActive(closed, 'closed', true)).toBe(true);
+    expect(coverActive(open, 'closed', true)).toBe(false);
+    expect(coverActive(coverView('closing', 20), 'closed', true)).toBe(false);
+    expect(coverActive(open, 'never', true)).toBe(false);
+    expect(coverActive(closed, 'closed', false)).toBe(false);
   });
 });

@@ -11,6 +11,7 @@ import { CheckField, EntityField, IconField, ListControls, NumberField, SelectFi
 import { StyledField, StyledRow } from './fields.styled';
 import { StyledDetails, StyledEmpty } from './editor.styled';
 import { move, newId, replaceAt } from '../../lib/editing';
+import { COVER_ACTIVE_WHEN, type CoverActiveWhen } from '../../lib/cover';
 
 /** A tile's component options, edited as JSON: each component defines its own. */
 const OptionsField: React.FC<{ value: Record<string, unknown>; onChange: (value: Record<string, unknown>) => void }> = ({
@@ -154,6 +155,17 @@ const TileListEditor: React.FC<TileListEditorProps> = ({ tiles, columns, rows, o
                   hint={t('light_hide_presets_hint')}
                   value={tile.options.hide_presets === true}
                   onChange={hide_presets => set(index, { options: { ...tile.options, hide_presets } })}
+                />
+              )}
+              {(tile.type === 'cover' || tile.type === 'adaptive_cover') && (
+                <SelectField
+                  label={t('cover_active_when')}
+                  hint={t('cover_active_when_hint')}
+                  value={
+                    COVER_ACTIVE_WHEN.includes(tile.options.active_when as CoverActiveWhen) ? String(tile.options.active_when) : 'open'
+                  }
+                  options={COVER_ACTIVE_WHEN.map(value => ({ value, label: t(`cover_active_${value}`) }))}
+                  onChange={active_when => set(index, { options: { ...tile.options, active_when } })}
                 />
               )}
               {tile.type === 'better_lighting' && <BetterLightingOptions tile={tile} onChange={options => set(index, { options })} />}

@@ -3,11 +3,11 @@ import type { TileProps } from '../registry';
 import CoverTileView from './cover/CoverTileView';
 import AdaptiveCoverPopup from '../../popups/adaptiveCover/AdaptiveCoverPopup';
 import { useAdaptiveCover } from '../../../hooks/useAdaptiveCover';
-import AcpBadges from '../../popups/adaptiveCover/AcpBadges';
+import AcpSigns from '../../popups/adaptiveCover/AcpSigns';
 
 /**
- * A cover Adaptive Cover Pro steers: the cover tile, with what is steering
- * it -- and, on a double tap, why.
+ * A cover Adaptive Cover Pro steers: the cover tile, with signs of what is
+ * steering it -- and, on a double tap, why.
  *
  * Given the cover, not the instance: the instance is found by the cover it
  * reports, so the editor offers the covers people know.
@@ -19,7 +19,7 @@ const AdaptiveCoverTile: React.FC<TileProps> = ({ tile }) => {
     <>
       <CoverTileView
         tile={tile}
-        chips={entities && <AcpBadges entities={entities} />}
+        signs={entities && <AcpSigns entities={entities} />}
         onDetails={entities ? () => setOpen(true) : undefined}
       />
       {entities && (
