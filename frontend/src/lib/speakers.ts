@@ -6,8 +6,9 @@
  * (Dolby Atmos, DTS:X, Neural:X, Dolby Surround, multi-channel stereo) fill
  * every speaker; plain stereo the front pair; a decoder on its own -- Dolby
  * Digital, DTS, multi-channel PCM, Direct -- the channels the source has,
- * read from its format ("3/4/.1", "5.1"). A mode this cannot read is
- * `unknown`, never a guess.
+ * read from its format ("3/4/.1", "5.1"). A mode this cannot read plays
+ * the source's own channels where the format is known, and is `unknown`
+ * otherwise, never a guess.
  */
 
 export type Channel =
@@ -114,6 +115,14 @@ export function sourceChannels(...texts: (string | undefined)[]): SourceChannels
   return null;
 }
 
+/** A source's channels the way people write a layout: "3/4/.1" is 7.1, a height channel or two makes it 7.1.4. */
+export function formatLayout(format: string | undefined): string | undefined {
+  const source = sourceChannels(format);
+  if (!source) return format;
+  const bed = source.front + source.surround;
+  return `${bed}.${source.lfe}${source.heights ? `.${source.heights}` : ''}`;
+}
+
 /** The speakers a source's own channels land on, of those there are. */
 function sourceSpeakers(source: SourceChannels): Channel[] {
   const front: Channel[] = source.front === 1 ? ['C'] : source.front === 2 ? ['FL', 'FR'] : source.front >= 3 ? ['FL', 'FR', 'C'] : [];
@@ -138,7 +147,10 @@ export interface SoundInfo {
  */
 export function speakerStates(layout: SpeakerLayout, sound: SoundInfo, unpowered: string[] = []): Record<string, SpeakerState> {
   const channels = layoutChannels(layout);
-  const how = sound.on ? rendering(sound.mode) : null;
+  const read = sound.on ? rendering(sound.mode) : null;
+  // A mode that says nothing about how it renders -- Denon's "Movie" is a
+  // group of them -- still plays the source's channels, where they are known.
+  const how = sound.on && !read && sourceChannels(sound.format) ? 'source' : read;
   const source = how === 'source' ? sourceChannels(sound.format, sound.mode) : null;
   const sounding: Channel[] | null = !sound.on
     ? []

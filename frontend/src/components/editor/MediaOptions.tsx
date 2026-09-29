@@ -234,6 +234,19 @@ const MediaOptions: React.FC<{ tile: Tile; onChange: (options: Record<string, un
             options={SOFAS.map(sofa => ({ value: sofa, label: t(`media_sofa_${sofa}`) }))}
             onChange={sofa => set({ sofa })}
           />
+          <CheckField
+            label={t('media_listener')}
+            hint={t('media_listener_hint')}
+            value={config.listener}
+            onChange={listener => set({ listener })}
+          />
+          <CheckField label={t('media_walls')} value={config.walls} onChange={walls => set({ hide_walls: !walls })} />
+          <CheckField
+            label={t('media_room_movable')}
+            hint={t('media_room_movable_hint')}
+            value={config.roomMovable}
+            onChange={room_movable => set({ room_movable })}
+          />
         </>
       )}
     </>

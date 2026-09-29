@@ -473,7 +473,6 @@ const en = {
   media_nothing: 'Nothing playing',
   media_current_source: 'Current source',
   media_now_playing: 'Now playing',
-  media_system: 'Source & system',
   media_audio_format: 'Audio format',
   media_sound_mode: 'Sound mode',
   media_decoder: 'Decoder',
@@ -483,9 +482,6 @@ const en = {
   media_switches: 'Outlets',
   media_night: 'Night mode',
   media_speakers: 'Speakers',
-  media_speakers_summary: '{active} of {count} playing',
-  media_speakers_unknown: 'Which speakers play cannot be told from “{mode}”.',
-  media_speakers_off: 'The receiver is off.',
   speaker_active: 'Playing',
   speaker_silent: 'Silent',
   speaker_unknown: 'Unknown',
@@ -556,6 +552,13 @@ const en = {
   media_sofa_straight: 'Straight',
   media_sofa_l_left: 'L-shaped, chaise on the left',
   media_sofa_l_right: 'L-shaped, chaise on the right',
+  media_view_reset: 'Back to the first view',
+  media_audio_info: 'Audio',
+  media_listener: 'Show a listener',
+  media_walls: 'Show the walls',
+  media_listener_hint: 'Someone seated in the middle of the sofa, where the speakers are aimed.',
+  media_room_movable: 'Turn and move the room by hand',
+  media_room_movable_hint: 'Drag to turn it; two fingers, a right-button drag or the wheel to pan and zoom.',
 };
 
 export type TranslationKey = keyof typeof en;
@@ -1024,7 +1027,6 @@ const de: Record<TranslationKey, string> = {
   media_nothing: 'Keine Wiedergabe',
   media_current_source: 'Aktuelle Quelle',
   media_now_playing: 'Wiedergabe',
-  media_system: 'Quelle & System',
   media_audio_format: 'Audioformat',
   media_sound_mode: 'Klangmodus',
   media_decoder: 'Decoder',
@@ -1034,9 +1036,6 @@ const de: Record<TranslationKey, string> = {
   media_switches: 'Steckdosen',
   media_night: 'Nachtmodus',
   media_speakers: 'Lautsprecher',
-  media_speakers_summary: '{active} von {count} aktiv',
-  media_speakers_unknown: 'Welche Lautsprecher spielen, lässt sich an „{mode}“ nicht ablesen.',
-  media_speakers_off: 'Der Receiver ist aus.',
   speaker_active: 'Spielt',
   speaker_silent: 'Still',
   speaker_unknown: 'Unbekannt',
@@ -1107,6 +1106,13 @@ const de: Record<TranslationKey, string> = {
   media_sofa_straight: 'Gerade',
   media_sofa_l_left: 'L-Form, Liege links',
   media_sofa_l_right: 'L-Form, Liege rechts',
+  media_view_reset: 'Zurück zur ersten Ansicht',
+  media_audio_info: 'Audio',
+  media_listener: 'Zuhörer zeigen',
+  media_walls: 'Wände zeigen',
+  media_listener_hint: 'Jemand in der Mitte des Sofas, wohin die Lautsprecher zielen.',
+  media_room_movable: 'Raum von Hand drehen und verschieben',
+  media_room_movable_hint: 'Ziehen dreht ihn; zwei Finger, Ziehen mit rechter Maustaste oder das Mausrad verschieben und zoomen.',
 };
 
 export const TRANSLATIONS: Record<string, Record<TranslationKey, string>> = { en, de };

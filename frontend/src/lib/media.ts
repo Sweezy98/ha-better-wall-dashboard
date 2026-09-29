@@ -266,13 +266,19 @@ export interface MediaConfig {
   formatEntity: string;
   layout: SpeakerLayout | null;
   sofa: Sofa;
+  /** Someone drawn in the listening position. */
+  listener: boolean;
+  /** The room turned, panned and zoomed by hand. */
+  roomMovable: boolean;
+  /** The room's walls drawn; the floor always is. */
+  walls: boolean;
 }
 
 /**
  * A media tile's options, each checked, from `tile.options`:
  * `players`, `power`, `volume`, `volume_unit`, `presets`, `switches`,
  * `switches_title`, `devices`, `night`, `night_text`, `mode_entity`,
- * `format_entity`, `speakers` ("7.4.4") and `sofa`.
+ * `format_entity`, `speakers` ("7.4.4"), `sofa`, `listener`, `room_movable` and `hide_walls`.
  */
 export function mediaConfig(entity: string, options: Record<string, unknown>): MediaConfig {
   const extra = Array.isArray(options.players) ? options.players.filter((id): id is string => typeof id === 'string' && id !== '') : [];
@@ -292,6 +298,9 @@ export function mediaConfig(entity: string, options: Record<string, unknown>): M
     formatEntity: text(options.format_entity),
     layout: parseLayout(options.speakers),
     sofa: SOFAS.includes(options.sofa as Sofa) ? (options.sofa as Sofa) : 'none',
+    listener: options.listener === true,
+    roomMovable: options.room_movable === true,
+    walls: options.hide_walls !== true,
   };
 }
 

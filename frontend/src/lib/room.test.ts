@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FACES, LISTENER, ROOM, corners, project, roomCamera, sofaBoxes, speakerBoxes, winding } from './room';
+import { FACES, LISTENER, ROOM, clampView, corners, project, roomCamera, sofaBoxes, speakerBoxes, winding } from './room';
 import { parseLayout } from './speakers';
 
 const camera = roomCamera();
@@ -54,5 +54,17 @@ describe('aim', () => {
     expect(places.FL!.yaw).toBeLessThan(0);
     expect(places.FHL!.pitch).toBeLessThan(0);
     expect(places.C!.yaw).toBeUndefined();
+  });
+});
+
+describe('view', () => {
+  it('starts where the fixed camera stood, and keeps a moved one outside the room', () => {
+    const home = roomCamera();
+    const moved = roomCamera(clampView({ turn: Math.PI, tilt: -2, zoom: 0.1, panX: 9, panY: 9 }));
+    expect(home.eye[1]).toBeCloseTo(ROOM.depth + 2.2);
+    expect(home.eye[2]).toBeCloseTo(ROOM.height + 3.6);
+    const inside = moved.eye[0] > -ROOM.width / 2 && moved.eye[0] < ROOM.width / 2 && moved.eye[1] > 0 && moved.eye[1] < ROOM.depth;
+    expect(inside).toBe(false);
+    expect(moved.eye[2]).toBeGreaterThan(0);
   });
 });

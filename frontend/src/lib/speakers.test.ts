@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layoutChannels, parseLayout, sourceChannels, speakerStates } from './speakers';
+import { formatLayout, layoutChannels, parseLayout, sourceChannels, speakerStates } from './speakers';
 
 const cinema = parseLayout('7.4.4')!;
 const active = (states: Record<string, string>) =>
@@ -33,6 +33,19 @@ describe('speakers', () => {
     );
     expect(active(speakerStates(cinema, { on: true, mode: 'Direct', format: '2/0/.0' }))).toEqual(['FL', 'FR']);
     expect(active(speakerStates(cinema, { on: true, mode: 'MULTI CH IN 7.1' }))).toContain('SBL');
+  });
+
+  it('plays the source channels for a mode it cannot read, when the format is known', () => {
+    expect(active(speakerStates(cinema, { on: true, mode: 'Movie', format: '3/2/.1' }))).toContain('SL');
+    expect(active(speakerStates(cinema, { on: true, mode: 'Movie', format: '3/2/.1' }))).not.toContain('SBL');
+  });
+
+  it('writes a source format as a layout', () => {
+    expect(formatLayout('3/4/.1')).toBe('7.1');
+    expect(formatLayout('2/0/.0')).toBe('2.0');
+    expect(formatLayout('3/4/.1/4')).toBe('7.1.4');
+    expect(formatLayout('PCM')).toBe('PCM');
+    expect(formatLayout(undefined)).toBeUndefined();
   });
 
   it('says unknown rather than guess, and silent while off', () => {

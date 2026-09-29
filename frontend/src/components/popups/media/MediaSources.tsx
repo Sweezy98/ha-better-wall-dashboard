@@ -5,10 +5,21 @@ import Bubble from '../../base/bubble/Bubble';
 import { domainIcon, useCallService, useEntity, useT } from '../../../hooks/useHa';
 import { playerApp, presetActive, presetCalls, type MediaPreset } from '../../../lib/media';
 
+/** One row along the top; more presets than fit run on sideways. */
 const StyledSources = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(${u(13)}, 1fr));
+  display: flex;
   gap: ${u(0.6)};
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  > * {
+    flex: 1 0 ${u(12)};
+    max-width: ${u(20)};
+  }
 `;
 
 const Preset: React.FC<{ preset: MediaPreset }> = ({ preset }) => {

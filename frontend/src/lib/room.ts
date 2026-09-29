@@ -37,15 +37,16 @@ export function speakerBoxes(layout: SpeakerLayout): Partial<Record<Channel, Box
     C: box(0, 0.32, 0.6, 0.62, 0.26, 0.2),
     SL: box(-1.8, 4.05, 0.95, 0.22, 0.26, 0.36),
     SR: box(1.8, 4.05, 0.95, 0.22, 0.26, 0.36),
-    SBL: box(-0.6, back - 0.3, 0.95, 0.26, 0.26, 0.4),
-    SBR: box(0.6, back - 0.3, 0.95, 0.26, 0.26, 0.4),
+    // Behind the sofa's corners.
+    SBL: box(-1.2, back - 0.3, 0.95, 0.26, 0.26, 0.4),
+    SBR: box(1.2, back - 0.3, 0.95, 0.26, 0.26, 0.4),
     FHL: box(-1.3, 0.13, 2.05, 0.24, 0.22, 0.32),
     FHR: box(1.3, 0.13, 2.05, 0.24, 0.22, 0.32),
     TML: box(-0.8, 2.9, ROOM.height - 0.08, 0.3, 0.3, 0.08),
     TMR: box(0.8, 2.9, ROOM.height - 0.08, 0.3, 0.3, 0.08),
-    // Above the surround backs, clear of the side surrounds in the view.
-    RHL: box(-1.05, back - 0.13, 2.05, 0.24, 0.22, 0.32),
-    RHR: box(1.05, back - 0.13, 2.05, 0.24, 0.22, 0.32),
+    // Inside the surround backs, clear of them and of the side surrounds in the view.
+    RHL: box(-0.75, back - 0.13, 2.05, 0.24, 0.22, 0.32),
+    RHR: box(0.75, back - 0.13, 2.05, 0.24, 0.22, 0.32),
     // One sub stands in the middle; a pair either side of it.
     SW1: box(layout.subs === 1 ? 0 : -0.4, 0.34, 0, 0.4, 0.4, 0.42),
     SW2: box(0.4, 0.34, 0, 0.4, 0.4, 0.42),
@@ -54,7 +55,10 @@ export function speakerBoxes(layout: SpeakerLayout): Partial<Record<Channel, Box
     SW4: box(ROOM.width / 2 - 0.3, back - 0.3, 0, 0.4, 0.4, 0.42),
   };
   return Object.fromEntries(
-    layoutChannels(layout).map(channel => [channel, AIMED.includes(channel) ? aimAt(places[channel], LISTENER) : places[channel]])
+    layoutChannels(layout).map(channel => [
+      channel,
+      AIMED.includes(channel) ? aimAt(places[channel], LISTENER, TILTED.includes(channel)) : places[channel],
+    ])
   );
 }
 
@@ -64,10 +68,13 @@ export const LISTENER: Point3 = [0, 4.05, 1.0];
 /** The speakers turned to the listener: all but the centre and the subwoofers, which face down the room, and those in the ceiling. */
 const AIMED: Channel[] = ['FL', 'FR', 'SL', 'SR', 'SBL', 'SBR', 'FHL', 'FHR', 'RHL', 'RHR'];
 
-/** A box turned, and tilted, so that its `back` face looks at a point. */
-export function aimAt(b: Box, target: Point3): Box {
+/** Of those, the ones up on the wall, tilted down as well; the rest stand upright, only turned in. */
+const TILTED: Channel[] = ['FHL', 'FHR', 'RHL', 'RHR'];
+
+/** A box turned -- and tilted, where it may be -- so that its `back` face looks at a point. */
+export function aimAt(b: Box, target: Point3, tilt = true): Box {
   const [dx, dy, dz] = [target[0] - b.x, target[1] - b.y, target[2] - (b.z + b.h / 2)];
-  return { ...b, yaw: Math.atan2(-dx, dy), pitch: Math.atan2(dz, Math.hypot(dx, dy)) };
+  return { ...b, yaw: Math.atan2(-dx, dy), pitch: tilt ? Math.atan2(dz, Math.hypot(dx, dy)) : 0 };
 }
 
 /** A point given from a box's centre in its own axes, in the room's: tilted, then turned. */
@@ -121,9 +128,6 @@ export function sofaBoxes(sofa: Sofa): Box[] {
   ];
   return sofa === 'l_right' ? l.map(mirror) : l;
 }
-
-/** The lowboard under the screen, the centre on it and the front subwoofers beneath. */
-export const LOWBOARD = box(0, 0.33, 0.52, 1.9, 0.5, 0.06);
 
 export const SCREEN = box(0, 0.05, 0.95, 1.5, 0.06, 0.86);
 
@@ -218,13 +222,96 @@ export interface Camera {
   up: Vector;
 }
 
-/** Behind the back wall and above it, looking down the room at the screen. */
-export function roomCamera(): Camera {
-  const eye: Vector = [0, ROOM.depth + 2.2, ROOM.height + 3.6];
-  const target: Vector = [0, ROOM.depth * 0.46, 0];
+/** How the view has been moved from the one it starts at: turned, tilted, zoomed and panned. */
+export interface RoomView {
+  /** Radians round the room's upright, and up or down. */
+  turn: number;
+  tilt: number;
+  /** Distance as a share of the first. */
+  zoom: number;
+  /** Metres across and along the floor, as the camera looks. */
+  panX: number;
+  panY: number;
+}
+
+export const HOME_VIEW: RoomView = { turn: 0, tilt: 0, zoom: 1, panX: 0, panY: 0 };
+
+const HOME_EYE: Vector = [0, ROOM.depth + 2.2, ROOM.height + 3.6];
+const HOME_TARGET: Vector = [0, ROOM.depth * 0.46, 0];
+
+const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
+
+/**
+ * A view kept to one that works: above the floor and short of straight
+ * down, and far enough off to stay outside the room -- a camera inside it
+ * would have furniture behind it.
+ */
+export function clampView(view: RoomView): RoomView {
+  const home = sub(HOME_EYE, HOME_TARGET);
+  const tilt = Math.asin(home[2] / Math.hypot(...home));
+  return {
+    turn: view.turn,
+    tilt: clamp(view.tilt, 0.12 - tilt, 1.5 - tilt),
+    zoom: clamp(view.zoom, 0.75, 1.8),
+    panX: clamp(view.panX, -1.5, 1.5),
+    panY: clamp(view.panY, -1.5, 1.5),
+  };
+}
+
+/** Behind the back wall and above it, looking down the room at the screen -- or wherever the view was moved to. */
+export function roomCamera(view: RoomView = HOME_VIEW): Camera {
+  const offset = sub(HOME_EYE, HOME_TARGET);
+  const distance = Math.hypot(...offset) * view.zoom;
+  const tilt = Math.asin(offset[2] / Math.hypot(...offset)) + view.tilt;
+  const turn = Math.atan2(offset[0], offset[1]) + view.turn;
+  // Panned along the floor, across and along the way the camera looks.
+  const target: Vector = [
+    HOME_TARGET[0] + view.panX * Math.cos(turn) - view.panY * Math.sin(turn),
+    HOME_TARGET[1] - view.panX * Math.sin(turn) - view.panY * Math.cos(turn),
+    HOME_TARGET[2],
+  ];
+  const eye: Vector = [
+    target[0] + distance * Math.cos(tilt) * Math.sin(turn),
+    target[1] + distance * Math.cos(tilt) * Math.cos(turn),
+    target[2] + distance * Math.sin(tilt),
+  ];
   const forward = unit(sub(target, eye));
   const right = unit(cross([0, 0, 1], forward));
   return { eye, forward, right, up: cross(forward, right) };
+}
+
+/** A rounded limb: a capsule from one point to another, this thick. */
+export interface Limb {
+  from: Point3;
+  to: Point3;
+  radius: number;
+}
+
+/**
+ * Someone seated in the listening position, facing the screen: body, arms
+ * resting on the lap, legs down to the floor, as rounded limbs -- and a head.
+ */
+export function listenerFigure(): { limbs: Limb[]; head: Point3; headRadius: number } {
+  const [x, y] = [LISTENER[0], LISTENER[1]];
+  const limb = (from: Point3, to: Point3, radius: number): Limb => ({ from, to, radius });
+  const both = (make: (side: number) => Limb) => [make(-1), make(1)];
+  return {
+    limbs: [
+      // Legs: thighs along the seat, shins down, feet forward.
+      ...both(side => limb([x + side * 0.1, y + 0.1, 0.5], [x + side * 0.12, y - 0.38, 0.52], 0.08)),
+      ...both(side => limb([x + side * 0.12, y - 0.4, 0.48], [x + side * 0.13, y - 0.46, 0.09], 0.06)),
+      ...both(side => limb([x + side * 0.13, y - 0.44, 0.04], [x + side * 0.14, y - 0.6, 0.04], 0.045)),
+      // The body, leaning back a little, and the shoulders across it.
+      limb([x, y + 0.12, 0.55], [x, y + 0.18, 0.86], 0.16),
+      limb([x - 0.19, y + 0.18, 0.92], [x + 0.19, y + 0.18, 0.92], 0.075),
+      limb([x, y + 0.17, 0.95], [x, y + 0.15, 1.05], 0.05),
+      // Arms: down at the sides, the forearms on the lap.
+      ...both(side => limb([x + side * 0.22, y + 0.18, 0.9], [x + side * 0.25, y + 0.08, 0.64], 0.055)),
+      ...both(side => limb([x + side * 0.25, y + 0.06, 0.62], [x + side * 0.16, y - 0.2, 0.6], 0.048)),
+    ],
+    head: [x, y + 0.13, 1.16],
+    headRadius: 0.1,
+  };
 }
 
 /** A point on screen, y down, and how far ahead of the camera it is. */

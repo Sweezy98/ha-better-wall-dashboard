@@ -177,6 +177,45 @@ const StyledMedia = styled(StyledTile)`
     }
   }
 
+  /* Smaller still, a row of a small cell: everything a size down. */
+  @container (height < 9.5em) {
+    .body {
+      padding: ${u(0.6)};
+      gap: ${u(0.3)};
+    }
+
+    .power,
+    .volume {
+      height: ${u(2.2)};
+    }
+
+    .power {
+      width: ${u(2.2)};
+      font-size: ${u(1.1)};
+    }
+
+    .title {
+      font-size: ${u(0.95)};
+    }
+
+    .controls button,
+    .controls .main {
+      height: ${u(2.2)};
+      font-size: ${u(1.1)};
+    }
+
+    .controls .main {
+      width: ${u(2.2)};
+    }
+  }
+
+  /* Too narrow for the volume beside the power button: the power button alone. */
+  @container (width < 10em) {
+    .volume {
+      display: none;
+    }
+  }
+
   @container (width < 15em) {
     .volume {
       padding: 0 ${u(0.7)};
