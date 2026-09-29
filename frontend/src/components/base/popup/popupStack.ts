@@ -21,10 +21,20 @@ export function pushPopup(dialog: HTMLDialogElement): void {
   mark();
 }
 
+/**
+ * Off the stack as it starts to close, so the popup beneath brightens with
+ * it -- but still `data-nested` until it is gone: its backdrop turning dark
+ * for the moment it fades was a blink over the whole screen.
+ */
 export function removePopup(dialog: HTMLDialogElement): void {
   const index = stack.indexOf(dialog);
   if (index >= 0) stack.splice(index, 1);
-  dialog.removeAttribute('data-nested');
   dialog.removeAttribute('data-covered');
   mark();
+}
+
+/** Closed: nothing of the stack left on it for the next time it opens. */
+export function clearPopup(dialog: HTMLDialogElement): void {
+  removePopup(dialog);
+  dialog.removeAttribute('data-nested');
 }

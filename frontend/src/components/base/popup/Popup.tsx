@@ -10,7 +10,7 @@ import {
   StyledPopupIcon,
   StyledPopupTitle,
 } from './Popup.styled';
-import { pushPopup, removePopup } from './popupStack';
+import { clearPopup, pushPopup, removePopup } from './popupStack';
 
 interface PopupProps {
   open: boolean;
@@ -99,6 +99,7 @@ const Popup: React.FC<PopupProps> = ({
         dialog.removeEventListener('animationend', onEnd);
         delete dialog.dataset.closing;
         dialog.close();
+        clearPopup(dialog);
         // Closing hands focus back to the button that opened the popup, and
         // the browser rings it -- a white outline on a wall tablet nobody
         // uses a keyboard on.
@@ -118,7 +119,7 @@ const Popup: React.FC<PopupProps> = ({
   useEffect(() => {
     const dialog = ref.current;
     return () => {
-      if (dialog) removePopup(dialog);
+      if (dialog) clearPopup(dialog);
     };
   }, []);
 
