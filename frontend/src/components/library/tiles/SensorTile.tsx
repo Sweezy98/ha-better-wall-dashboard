@@ -34,8 +34,9 @@ const StyledSensor = styled(StyledTile).attrs({ as: 'button', type: 'button' })`
     align-items: center;
     justify-content: center;
     font-size: ${u(1.4)};
-    background: color-mix(in srgb, var(--graph-color) 18%, transparent);
-    color: var(--graph-color);
+    /* A reading is neither on nor off: its icon in the plain, unlit style. */
+    background: ${({ theme }) => theme.bubble.icon};
+    color: ${({ theme }) => theme.text.secondary};
   }
 
   .text {
@@ -89,7 +90,7 @@ const SensorTile: React.FC<TileProps> = ({ tile }) => {
     (deviceClass === 'temperature' ? 'mdi:thermometer' : deviceClass === 'humidity' ? 'mdi:water-percent' : 'mdi:chart-line');
   return (
     <>
-      <StyledSensor onClick={() => setOpen(true)} disabled={!tile.entity} style={{ '--graph-color': color } as React.CSSProperties}>
+      <StyledSensor onClick={() => setOpen(true)} disabled={!tile.entity}>
         <span className='head'>
           <span className='icon'>
             <Icon icon={icon} />
