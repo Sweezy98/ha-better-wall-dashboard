@@ -4,6 +4,16 @@
  * Pure, so it tests without a browser.
  */
 
+import type { TranslationKey } from './i18n';
+
+/** A cover's states as shown: Home Assistant's own wording for them. */
+export const COVER_STATES: Record<string, TranslationKey> = {
+  open: 'cover_open',
+  closed: 'cover_closed',
+  opening: 'cover_opening',
+  closing: 'cover_closing',
+};
+
 /** Home Assistant's `CoverEntityFeature` bits. */
 const OPEN = 1;
 const CLOSE = 2;

@@ -1,10 +1,9 @@
 import { memo } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { u } from '../../../themes/default.theme';
-import { pressable } from '../../../themes/interaction';
 import Popup from '../../base/popup/Popup';
-import Icon from '../../base/icon/Icon';
 import { LevelColumn } from '../light/LightControls';
+import CoverButtons from './CoverButtons';
 import { useCallService, useEntity, useT } from '../../../hooks/useHa';
 import { coverFeatures, coverView } from '../../../lib/cover';
 
@@ -26,29 +25,6 @@ const StyledPanel = styled.div`
     gap: ${u(0.5)};
     font-size: ${u(0.9)};
     color: ${({ theme }) => theme.text.secondary};
-  }
-
-  .buttons {
-    display: flex;
-    gap: ${u(0.5)};
-    padding: ${u(0.4)};
-    border-radius: ${u(2.2)};
-    background: ${({ theme }) => theme.bubble.background};
-  }
-
-  .buttons button {
-    width: ${u(4.4)};
-    height: ${u(3.4)};
-    border-radius: ${u(1.7)};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: ${u(1.45)};
-    ${({ theme }) => pressable(theme.bubble.hover, theme.bubble.pressed)}
-  }
-
-  .buttons button:disabled {
-    opacity: 0.35;
   }
 `;
 
@@ -96,17 +72,7 @@ const CoverPanel: React.FC<{ entityId: string }> = ({ entityId }) => {
           )}
         </div>
       )}
-      <div className='buttons'>
-        <button type='button' aria-label={t('cover_up')} disabled={!features.open || !view.canOpen} onClick={() => call('open_cover')}>
-          <Icon icon='mdi:arrow-up' />
-        </button>
-        <button type='button' aria-label={t('cover_stop')} disabled={!features.stop} onClick={() => call('stop_cover')}>
-          <Icon icon='mdi:stop' />
-        </button>
-        <button type='button' aria-label={t('cover_down')} disabled={!features.close || !view.canClose} onClick={() => call('close_cover')}>
-          <Icon icon='mdi:arrow-down' />
-        </button>
-      </div>
+      <CoverButtons entityId={entityId} />
     </StyledPanel>
   );
 };

@@ -66,3 +66,13 @@ export function spans(changes: { t: number; key: string }[], start: number, end:
 export function fractionOf(t: number, start: number, end: number): number {
   return Math.min(1, Math.max(0, (t - start) / (end - start)));
 }
+
+/** What a step line held at a moment: its last point at or before it. */
+export function valueAt(points: TimePoint[], t: number): number | undefined {
+  let value: number | undefined;
+  for (const point of points) {
+    if (point.t > t) break;
+    value = point.v;
+  }
+  return value;
+}

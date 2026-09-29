@@ -1,8 +1,10 @@
 import { memo } from 'react';
 import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
-import { fractionOf, stepPath, type TimePoint, type TimeSpan } from '../../../lib/timeline';
+import { fractionOf, stepPath, valueAt, type TimePoint, type TimeSpan } from '../../../lib/timeline';
 import { useLanguage } from '../../../hooks/useHa';
+import { useTimeCursor } from '../../../hooks/useTimeCursor';
+import ChartTooltip from '../../base/chartTooltip/ChartTooltip';
 
 const WIDTH = 500;
 const HEIGHT = 100;
@@ -14,6 +16,14 @@ const StyledChart = styled.div`
   padding: ${u(0.8)};
   border-radius: ${u(1)};
   background: ${({ theme }) => theme.bubble.background};
+
+  /* Hovered or touched, it shows what held at that moment. */
+  .plot {
+    position: relative;
+    cursor: default;
+    /* A finger drags along it; the popup still scrolls up and down. */
+    touch-action: pan-y;
+  }
 
   svg {
     display: block;
@@ -94,37 +104,73 @@ const PositionChart: React.FC<PositionChartProps> = ({ start, end, lines, bands,
   const language = useLanguage();
   const frame = { start, end, width: WIDTH, height: HEIGHT };
   const time = (t: number) => new Date(t).toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' });
+  const cursor = useTimeCursor(start, end);
+  const at = cursor.t === null ? null : fractionOf(cursor.t, start, end);
+  const readings =
+    cursor.t === null
+      ? []
+      : lines.flatMap(line => {
+          const value = valueAt(line.points, cursor.t!);
+          return value === undefined ? [] : [`${line.label} ${Math.round(value)} %`];
+        });
   return (
     <StyledChart>
-      {/* A little room above and below, so a line at 0 or 100 % is not lost on the edge. */}
-      <svg viewBox={`0 -4 ${WIDTH} ${HEIGHT + 8}`} preserveAspectRatio='none' aria-hidden='true'>
-        {[0, 50, 100].map(level => (
-          <line key={level} className='grid' x1={0} x2={WIDTH} y1={HEIGHT - level} y2={HEIGHT - level} vectorEffect='non-scaling-stroke' />
-        ))}
-        {lines.map(line => (
-          <path
-            key={line.label}
-            d={stepPath(line.points, frame)}
-            fill='none'
-            stroke={line.color}
-            strokeWidth={2}
-            strokeDasharray={line.dashed ? '5 4' : undefined}
-            strokeLinejoin='round'
-            vectorEffect='non-scaling-stroke'
-          />
-        ))}
-        {marker !== undefined && (
-          <line
-            x1={fractionOf(marker, start, end) * WIDTH}
-            x2={fractionOf(marker, start, end) * WIDTH}
-            y1={0}
-            y2={HEIGHT}
-            stroke='rgba(255, 255, 255, 0.5)'
-            strokeWidth={1}
-            vectorEffect='non-scaling-stroke'
-          />
+      <div className='plot' {...cursor.handlers}>
+        {/* A little room above and below, so a line at 0 or 100 % is not lost on the edge. */}
+        <svg viewBox={`0 -4 ${WIDTH} ${HEIGHT + 8}`} preserveAspectRatio='none' aria-hidden='true'>
+          {[0, 50, 100].map(level => (
+            <line
+              key={level}
+              className='grid'
+              x1={0}
+              x2={WIDTH}
+              y1={HEIGHT - level}
+              y2={HEIGHT - level}
+              vectorEffect='non-scaling-stroke'
+            />
+          ))}
+          {lines.map(line => (
+            <path
+              key={line.label}
+              d={stepPath(line.points, frame)}
+              fill='none'
+              stroke={line.color}
+              strokeWidth={2}
+              strokeDasharray={line.dashed ? '5 4' : undefined}
+              strokeLinejoin='round'
+              vectorEffect='non-scaling-stroke'
+            />
+          ))}
+          {at !== null && (
+            <line
+              x1={at * WIDTH}
+              x2={at * WIDTH}
+              y1={0}
+              y2={HEIGHT}
+              stroke='rgba(255, 255, 255, 0.7)'
+              strokeWidth={1}
+              vectorEffect='non-scaling-stroke'
+            />
+          )}
+          {marker !== undefined && (
+            <line
+              x1={fractionOf(marker, start, end) * WIDTH}
+              x2={fractionOf(marker, start, end) * WIDTH}
+              y1={0}
+              y2={HEIGHT}
+              stroke='rgba(255, 255, 255, 0.5)'
+              strokeWidth={1}
+              vectorEffect='non-scaling-stroke'
+            />
+          )}
+        </svg>
+        {at !== null && cursor.t !== null && readings.length > 0 && (
+          // Kept off the popup's edges, where it would be cut.
+          <ChartTooltip style={{ left: `${Math.min(88, Math.max(12, at * 100))}%`, top: 0 }}>
+            {[time(cursor.t), ...readings].join(' · ')}
+          </ChartTooltip>
         )}
-      </svg>
+      </div>
       {bands && bands.length > 0 && (
         <div className='band'>
           {bands.map(band => (

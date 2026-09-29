@@ -8,6 +8,7 @@ import { StyledFacts } from '../WeatherFacts.styled';
 import AcpBadges from './AcpBadges';
 import PositionChart from './PositionChart';
 import WindowView from './WindowView';
+import CoverButtons from '../cover/CoverButtons';
 import { useCoverHistory } from './useCoverHistory';
 import { useSteering } from './useSteering';
 import { CLIMATE_STATUS, CONTROL_STATUS, MOTION_STATUS, handlerKey } from './acpLabels';
@@ -15,6 +16,7 @@ import { useCallService, useEntity, useLanguage, useT } from '../../../hooks/use
 import { useTick } from '../../../hooks/useNow';
 import { ACP_BADGES, handlerBadge, shownSteps, type AcpEntities, type AcpRole } from '../../../lib/adaptiveCover';
 import { spans, type TimePoint } from '../../../lib/timeline';
+import { COVER_STATES } from '../../../lib/cover';
 import { formatNumber } from '../../../lib/format';
 import type { TranslationKey } from '../../../lib/i18n';
 
@@ -56,6 +58,10 @@ const StyledBody = styled.div`
     min-width: 0;
   }
 
+  .cover-buttons {
+    margin-bottom: ${u(0.6)};
+  }
+
   .switches {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -68,33 +74,57 @@ const StyledBody = styled.div`
     gap: ${u(0.4)};
   }
 
+  /* Each handler with its own sign, not a choice to tick: the one that
+     decides lit in its colour and saying so, one that matched but lost
+     still clear, the rest faded back without a box of their own. */
   .step {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     gap: ${u(0.7)};
     align-items: center;
-    padding: ${u(0.55)} ${u(0.8)};
-    border-radius: ${u(1)};
+    padding: ${u(0.45)} ${u(0.8)} ${u(0.45)} ${u(0.45)};
+    border-radius: ${u(1.4)};
     background: ${({ theme }) => theme.bubble.background};
   }
 
   .step[data-matched='false'] {
-    opacity: 0.5;
+    background: none;
+    opacity: 0.45;
   }
 
-  /* The handler that won: in the accent colour, as a chosen row is. */
   .step[data-winner='true'] {
-    background: color-mix(in srgb, ${({ theme }) => theme.colors.accent} 16%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, ${({ theme }) => theme.colors.accent} 45%, transparent);
+    background: color-mix(in srgb, var(--step-color) 14%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--step-color) 40%, transparent);
   }
 
-  .step .mark {
-    font-size: ${u(1.2)};
+  .step .sign {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: ${u(2.3)};
+    height: ${u(2.3)};
+    border-radius: 50%;
+    font-size: ${u(1.15)};
+    background: ${({ theme }) => theme.bubble.icon};
     color: ${({ theme }) => theme.text.secondary};
   }
 
-  .step[data-winner='true'] .mark {
-    color: ${({ theme }) => theme.colors.accent};
+  .step[data-winner='true'] .sign {
+    background: color-mix(in srgb, var(--step-color) 24%, transparent);
+    color: var(--step-color);
+  }
+
+  .step .outcome {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: ${u(0.05)};
+  }
+
+  .step .verdict {
+    font-size: ${u(0.75)};
+    font-weight: 600;
+    color: var(--step-color);
   }
 
   .step .name {
@@ -115,7 +145,19 @@ const StyledBody = styled.div`
     font-weight: 600;
     font-variant-numeric: tabular-nums;
   }
+
+  .step[data-winner='false'] .position {
+    font-weight: 400;
+    color: ${({ theme }) => theme.text.secondary};
+  }
 `;
+
+/** Signs for the handlers that have no badge of their own. */
+const HANDLER_SIGNS: Record<string, string> = {
+  default: 'mdi:window-shutter',
+  group_lock: 'mdi:lock-outline',
+  group_scene: 'mdi:palette-outline',
+};
 
 const SWITCHES: { role: AcpRole; label: TranslationKey; icon: string }[] = [
   { role: 'enabled', label: 'acp_enabled', icon: 'mdi:power' },
@@ -200,7 +242,10 @@ const Body: React.FC<{ coverId: string; entities: AcpEntities }> = ({ coverId, e
         <div>
           <Icon className='icon' icon='mdi:window-shutter' />
           <span className='label'>{t('acp_actual')}</span>
-          <span className='value'>{percent(cover?.attributes.current_position)}</span>
+          <span className='value'>
+            {cover && COVER_STATES[cover.state] ? `${t(COVER_STATES[cover.state])} · ` : ''}
+            {percent(cover?.attributes.current_position)}
+          </span>
         </div>
         <div>
           <Icon className='icon' icon='mdi:state-machine' />
@@ -227,6 +272,9 @@ const Body: React.FC<{ coverId: string; entities: AcpEntities }> = ({ coverId, e
         <div className='column'>
           <section>
             <h3>{t('acp_switches')}</h3>
+            <div className='cover-buttons'>
+              <CoverButtons entityId={coverId} />
+            </div>
             <div className='switches'>
               {SWITCHES.map(item => {
                 const entityId = entities[item.role];
@@ -252,17 +300,29 @@ const Body: React.FC<{ coverId: string; entities: AcpEntities }> = ({ coverId, e
                   // Highest priority first: the first that matched is the one that won.
                   const winner = step === steering.trace.find(other => other.matched);
                   const position = step.held_position ?? step.position;
+                  const kind = handlerBadge(step.handler);
+                  const shown = position !== undefined && position !== null ? `${Math.round(position)} %` : '';
                   return (
-                    <div key={step.handler} className='step' data-matched={step.matched} data-winner={winner}>
-                      <Icon
-                        className='mark'
-                        icon={winner ? 'mdi:check-circle' : step.matched ? 'mdi:circle-medium' : 'mdi:circle-outline'}
-                      />
+                    <div
+                      key={step.handler}
+                      className='step'
+                      data-matched={step.matched}
+                      data-winner={winner}
+                      style={{ '--step-color': kind ? ACP_BADGES[kind].color : theme.colors.accent } as React.CSSProperties}
+                    >
+                      <span className='sign'>
+                        <Icon icon={kind ? ACP_BADGES[kind].icon : (HANDLER_SIGNS[step.handler] ?? 'mdi:window-shutter')} />
+                      </span>
                       <span>
                         <div className='name'>{key ? t(key) : step.handler}</div>
                         {step.reason && <div className='reason'>{step.reason}</div>}
                       </span>
-                      <span className='position'>{position !== undefined && position !== null ? `${Math.round(position)} %` : ''}</span>
+                      {step.matched && shown && (
+                        <span className='outcome'>
+                          <span className='position'>{winner ? shown : t('acp_would', { position: shown })}</span>
+                          {winner && <span className='verdict'>{t('acp_decides')}</span>}
+                        </span>
+                      )}
                     </div>
                   );
                 })}

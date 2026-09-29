@@ -2,6 +2,7 @@ import { memo, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { buildGraph, GRAPH_WIDTH, type GraphPoint, type Sample } from '../../../lib/graph';
 import { u } from '../../../themes/default.theme';
+import ChartTooltip from '../chartTooltip/ChartTooltip';
 
 interface MiniGraphProps {
   samples: Sample[];
@@ -108,21 +109,6 @@ const StyledLabels = styled.div`
 
 /** A point's value and time, above it, in the labels' dark chip. */
 /** Always above the point -- past the graph's top edge, if it must be: nothing clips it. */
-const StyledTooltip = styled.div`
-  position: absolute;
-  z-index: 2;
-  transform: translate(-50%, calc(-100% - ${u(0.9)}));
-  padding: ${u(0.25)} ${u(0.6)};
-  border-radius: ${u(0.6)};
-  background: rgba(18, 18, 22, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: ${({ theme }) => theme.text.primary};
-  font-size: ${u(0.9)};
-  font-weight: 500;
-  white-space: nowrap;
-  pointer-events: none;
-`;
-
 /**
  * mini-graph-card's graph, as a React component.
  *
@@ -219,7 +205,7 @@ const MiniGraph: React.FC<MiniGraphProps> = ({
         </svg>
       )}
       {graph && shown && tooltip && (
-        <StyledTooltip
+        <ChartTooltip
           style={{
             // Kept inside the graph at either end.
             left: `${Math.min(88, Math.max(12, (shown.x / GRAPH_WIDTH) * 100))}%`,
@@ -227,7 +213,7 @@ const MiniGraph: React.FC<MiniGraphProps> = ({
           }}
         >
           {tooltip(shown)}
-        </StyledTooltip>
+        </ChartTooltip>
       )}
       {graph && labels && (
         <StyledLabels>

@@ -7,15 +7,7 @@ import { StyledTile } from '../Tile.styled';
 import Icon from '../../../base/icon/Icon';
 import { domainIcon, useCallService, useEntity, useT } from '../../../../hooks/useHa';
 import { useTaps } from '../../../../hooks/useTaps';
-import { coverActive, coverFeatures, coverView } from '../../../../lib/cover';
-import type { TranslationKey } from '../../../../lib/i18n';
-
-const STATES: Record<string, TranslationKey> = {
-  open: 'cover_open',
-  closed: 'cover_closed',
-  opening: 'cover_opening',
-  closing: 'cover_closing',
-};
+import { COVER_STATES, coverActive, coverFeatures, coverView } from '../../../../lib/cover';
 
 /**
  * Moving, the icon holds still and its shade runs: slats sliding up under
@@ -277,7 +269,7 @@ const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, signs, action, onDe
   const view = coverView(entity?.state, attributes.current_position as number | undefined);
   const name = tile.name || (attributes.friendly_name as string | undefined) || tile.entity;
   const icon = tile.icon || (attributes.icon as string | undefined) || domainIcon(tile.entity || 'cover.x');
-  const stateKey = entity ? STATES[entity.state] : undefined;
+  const stateKey = entity ? COVER_STATES[entity.state] : undefined;
   const stateText = !entity
     ? t('not_found')
     : [stateKey ? t(stateKey) : entity.state, view.position !== undefined ? `${view.position} %` : ''].filter(Boolean).join(' · ');

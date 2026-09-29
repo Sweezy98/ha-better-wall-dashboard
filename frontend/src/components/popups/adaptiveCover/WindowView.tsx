@@ -4,6 +4,8 @@ import { useHass } from '@hakit/core';
 import { u } from '../../../themes/default.theme';
 import { useEntity, useLanguage, useT } from '../../../hooks/useHa';
 import { useTick } from '../../../hooks/useNow';
+import { useTimeCursor } from '../../../hooks/useTimeCursor';
+import ChartTooltip from '../../base/chartTooltip/ChartTooltip';
 import { skyPoint, sunDay, wedgePath } from '../../../lib/sun';
 import { fractionOf } from '../../../lib/timeline';
 import { formatNumber } from '../../../lib/format';
@@ -36,8 +38,11 @@ const StyledWindow = styled.div`
     overflow: visible;
   }
 
+  /* Hovered or touched, it shows the sun's height at that moment. */
   .plot {
     position: relative;
+    cursor: default;
+    touch-action: pan-y;
   }
 
   .plot svg {
@@ -114,6 +119,7 @@ const WindowView: React.FC<{ entities: AcpEntities }> = ({ entities }) => {
   const now = useTick(60_000);
   const dayStart = new Date(now).setHours(0, 0, 0, 0);
   const dayEnd = dayStart + 86_400_000;
+  const cursor = useTimeCursor(dayStart, dayEnd);
   const path = useMemo(
     () => (latitude !== undefined && longitude !== undefined ? sunDay(dayStart, latitude, longitude) : []),
     [dayStart, latitude, longitude]
@@ -149,9 +155,13 @@ const WindowView: React.FC<{ entities: AcpEntities }> = ({ entities }) => {
   const shadeFrom = startSun ? Date.parse(startSun.state) : NaN;
   const shadeTo = endSun ? Date.parse(endSun.state) : NaN;
   const nowX = fractionOf(now, dayStart, dayEnd) * W;
-  const nowElevation = path.length
-    ? path[Math.min(path.length - 1, Math.round(((now - dayStart) / 86_400_000) * (path.length - 1)))].elevation
-    : undefined;
+  const elevationAt = (t: number) =>
+    path.length
+      ? path[Math.min(path.length - 1, Math.max(0, Math.round(((t - dayStart) / 86_400_000) * (path.length - 1))))].elevation
+      : undefined;
+  const nowElevation = elevationAt(now);
+  const cursorElevation = cursor.t === null ? undefined : elevationAt(cursor.t);
+  const cursorX = cursor.t === null ? null : fractionOf(cursor.t, dayStart, dayEnd);
 
   if (!sun) return null;
   return (
@@ -216,7 +226,7 @@ const WindowView: React.FC<{ entities: AcpEntities }> = ({ entities }) => {
             {t('acp_sun_window')} <strong>{time(startSun?.state)}</strong> – <strong>{time(endSun?.state)}</strong>
           </span>
         </div>
-        <div className='plot'>
+        <div className='plot' {...cursor.handlers}>
           <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio='none' aria-hidden='true'>
             {Number.isFinite(shadeFrom) && Number.isFinite(shadeTo) && (
               <rect
@@ -230,9 +240,28 @@ const WindowView: React.FC<{ entities: AcpEntities }> = ({ entities }) => {
             <line x1={0} x2={W} y1={y(0)} y2={y(0)} stroke='rgba(255, 255, 255, 0.18)' strokeWidth={1} vectorEffect='non-scaling-stroke' />
             <path d={dayLine} fill='none' stroke={sunColor} strokeWidth={2} vectorEffect='non-scaling-stroke' />
             <line x1={nowX} x2={nowX} y1={0} y2={H} stroke='rgba(255, 255, 255, 0.45)' strokeWidth={1} vectorEffect='non-scaling-stroke' />
+            {cursorX !== null && (
+              <line
+                x1={cursorX * W}
+                x2={cursorX * W}
+                y1={0}
+                y2={H}
+                stroke='rgba(255, 255, 255, 0.7)'
+                strokeWidth={1}
+                vectorEffect='non-scaling-stroke'
+              />
+            )}
           </svg>
           {nowElevation !== undefined && (
             <span className='dot' style={{ left: `${(nowX / W) * 100}%`, top: `${(y(nowElevation) / H) * 100}%`, background: sunColor }} />
+          )}
+          {cursorX !== null && cursor.t !== null && cursorElevation !== undefined && (
+            <>
+              <span className='dot' style={{ left: `${cursorX * 100}%`, top: `${(y(cursorElevation) / H) * 100}%`, background: '#fff' }} />
+              <ChartTooltip style={{ left: `${Math.min(88, Math.max(12, cursorX * 100))}%`, top: 0 }}>
+                {time(new Date(cursor.t).toISOString())} · {degrees(cursorElevation)}
+              </ChartTooltip>
+            </>
           )}
         </div>
         <div className='axis'>
