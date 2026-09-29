@@ -13,6 +13,7 @@ import VolumeCard from './VolumeCard';
 import SpeakerRoom from './SpeakerRoom';
 import { domainIcon, toggleService, useCallService, useEntity, useT } from '../../../hooks/useHa';
 import { useAudio, usePlayerArt, type Audio } from '../../../hooks/useMedia';
+import { useImageUrl } from '../../../hooks/useBackgroundImage';
 import { playerApp, playerOn, type MediaConfig, type MediaDevice, type MediaSwitch } from '../../../lib/media';
 import { formatLayout, speakerStates } from '../../../lib/speakers';
 
@@ -282,6 +283,9 @@ const Body: React.FC<{ config: MediaConfig; activeId: string | undefined }> = ({
       .join(' ')
   );
   const states = config.layout ? speakerStates(config.layout, audio, unpowered.split(' ').filter(Boolean)) : {};
+  const art = usePlayerArt(config.screen === 'art' ? activeId : undefined);
+  const picture = useImageUrl(config.screen === 'image' ? config.screenImage : '', '');
+  const screen = config.screen === 'art' ? art : config.screen === 'image' ? picture : undefined;
 
   return (
     <StyledBody data-room={config.layout !== null}>
@@ -306,6 +310,7 @@ const Body: React.FC<{ config: MediaConfig; activeId: string | undefined }> = ({
               listener={config.listener}
               movable={config.roomMovable}
               walls={config.walls}
+              screen={screen || undefined}
             />
           </div>
         )}

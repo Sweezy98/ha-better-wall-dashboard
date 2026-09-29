@@ -6,6 +6,7 @@ import {
   MAX_PRESETS,
   MAX_SWITCHES,
   PRESET_KINDS,
+  SCREEN_SHOWS,
   VOLUME_UNITS,
   mediaConfig,
   type MediaDevice,
@@ -17,7 +18,7 @@ import { BEDS, HEIGHTS, SUB_COUNTS, SUBS, layoutText, type SpeakerLayout } from 
 import { SOFAS } from '../../lib/room';
 import type { TranslationKey } from '../../lib/i18n';
 import NamedEntityList from './screens/NamedEntityList';
-import { CheckField, EntityField, EntityListField, SelectField, TextField } from './fields';
+import { CheckField, EntityField, EntityListField, MediaField, SelectField, TextField } from './fields';
 import { StyledField, StyledRow } from './fields.styled';
 
 /** What a preset does with its value: the player's inputs to choose from, or an app's id to type. */
@@ -240,6 +241,21 @@ const MediaOptions: React.FC<{ tile: Tile; onChange: (options: Record<string, un
             value={config.listener}
             onChange={listener => set({ listener })}
           />
+          <SelectField
+            label={t('media_screen')}
+            value={config.screen}
+            options={SCREEN_SHOWS.map(shows => ({ value: shows, label: t(`media_screen_${shows}`) }))}
+            onChange={screen => set({ screen })}
+          />
+          {config.screen === 'image' && (
+            <MediaField
+              label={t('media_screen_picture')}
+              hint={t('media_screen_picture_hint')}
+              accept={['image/*']}
+              value={config.screenImage}
+              onChange={screen_image => set({ screen_image })}
+            />
+          )}
           <CheckField label={t('media_walls')} value={config.walls} onChange={walls => set({ hide_walls: !walls })} />
           <CheckField
             label={t('media_room_movable')}

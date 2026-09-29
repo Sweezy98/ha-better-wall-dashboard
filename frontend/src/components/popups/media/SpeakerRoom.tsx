@@ -341,6 +341,8 @@ interface SpeakerRoomProps {
   movable: boolean;
   /** The walls drawn, or the floor alone. */
   walls: boolean;
+  /** A picture on the screen. */
+  screen?: string;
 }
 
 /**
@@ -348,7 +350,7 @@ interface SpeakerRoomProps {
  * each speaker where it stands, lit while the receiver plays through it --
  * the model alone, with nothing written over it.
  */
-const SpeakerRoom: React.FC<SpeakerRoomProps> = ({ layout, sofa, states, on, listener, movable, walls: withWalls }) => {
+const SpeakerRoom: React.FC<SpeakerRoomProps> = ({ layout, sofa, states, on, listener, movable, walls: withWalls, screen }) => {
   const t = useT();
   const id = useId().replace(/:/g, '');
   const { ref, view, moved, reset } = useRoomView<SVGSVGElement>(movable);
@@ -401,6 +403,34 @@ const SpeakerRoom: React.FC<SpeakerRoomProps> = ({ layout, sofa, states, on, lis
       ),
     });
   solid('screen', 'screen', SCREEN, { 'data-on': on });
+  if (screen) {
+    // On the screen's face, mapped from its top left, top right and bottom
+    // left corners: the parallelogram they span is all but exact for a face
+    // this flat, and a picture needs no more.
+    const face = FACES.find(item => item.name === 'back')!;
+    const points = corners(SCREEN).map(point => onScreen(point, camera));
+    const [bottomLeft, , topRight, topLeft] = face.corners.map(index => points[index]);
+    if (winding(face.corners.map(index => points[index])) > 0) {
+      const matrix = [
+        topRight[0] - topLeft[0],
+        topRight[1] - topLeft[1],
+        bottomLeft[0] - topLeft[0],
+        bottomLeft[1] - topLeft[1],
+        topLeft[0],
+        topLeft[1],
+      ];
+      drawn.push({
+        key: 'picture',
+        // Just in front of the screen it lies on.
+        depth: depthOf(SCREEN, camera) - 0.001,
+        element: (
+          <g transform={`matrix(${matrix.join(' ')})`}>
+            <image href={screen} x={0.04} y={0.06} width={0.92} height={0.88} preserveAspectRatio='xMidYMid meet' />
+          </g>
+        ),
+      });
+    }
+  }
   sofaBoxes(sofa).forEach((part, index) => solid(`sofa-${index}`, 'sofa', part));
   if (listener) drawn.push(...figure(camera, id));
 

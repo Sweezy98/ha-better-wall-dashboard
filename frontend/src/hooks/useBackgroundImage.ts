@@ -18,6 +18,14 @@ const REFRESH_MS = 6 * 3_600_000;
  * for a while -- so it is asked for here, and asked for again before it lapses.
  */
 export function useBackgroundImage(image: string): string {
+  return useImageUrl(image, defaultBackground);
+}
+
+/**
+ * The address to draw a picture from, stored the same ways as the
+ * background: `fallback` for none, or one that is gone from the library.
+ */
+export function useImageUrl(image: string, fallback: string): string {
   const connection = useConnection();
   const joinHassUrl = useHassUrl();
   const [resolved, setResolved] = useState<{ id: string; url: string } | null>(null);
@@ -30,9 +38,9 @@ export function useBackgroundImage(image: string): string {
       connection
         .sendMessagePromise<{ url: string }>({ type: 'media_source/resolve_media', media_content_id: image, expires: EXPIRES_SECONDS })
         .then(result => alive && setResolved({ id: image, url: result.url }))
-        // A picture since deleted from the library: the built-in one instead.
+        // A picture since deleted from the library: the fallback instead.
         .catch(error => {
-          console.warn('Better Wall Dashboard: background picture not found', image, error);
+          console.warn('Better Wall Dashboard: picture not found', image, error);
           if (alive) setResolved({ id: image, url: '' });
         });
     void resolve();
@@ -43,11 +51,11 @@ export function useBackgroundImage(image: string): string {
     };
   }, [image, fromMedia, connection]);
 
-  if (!image) return defaultBackground;
+  if (!image) return fallback;
   if (fromMedia) {
-    // Nothing while asking, rather than the built-in picture for a moment.
+    // Nothing while asking, rather than the fallback for a moment.
     if (resolved?.id !== image) return '';
-    return resolved.url ? joinHassUrl(resolved.url) : defaultBackground;
+    return resolved.url ? joinHassUrl(resolved.url) : fallback;
   }
   // "/local/wall.jpg" is a path on Home Assistant. Inside Home Assistant that
   // is this page's origin anyway; on the dev server it is not.

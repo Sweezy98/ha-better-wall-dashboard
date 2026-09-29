@@ -272,13 +272,19 @@ export interface MediaConfig {
   roomMovable: boolean;
   /** The room's walls drawn; the floor always is. */
   walls: boolean;
+  /** What the room's screen shows: nothing, what plays, or a picture of one's own. */
+  screen: ScreenShows;
+  screenImage: string;
 }
+
+export const SCREEN_SHOWS = ['off', 'art', 'image'] as const;
+export type ScreenShows = (typeof SCREEN_SHOWS)[number];
 
 /**
  * A media tile's options, each checked, from `tile.options`:
  * `players`, `power`, `volume`, `volume_unit`, `presets`, `switches`,
  * `switches_title`, `devices`, `night`, `night_text`, `mode_entity`,
- * `format_entity`, `speakers` ("7.4.4"), `sofa`, `listener`, `room_movable` and `hide_walls`.
+ * `format_entity`, `speakers` ("7.4.4"), `sofa`, `listener`, `room_movable`, `hide_walls`, `screen` and `screen_image`.
  */
 export function mediaConfig(entity: string, options: Record<string, unknown>): MediaConfig {
   const extra = Array.isArray(options.players) ? options.players.filter((id): id is string => typeof id === 'string' && id !== '') : [];
@@ -301,6 +307,8 @@ export function mediaConfig(entity: string, options: Record<string, unknown>): M
     listener: options.listener === true,
     roomMovable: options.room_movable === true,
     walls: options.hide_walls !== true,
+    screen: SCREEN_SHOWS.includes(options.screen as ScreenShows) ? (options.screen as ScreenShows) : 'off',
+    screenImage: text(options.screen_image),
   };
 }
 
