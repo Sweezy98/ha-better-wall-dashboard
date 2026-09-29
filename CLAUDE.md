@@ -445,6 +445,10 @@ says so on purpose.
 - Publish **idempotently**: create, and if that answers "tag_name already exists",
   fetch the release and update it. *Failure: `gh release create` made the release,
   then failed its own second try with HTTP 422 and turned the run red.*
+- The workflow then keeps only the **newest four releases**, newest by version
+  (`sort -V`, so `0.2.10` > `0.2.9`), not by date, and deletes the older release
+  entries — never their tags, so every version stays in the history. HACS lists
+  each release in its version picker; more than a handful is clutter.
 - For a tag push the workflow file is read **from the tagged commit**: a tag on a
   commit older than a workflow change runs the old workflow (or none).
 - Check the order as GitHub sees it before telling the user a release is out:
