@@ -486,7 +486,9 @@ says so on purpose.
   scroll inside a shadow root. `wheel` is composed.
 - The browser's `title` tooltips are replaced by one app-wide tooltip in the top
   layer (`popover="manual"`, shown afresh each time so it is above any dialog),
-  driven by `data-tip` and `pointerover` on `window` in capture phase.
+  driven by `data-tip` and **`pointermove`** on `window` in capture phase.
+  *Failure: on `pointerover` it showed once and never again — Chrome stops sending
+  `pointerover` once a top-layer element is up, while `pointermove` still comes.*
 - **Container queries**: a size query styles the container's descendants, never
   the container itself; measures the **content box**; and `em` in the condition is
   the container's font size — set it to the layout unit to query in units.

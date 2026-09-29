@@ -316,11 +316,11 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
             <span className='temperature'>{temperature}</span>
             {today && (
               <div className='today'>
-                <div data-tip={t('high_short')}>
+                <div data-tip={t('high_today')}>
                   <Icon className='icon' icon='mdi:arrow-up-thin' />
                   {degrees(today.temperature, language)}
                 </div>
-                <div data-tip={t('low_short')}>
+                <div data-tip={t('low_today')}>
                   <Icon className='icon' icon='mdi:arrow-down-thin' />
                   {degrees(today.templow, language)}
                 </div>

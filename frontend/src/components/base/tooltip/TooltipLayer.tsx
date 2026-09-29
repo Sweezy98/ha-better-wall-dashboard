@@ -72,8 +72,15 @@ const TooltipLayer: React.FC = () => {
       tip.style.left = `${left}px`;
       tip.style.top = `${top}px`;
     };
-    const onOver = (event: PointerEvent) => {
+    // By pointermove, not pointerover: Chrome stops sending pointerover once
+    // a tooltip is up -- the top layer changed -- while every move still
+    // arrives. Only when what is under the pointer changes is it looked at.
+    let under: EventTarget | null = null;
+    const onMove = (event: PointerEvent) => {
       if (event.pointerType !== 'mouse') return;
+      const target = event.composedPath()[0] ?? null;
+      if (target === under) return;
+      under = target;
       const element = tipped(event);
       if (element === current) return;
       hide();
@@ -88,14 +95,14 @@ const TooltipLayer: React.FC = () => {
     // is not composed -- but the wheel that turns it is.
     const onWheel = () => hide();
 
-    window.addEventListener('pointerover', onOver, true);
+    window.addEventListener('pointermove', onMove, true);
     window.addEventListener('pointerout', onLeave, true);
     window.addEventListener('pointerdown', hide, true);
     window.addEventListener('wheel', onWheel, { capture: true, passive: true });
     window.addEventListener('keydown', hide, true);
     return () => {
       hide();
-      window.removeEventListener('pointerover', onOver, true);
+      window.removeEventListener('pointermove', onMove, true);
       window.removeEventListener('pointerout', onLeave, true);
       window.removeEventListener('pointerdown', hide, true);
       window.removeEventListener('wheel', onWheel, { capture: true });
