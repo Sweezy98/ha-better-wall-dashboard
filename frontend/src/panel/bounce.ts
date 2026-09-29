@@ -30,5 +30,9 @@ export function bouncePress(event: React.MouseEvent): void {
   // A button in a tile gives by itself; the tile gives when it is what was
   // pressed -- its own surface (data-press), or a tile that is one button.
   const whole = !tile || button.hasAttribute('data-press') || button.parentElement === tile;
-  (whole ? (tile ?? button) : button).animate(KEYFRAMES, { duration: 560 });
+  // The tile's own surface, not the cell around it: the cell holds the
+  // tile's popup too, and a modal dialog under a transform being animated
+  // is a case better left alone.
+  const surface = tile ? ([...tile.children].find(child => child.contains(button)) ?? button) : button;
+  (whole ? surface : button).animate(KEYFRAMES, { duration: 560 });
 }
