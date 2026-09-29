@@ -411,11 +411,13 @@ const SpeakerRoom: React.FC<SpeakerRoomProps> = ({ layout, sofa, states, on, lis
     const points = corners(SCREEN).map(point => onScreen(point, camera));
     const [bottomLeft, , topRight, topLeft] = face.corners.map(index => points[index]);
     if (winding(face.corners.map(index => points[index])) > 0) {
+      // In the screen's own metres, so the picture fits it at its own proportions.
+      const [w, h] = [SCREEN.w, SCREEN.h];
       const matrix = [
-        topRight[0] - topLeft[0],
-        topRight[1] - topLeft[1],
-        bottomLeft[0] - topLeft[0],
-        bottomLeft[1] - topLeft[1],
+        (topRight[0] - topLeft[0]) / w,
+        (topRight[1] - topLeft[1]) / w,
+        (bottomLeft[0] - topLeft[0]) / h,
+        (bottomLeft[1] - topLeft[1]) / h,
         topLeft[0],
         topLeft[1],
       ];
@@ -425,7 +427,7 @@ const SpeakerRoom: React.FC<SpeakerRoomProps> = ({ layout, sofa, states, on, lis
         depth: depthOf(SCREEN, camera) - 0.001,
         element: (
           <g transform={`matrix(${matrix.join(' ')})`}>
-            <image href={screen} x={0.04} y={0.06} width={0.92} height={0.88} preserveAspectRatio='xMidYMid meet' />
+            <image href={screen} x={w * 0.03} y={h * 0.05} width={w * 0.94} height={h * 0.9} preserveAspectRatio='xMidYMid meet' />
           </g>
         ),
       });

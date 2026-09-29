@@ -44,15 +44,16 @@ export function speakerBoxes(layout: SpeakerLayout): Partial<Record<Channel, Box
     FHR: box(1.3, 0.13, 2.05, 0.24, 0.22, 0.32),
     TML: box(-0.8, 2.9, ROOM.height - 0.08, 0.3, 0.3, 0.08),
     TMR: box(0.8, 2.9, ROOM.height - 0.08, 0.3, 0.3, 0.08),
-    // Inside the surround backs, clear of them and of the side surrounds in the view.
-    RHL: box(-0.75, back - 0.13, 2.05, 0.24, 0.22, 0.32),
-    RHR: box(0.75, back - 0.13, 2.05, 0.24, 0.22, 0.32),
+    // High on the back wall, above the surround backs.
+    RHL: box(-1.3, back - 0.13, 2.05, 0.24, 0.22, 0.32),
+    RHR: box(1.3, back - 0.13, 2.05, 0.24, 0.22, 0.32),
     // One sub stands in the middle; a pair either side of it.
     SW1: box(layout.subs === 1 ? 0 : -0.4, 0.34, 0, 0.4, 0.4, 0.42),
     SW2: box(0.4, 0.34, 0, 0.4, 0.4, 0.42),
     // Behind the sofa, in the room's back corners; one alone in the middle.
-    SW3: box(layout.subs === 3 ? 0 : -ROOM.width / 2 + 0.3, back - 0.3, 0, 0.4, 0.4, 0.42),
-    SW4: box(ROOM.width / 2 - 0.3, back - 0.3, 0, 0.4, 0.4, 0.42),
+    // Facing the front, as the ones there face back down the room.
+    SW3: { ...box(layout.subs === 3 ? 0 : -ROOM.width / 2 + 0.3, back - 0.3, 0, 0.4, 0.4, 0.42), yaw: Math.PI },
+    SW4: { ...box(ROOM.width / 2 - 0.3, back - 0.3, 0, 0.4, 0.4, 0.42), yaw: Math.PI },
   };
   return Object.fromEntries(
     layoutChannels(layout).map(channel => [
