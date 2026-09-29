@@ -383,3 +383,136 @@ This section is most of the bugs.
 - Comments should say **why**, and name the failure that made the line
   necessary. Every rule above exists because someone deleted a line that looked
   pointless.
+
+---
+
+## 12. Learned building this repo (Better Wall Dashboard)
+
+Added from `better_wall_dashboard` (React + Vite panel, HA 2026.3–2026.9,
+HACS, GitHub Actions). Where it differs from the sections above, this repo
+says so on purpose.
+
+### This repo has a build step — and commits its output
+
+- The frontend is React/TypeScript in `frontend/`, built by Vite into
+  `custom_components/better_wall_dashboard/frontend/`. **The built files are
+  committed**, because HACS copies what is in the repo and runs nothing.
+  *Failure: a change that only exists in `frontend/src` ships nothing.*
+- CI rebuilds and fails on `git diff --exit-code` over the built folder. Commit
+  source and build together, from a fresh `npm run build`.
+- The panel's entry URL carries a content fingerprint, set when the integration
+  **registers** the panel. After a build on a running HA, reload the config entry
+  (or restart); telling open pages to reload makes them fetch the *old* URL, which
+  the browser serves from cache.
+  *Failure: the user kept seeing last week's code while a fresh headless browser
+  showed the new build.* Check `better_wall_dashboard/version` → `app` equals the
+  first 12 hex of the sha256 of the entry file.
+
+### CI (GitHub Actions) for a custom component
+
+- **Home Assistant 2026.3 needs Python ≥ 3.14.2.** Pin the runner with
+  `uv python install 3.14` and a uv venv; `setup-python`'s 3.13 fails at install.
+- Test the oldest supported core and the newest (matrix), and install the
+  frontend package **that core pins** (`homeassistant/components/frontend/manifest.json`
+  → `requirements[0]`), or panel tests import a mismatched frontend.
+- CI runs `ruff check` **and** `ruff format --check`. pytest passing locally is
+  not enough. *Failure: a tagged beta with a red build over two long lines.*
+  Run the whole workflow's commands locally before every commit and tag.
+- Keep `hassfest` and `hacs/action` as separate workflows; hassfest needs Docker.
+
+### Releases and HACS
+
+- Tag `vX.Y.Z-beta.N` and set `manifest.json` `version` to the same string without
+  the `v` (semver; AwesomeVersion accepts `0.1.0-beta.1`). HACS shows the manifest
+  version, so a mismatch reads as a different release.
+- Publish tags as **pre-releases** while in beta. HACS hides them unless the user
+  ticks "Show beta versions" on the repository (Redownload dialog) — say so.
+- A backend change needs an HA restart after the HACS update; a frontend-only
+  change does not, but the integration must be reloaded (see fingerprint above).
+
+### Home Assistant APIs that behave differently than expected
+
+- `config/entity_registry/list` is **not** admin-only and has `unique_id`,
+  `platform`, `config_entry_id`. The kit's/`hass.entities` display registry
+  (`list_for_display`) has `platform` and `device_id` but **not** `unique_id` or
+  `config_entry_id`. Fetch the full list once per connection and cache it.
+- `logbook/get_events` returns entity ids and raw states, **no names**: name them
+  from states yourself.
+- `history/history_during_period` without `minimal_response` returns compressed
+  rows `{s, a, lu, lc}`; an attribute not repeated on a row is the previous one's.
+  Times are **seconds**.
+- A service that only returns data must be called with `return_response: true`;
+  one that never returns data refuses it. Ask for it exactly when wanted.
+- The websocket connection emits `disconnected`, `reconnect-error` and `ready`.
+  A restart is a disconnect of ~10–40 s; show it, with a grace of ~2 s.
+- The entity selector takes `include_entities` — the way to narrow a picker to
+  entities no `filter` can express (numeric sensors, covers another integration
+  steers). `filter.integration` narrows by platform.
+
+### Detecting and reading other integrations from the frontend
+
+- Offer a feature for an integration only where the display registry has an entity
+  with that `platform` (compare as one joined string in a selector, so a component
+  re-renders when it changes, not on every state change).
+- **Better Lighting**: a room light has attribute `bl_room_id`; its scene select is
+  the one `select.*` on the same `device_id`. `None` in a `bl_` attribute means
+  "does not apply", not "no".
+- **Adaptive Cover Pro**: entities are found by `unique_id` = `{entry_id}_{suffix}`
+  qualified by domain (`sensor:Cover_Position`, `binary_sensor:manual_override`,
+  `switch:Automatic Control`) — **never** by entity_id or device (they may sit on
+  the physical cover's device). The covers an instance steers are the keys of the
+  Target Position sensor's `actual_positions`. During a manual hold that sensor's
+  state is the held position while `linear_position` stays the sun's target.
+- **Moon** integration: `sensor.moon_phase`, eight named states; compute the shape
+  yourself from the moon's age if you want to draw it.
+
+### Panel frontend traps (in addition to section 8)
+
+- **Icons load from Home Assistant.** While the connection is lost none arrive:
+  anything shown then (the "connection lost" screen) draws its SVG inline.
+- **Modal `<dialog>`s nested inside each other in React**: React carries a child
+  dialog's `close`/`cancel` up to the parent's handler — check
+  `event.target === event.currentTarget`, or closing the inner closes both.
+  Each dialog also darkens the page with its own `::backdrop`; give nested ones a
+  transparent backdrop and dim the covered dialog instead.
+- A dialog rendered inside a tile is still the tile's DOM descendant: the tile's
+  class rules (`.icon`, `.power`, `.buttons`) reach into it, and pointer events
+  bubble to the page swiper around it. Render popups **beside** the styled tile,
+  and ignore drags whose target is inside a `dialog` that is not the scroller's.
+- A `dialog` hidden with its ancestor (`display: none` from a container query)
+  stays **modal** and makes the whole page inert. Don't put popups inside
+  elements that can be hidden.
+- `scroll` events are **not composed**: a listener on `window` never hears a
+  scroll inside a shadow root. `wheel` is composed.
+- The browser's `title` tooltips are replaced by one app-wide tooltip in the top
+  layer (`popover="manual"`, shown afresh each time so it is above any dialog),
+  driven by `data-tip` and `pointerover` on `window` in capture phase.
+- **Container queries**: a size query styles the container's descendants, never
+  the container itself; measures the **content box**; and `em` in the condition is
+  the container's font size — set it to the layout unit to query in units.
+  Rules inside `@container` lose to later rules of equal specificity: put the
+  queries last.
+- A `filter` (or `transform`) on an element makes it the containing block of its
+  `position: fixed` descendants. Apply a dimming filter only while needed.
+- **Touch**: an element that uses double tap needs `touch-action: manipulation`,
+  or the browser takes the double tap as a zoom and passes one tap through. A
+  control dragged by finger inside a scroller needs `touch-action: none` (or
+  `pan-y` for a horizontal chart), and its pointer listeners must be **native**:
+  React's delegated events arrive after an ancestor's native listener.
+- A mouse drag must end on a `pointermove` with `buttons === 0`: released outside
+  the element, `pointerup` never arrives, and the next plain move became a drag
+  that swallowed the following click — "stuck" tiles.
+- Don't call `Date.now()` in render, or `setState` synchronously in an effect: the
+  React hooks lint rejects both. Tick with a timer hook; derive state instead.
+
+### Testing against a live instance
+
+- Keep a **local** HA (e.g. `hass -c <scratch>/ha-config` on port 18123) with the
+  demo integration and the third-party integrations installed from source, and
+  drive it with a headless-Chrome harness. Never run automation against the
+  user's own Home Assistant.
+- To restart it, look up the PID in one command and start it in another: a
+  command that both greps for and contains the start string matches — and kills —
+  its own shell (`pkill -f` does the same).
+- Measure after the thing you measure has had time to happen: a tooltip with a
+  350 ms delay read right after the hover looks broken when it is not.
