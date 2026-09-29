@@ -14,37 +14,66 @@
  */
 const WANTED = ['ha-selector', 'ha-entity-picker', 'ha-switch', 'ha-icon-picker'];
 
+/** The cards whose editors bring the controls: the entities card the pickers and switch, the button card the icon picker. */
+const EDITORS = [
+  { tag: 'hui-entities-card', config: { type: 'entities', entities: [] } },
+  { tag: 'hui-button-card', config: { type: 'button' } },
+];
+
+type CardClass = { getConfigElement?: () => Promise<unknown> };
+
 interface CardHelpers {
   createCardElement(config: Record<string, unknown>): Promise<HTMLElement> | HTMLElement;
 }
 
 let loading: Promise<boolean> | null = null;
+let partsLoad = false;
 
 export function haControlsReady(): boolean {
-  return WANTED.every(tag => customElements.get(tag));
+  return partsLoad && WANTED.every(tag => customElements.get(tag));
+}
+
+const wait = (ms: number) => new Promise<false>(resolve => window.setTimeout(() => resolve(false), ms));
+
+/**
+ * `ha-selector` fetches the part for each kind of selector as it first draws
+ * one. When Home Assistant's chunk fails to arrive -- it did, now and then --
+ * the selector draws as nothing, and a failed import is never tried again on
+ * that page. So one text selector is drawn unseen first, and the controls are
+ * used only if its part arrives.
+ */
+async function selectorPartsLoad(): Promise<boolean> {
+  const probe = Object.assign(document.createElement('ha-selector'), { selector: { text: {} }, hidden: true });
+  document.body.append(probe);
+  try {
+    return await Promise.race([customElements.whenDefined('ha-selector-text').then(() => true), wait(5000)]);
+  } finally {
+    probe.remove();
+  }
 }
 
 export function ensureHaControls(): Promise<boolean> {
   if (haControlsReady()) return Promise.resolve(true);
   loading ??= (async () => {
+    // A card class already defined -- Home Assistant loads some with its
+    // Home dashboard -- opens its editor directly. `loadCardHelpers` exists
+    // only once a Lovelace dashboard has been, and was missing here.
     const load = (window as unknown as { loadCardHelpers?: () => Promise<CardHelpers> }).loadCardHelpers;
-    if (!load) return false;
-    try {
-      const helpers = await load();
-      // Two editors: the entities card brings the pickers and the switch,
-      // the button card the icon picker. Either may fail without the other.
-      for (const config of [{ type: 'entities', entities: [] }, { type: 'button' }]) {
-        try {
-          const card = await helpers.createCardElement(config);
-          await (card.constructor as { getConfigElement?: () => Promise<unknown> }).getConfigElement?.();
-        } catch {
-          // This one is unavailable; the next may not be.
+    let helpers: CardHelpers | null = null;
+    for (const editor of EDITORS) {
+      try {
+        let card = customElements.get(editor.tag) as CardClass | undefined;
+        if (!card?.getConfigElement && load) {
+          helpers ??= await load();
+          card = (await helpers.createCardElement(editor.config)).constructor as CardClass;
         }
+        await card?.getConfigElement?.();
+      } catch {
+        // This one is unavailable; the next may not be.
       }
-    } catch {
-      return false;
     }
-    return Boolean(customElements.get('ha-selector'));
+    partsLoad = Boolean(customElements.get('ha-selector')) && (await selectorPartsLoad());
+    return haControlsReady();
   })();
   return loading;
 }

@@ -47,28 +47,59 @@ const EditorPreview: React.FC<{ dashboard: Dashboard; device: (typeof DEVICES)[n
 }) => {
   const t = useT();
   const ref = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(0.5);
+  const frame = useRef<HTMLDivElement>(null);
+  const [room, setRoom] = useState<{ width: number; height: number } | null>(null);
   const width = portrait ? device.height : device.width;
   const height = portrait ? device.width : device.height;
+  // Worked out in the same render as the size, so a change of device or
+  // orientation knows where it starts and where it ends.
+  const fit = room ? Math.min((room.width - 40) / width, (room.height - 40) / height) : 0.5;
+  const scale = Math.max(0.1, Math.min(1, Math.floor(fit * 1000) / 1000));
 
   useLayoutEffect(() => {
     const element = ref.current;
     if (!element) return;
-    const apply = () => {
-      const fit = Math.min((element.clientWidth - 40) / width, (element.clientHeight - 40) / height);
-      setScale(Math.max(0.1, Math.min(1, Math.floor(fit * 1000) / 1000)));
-    };
+    const apply = () => setRoom({ width: element.clientWidth, height: element.clientHeight });
     apply();
     const observer = new ResizeObserver(apply);
     observer.observe(element);
     return () => observer.disconnect();
-  }, [width, height]);
+  }, []);
+
+  // From what was shown to what is now: another tablet grows or shrinks into
+  // place, the dashboard laying itself out as it goes; turned, the frame
+  // swings a quarter round, as the tablet would in a hand. Resizing the
+  // editor itself just follows.
+  const shown = useRef<{ width: number; height: number; scale: number; portrait: boolean } | null>(null);
+  useLayoutEffect(() => {
+    const element = frame.current;
+    const before = shown.current;
+    shown.current = { width, height, scale, portrait };
+    if (!element || !before || !room) return;
+    const to = `translate(-50%, -50%) scale(${scale})`;
+    const easing = 'cubic-bezier(0.3, 0, 0.2, 1)';
+    if (before.portrait !== portrait) {
+      // The new shape, turned back a quarter, has the old one's outline.
+      element.animate(
+        [{ transform: `translate(-50%, -50%) scale(${before.scale}) rotate(${portrait ? 90 : -90}deg)` }, { transform: to }],
+        { duration: 550, easing }
+      );
+    } else if (before.width !== width || before.height !== height) {
+      element.animate(
+        [
+          { width: `${before.width}px`, height: `${before.height}px`, transform: `translate(-50%, -50%) scale(${before.scale})` },
+          { width: `${width}px`, height: `${height}px`, transform: to },
+        ],
+        { duration: 450, easing }
+      );
+    }
+  }, [width, height, scale, portrait, room]);
 
   const view = useMemo(() => ({ dashboard, dashboards: [], kiosk: false, is_admin: true, pin_required: false }), [dashboard]);
 
   return (
     <StyledPreview ref={ref} aria-label={t('preview')}>
-      <StyledFrame style={{ width, height, transform: `translate(-50%, -50%) scale(${scale})` }}>
+      <StyledFrame ref={frame} style={{ width, height, transform: `translate(-50%, -50%) scale(${scale})` }}>
         <DashboardViewProvider view={view} focusPage={page}>
           <DashboardLayout />
         </DashboardViewProvider>
