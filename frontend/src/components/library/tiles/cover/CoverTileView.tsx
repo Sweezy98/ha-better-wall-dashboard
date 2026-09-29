@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { pressedInside } from '../../../../lib/dom';
 import styled, { keyframes, useTheme } from 'styled-components';
 import { u } from '../../../../themes/default.theme';
 import { hoverable, pressable } from '../../../../themes/interaction';
@@ -317,7 +318,7 @@ const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, signs, action, onDe
       aria-label={name}
       onClick={event => {
         // Its own buttons do their own thing; anywhere else moves the cover.
-        if (!entity || (event.target as Element).closest('button, dialog')) return;
+        if (!entity || pressedInside(event, 'button')) return;
         tap();
       }}
       onKeyDown={event => {

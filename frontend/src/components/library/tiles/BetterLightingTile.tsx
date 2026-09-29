@@ -1,4 +1,5 @@
 import { memo, useCallback, useState } from 'react';
+import { pressedInside } from '../../../lib/dom';
 import styled, { useTheme } from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import { hoverable, pressable } from '../../../themes/interaction';
@@ -398,7 +399,7 @@ const BetterLightingTile: React.FC<TileProps> = ({ tile }) => {
         aria-label={name}
         onClick={event => {
           // Its own controls do their own thing; anywhere else switches the room.
-          if ((event.target as Element).closest('button, [role="slider"], dialog')) return;
+          if (pressedInside(event, 'button, [role="slider"]')) return;
           tap();
         }}
         onKeyDown={event => {
