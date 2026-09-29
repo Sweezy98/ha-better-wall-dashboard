@@ -432,6 +432,18 @@ says so on purpose.
   right, which is why it looked fine in every local check.* Plain numbers are
   compared as numbers everywhere. The move from `0.1.0-beta.10` to `0.2.0` was
   made so the next release sorts above every beta.
+- **Releases are made by `.github/workflows/release.yml`, not by hand.** Pushing a
+  `vX.Y.Z` tag creates the release titled "Better Wall Dashboard vX.Y.Z", marked
+  latest, with notes from the commit subjects since the previous `v*` tag (bare
+  "Version x" bumps dropped, a trailing "; version x" trimmed) and a compare link.
+  A tag pushed before the workflow existed, or a release to be rewritten: run the
+  workflow by hand (Actions → Release → Run workflow, with the tag).
+  *Failure: GitHub's form prefills only the tag as the title and cannot be
+  templated, and its "Generate release notes" builds from pull requests — this
+  repository commits to main, so they came out empty.* Commit subjects are the
+  release notes, so write each as a sentence a user would want to read.
+- For a tag push the workflow file is read **from the tagged commit**: a tag on a
+  commit older than a workflow change runs the old workflow (or none).
 - Check the order as GitHub sees it before telling the user a release is out:
   `https://api.github.com/repos/<owner>/<repo>/releases` lists them newest first
   (public, no token needed). The user publishes the release in GitHub's UI; a
