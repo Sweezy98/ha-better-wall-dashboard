@@ -87,6 +87,21 @@ export const StyledDialog = styled.dialog<{ $width: number; $full: boolean }>`
   &[data-closing]::backdrop {
     animation: ${fadeOut} ${CLOSE_MS}ms ease-in forwards;
   }
+
+  /* Opened over another popup (popupStack): the page is dimmed already, so
+     its backdrop only takes the tap that closes it ... */
+  &[data-nested]::backdrop {
+    background: transparent;
+  }
+
+  /* ... and the popup it covers dims instead, as the page beneath it is.
+     A filter only while covered: one there always would make the popup the
+     box its fixed-position content (a graph's tooltip) is placed in. */
+  transition: filter 0.25s ease;
+
+  &[data-covered] {
+    filter: brightness(0.45);
+  }
 `;
 
 export const StyledPopupHeader = styled.header`

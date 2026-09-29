@@ -10,6 +10,7 @@ import {
   StyledPopupIcon,
   StyledPopupTitle,
 } from './Popup.styled';
+import { pushPopup, removePopup } from './popupStack';
 
 interface PopupProps {
   open: boolean;
@@ -84,10 +85,13 @@ const Popup: React.FC<PopupProps> = ({
       // drawn with a focus ring the moment it opens.
       dialog.setAttribute('autofocus', '');
       dialog.showModal();
+      pushPopup(dialog);
     }
     if (!open && dialog.open && !('closing' in dialog.dataset)) {
       // Animated out first (data-closing, see Popup.styled), then closed.
       dialog.dataset.closing = '';
+      // Off the stack as it starts to go: the popup beneath brightens as this one fades.
+      removePopup(dialog);
       let done = false;
       const finish = () => {
         if (done) return;
@@ -108,6 +112,15 @@ const Popup: React.FC<PopupProps> = ({
       window.setTimeout(finish, CLOSE_MS + 100);
     }
   });
+
+  // Gone from the page while open -- its tile removed, the dashboard
+  // switched: off the stack, or the popups left would stay dimmed.
+  useEffect(() => {
+    const dialog = ref.current;
+    return () => {
+      if (dialog) removePopup(dialog);
+    };
+  }, []);
 
   useEffect(() => {
     const dialog = ref.current;
