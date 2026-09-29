@@ -1,5 +1,6 @@
 import { useEffect, type RefObject } from 'react';
 import { swipeTarget } from '../lib/swipe';
+import { fromPopup } from '../lib/dom';
 
 /**
  * Drag pages sideways with a mouse, the way a finger swipes them.
@@ -31,6 +32,9 @@ export function useMouseSwipe(ref: RefObject<HTMLElement | null>, count: number)
 
     const onDown = (event: PointerEvent) => {
       if (event.pointerType !== 'mouse' || event.button !== 0) return;
+      // A popup opened from a tile sits inside the track in the page, if not
+      // on screen: a drag in it is the popup's, not the pages'.
+      if (fromPopup(event, element)) return;
       drag = {
         id: event.pointerId,
         x: event.clientX,

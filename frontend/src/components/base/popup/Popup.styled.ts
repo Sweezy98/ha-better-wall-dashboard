@@ -8,6 +8,25 @@ const rise = keyframes`
   to { opacity: 1; transform: none; }
 `;
 
+/** Closing, the way it came, only quicker: a popup leaving should not keep anyone waiting. */
+const sink = keyframes`
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(${u(2)}) scale(0.98); }
+`;
+
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
+const fadeOut = keyframes`
+  from { opacity: 1; }
+  to { opacity: 0; }
+`;
+
+/** How long closing takes; Popup waits this long at most before it closes the dialog. */
+export const CLOSE_MS = 200;
+
 export const StyledDialog = styled.dialog<{ $width: number; $full: boolean }>`
   /* The dialog is in the top layer, so none of this is relative to the
      dashboard: no transformed ancestor can offset it and no stacking context
@@ -52,6 +71,21 @@ export const StyledDialog = styled.dialog<{ $width: number; $full: boolean }>`
 
   &::backdrop {
     background: ${({ theme }) => theme.popup.backdrop};
+  }
+
+  &[open]::backdrop {
+    animation: ${fadeIn} 0.28s ease-out;
+  }
+
+  /* On its way out (Popup sets it, then closes when this ends): nothing in
+     it takes a tap any more. */
+  &[data-closing] {
+    animation: ${sink} ${CLOSE_MS}ms ease-in forwards;
+    pointer-events: none;
+  }
+
+  &[data-closing]::backdrop {
+    animation: ${fadeOut} ${CLOSE_MS}ms ease-in forwards;
   }
 `;
 

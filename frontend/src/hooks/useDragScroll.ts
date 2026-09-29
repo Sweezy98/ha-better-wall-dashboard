@@ -1,4 +1,5 @@
 import { useEffect, type RefObject } from 'react';
+import { fromPopup } from '../lib/dom';
 
 /** Pointer presses an inner scroller has already taken for its own drag. */
 const claimed = new WeakSet<Event>();
@@ -34,6 +35,8 @@ export function useDragScroll(ref: RefObject<HTMLElement | null>, active = true,
 
     const onDown = (event: PointerEvent) => {
       if (event.pointerType !== 'mouse' || event.button !== 0 || claimed.has(event)) return;
+      // A drag in a popup opened from inside this list is the popup's.
+      if (fromPopup(event, element)) return;
       if (room() <= 0) return;
       claimed.add(event);
       drag = {

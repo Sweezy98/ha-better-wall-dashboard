@@ -1,7 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Icon from '../icon/Icon';
 import { useT } from '../../../hooks/useHa';
-import { StyledDialog, StyledPopupBody, StyledPopupClose, StyledPopupHeader, StyledPopupIcon, StyledPopupTitle } from './Popup.styled';
+import {
+  CLOSE_MS,
+  StyledDialog,
+  StyledPopupBody,
+  StyledPopupClose,
+  StyledPopupHeader,
+  StyledPopupIcon,
+  StyledPopupTitle,
+} from './Popup.styled';
 
 interface PopupProps {
   open: boolean;
@@ -60,6 +68,9 @@ const Popup: React.FC<PopupProps> = ({
 }) => {
   const ref = useRef<HTMLDialogElement>(null);
   const t = useT();
+  // Its content stays while it animates out, and goes once it is closed.
+  const [rendered, setRendered] = useState(open);
+  if (open && !rendered) setRendered(true);
 
   // After every render, not only when `open` changes: the <dialog> element
   // itself can be replaced while the popup stays open -- a hot reload in
@@ -74,12 +85,27 @@ const Popup: React.FC<PopupProps> = ({
       dialog.setAttribute('autofocus', '');
       dialog.showModal();
     }
-    if (!open && dialog.open) {
-      dialog.close();
-      // Closing hands focus back to the button that opened the popup, and
-      // the browser rings it -- a white outline on a wall tablet nobody
-      // uses a keyboard on.
-      ((dialog.getRootNode() as Document | ShadowRoot).activeElement as HTMLElement | null)?.blur();
+    if (!open && dialog.open && !('closing' in dialog.dataset)) {
+      // Animated out first (data-closing, see Popup.styled), then closed.
+      dialog.dataset.closing = '';
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        dialog.removeEventListener('animationend', onEnd);
+        delete dialog.dataset.closing;
+        dialog.close();
+        // Closing hands focus back to the button that opened the popup, and
+        // the browser rings it -- a white outline on a wall tablet nobody
+        // uses a keyboard on.
+        ((dialog.getRootNode() as Document | ShadowRoot).activeElement as HTMLElement | null)?.blur();
+        setRendered(false);
+      };
+      // Its own animation ending, not one of something inside it.
+      const onEnd = (event: AnimationEvent) => event.target === dialog && finish();
+      dialog.addEventListener('animationend', onEnd);
+      // Without animations (reduced motion, a hidden tab), close anyway.
+      window.setTimeout(finish, CLOSE_MS + 100);
     }
   });
 
@@ -114,8 +140,11 @@ const Popup: React.FC<PopupProps> = ({
       // state and the element agree about whether it is open.
       // However the dialog was closed -- by us, by the browser, by a script --
       // React hears of it, or the next render would open it again.
-      onClose={() => open && onClose()}
+      // Its own events only: React carries a popup's close and cancel up to
+      // the popup it was opened from, which then closed with it.
+      onClose={event => event.target === event.currentTarget && open && onClose()}
       onCancel={event => {
+        if (event.target !== event.currentTarget) return;
         event.preventDefault();
         onClose();
       }}
@@ -125,7 +154,7 @@ const Popup: React.FC<PopupProps> = ({
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      {open && (
+      {rendered && (
         <>
           <StyledPopupHeader>
             {icon && (

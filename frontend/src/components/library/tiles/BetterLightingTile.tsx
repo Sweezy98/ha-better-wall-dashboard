@@ -195,25 +195,23 @@ const StyledRoom = styled(StyledTile)<{ $glow: string }>`
     opacity: 0.4;
   }
 
-  /* Too short for the scenes under the bar (three rows of 2.8 and their
-     gaps, measured inside the padding): the bar and the scenes share one
-     row, as a 2x1 tile has room for across. Only a tile short and narrow
-     both, a 1x1, leaves the scenes out. Last, so it wins over the rows' own
-     layout above. */
+  /* Too short for both the bar and the scenes under it (three rows of 2.8
+     and their gaps, measured inside the padding): the scenes stay and the
+     bar goes -- the room is dimmed in its details, a double tap away. A room
+     without scenes keeps its bar. Last, so these win over the layout above. */
   @container (height < 9.6em) {
-    .controls {
-      flex-direction: row;
-      align-items: center;
-    }
-
-    .controls > * {
-      flex: 1 1 0;
-      min-width: 0;
+    .controls:has(.scenes) > [role='slider'] {
+      display: none;
     }
   }
 
-  @container (height < 9.6em) and (width < 18em) {
+  /* Too narrow for the arrows beside it, as a 1x1 is: the scene button alone. */
+  @container (width < 12em) {
     .scenes {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .scenes > .round {
       display: none;
     }
   }
