@@ -30,7 +30,7 @@ const Sidebar: React.FC = () => {
             <Persons entities={sidebar.persons} />
           </StyledArea>
           <StyledArea $area='openings' data-area='openings'>
-            <Openings entities={sidebar.openings} />
+            <Openings entities={sidebar.openings} view={sidebar.openings_view} />
           </StyledArea>
           <StyledArea $area='travel' data-area='travel'>
             <TravelTime config={sidebar.travel} />

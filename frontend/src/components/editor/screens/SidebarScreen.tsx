@@ -153,6 +153,20 @@ const SidebarScreen: React.FC<ScreenProps & { part: SidebarPart }> = ({ draft, u
             domains={['binary_sensor', 'cover', 'lock', 'sensor']}
             onChange={openings => change({ ...value, openings })}
           />
+          <CheckField
+            label={t('openings_hide_when_closed')}
+            hint={t('openings_hide_when_closed_hint')}
+            value={value.openings_view?.hide_when_closed ?? false}
+            onChange={hide_when_closed =>
+              change({ ...value, openings_view: { only_open: false, ...value.openings_view, hide_when_closed } })
+            }
+          />
+          <CheckField
+            label={t('openings_only_open')}
+            hint={t('openings_only_open_hint')}
+            value={value.openings_view?.only_open ?? false}
+            onChange={only_open => change({ ...value, openings_view: { hide_when_closed: false, ...value.openings_view, only_open } })}
+          />
         </>
       );
     case 'travel':
@@ -200,6 +214,7 @@ const SidebarScreen: React.FC<ScreenProps & { part: SidebarPart }> = ({ draft, u
             items={value.quick_actions}
             max={LIMITS.quickActions}
             addLabel={t('add_quick_action')}
+            withRules
             onChange={quick_actions => change({ ...value, quick_actions })}
           />
         </>

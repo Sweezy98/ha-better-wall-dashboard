@@ -287,3 +287,64 @@ def test_a_stored_background_stays_a_picture_and_a_colour_is_a_hex_one() -> None
         "image",
         "#131313",
     )
+
+
+def test_quick_actions_keep_their_rules_and_old_ones_show_always() -> None:
+    old = model.normalize_dashboard(
+        {"sidebar": {"quick_actions": [{"entity": "switch.night"}]}}
+    )
+    assert old["sidebar"]["quick_actions"][0]["rules"] == []
+    ruled = model.normalize_dashboard(
+        {
+            "sidebar": {
+                "quick_actions": [
+                    {
+                        "entity": "input_boolean.guests",
+                        "rules": [
+                            {"type": "state", "entity": "person.anna", "state": "home"},
+                            {"type": "numeric", "entity": "sensor.lux", "below": "50"},
+                            {"type": "time", "after": "18:00:00", "before": "23:30"},
+                            {"type": "sun", "when": "night"},
+                            {"type": "home", "who": "nobody"},
+                            {"type": "weather", "is": "rain"},
+                            {"type": "time", "after": "25:00"},
+                        ],
+                    }
+                ]
+            }
+        }
+    )
+    rules = ruled["sidebar"]["quick_actions"][0]["rules"]
+    assert rules[0] == {
+        "type": "state",
+        "entity": "person.anna",
+        "state": "home",
+        "not": False,
+    }
+    assert rules[1] == {
+        "type": "numeric",
+        "entity": "sensor.lux",
+        "above": None,
+        "below": 50.0,
+    }
+    assert rules[2] == {"type": "time", "after": "18:00", "before": "23:30"}
+    assert rules[3] == {"type": "sun", "when": "night"}
+    assert rules[4] == {"type": "home", "who": "nobody"}
+    # An unknown kind is dropped; a time that is no time is kept empty.
+    assert rules[5] == {"type": "time", "after": "", "before": ""}
+    assert len(rules) == 6
+
+
+def test_the_openings_row_and_list_show_everything_until_told_otherwise() -> None:
+    plain = model.normalize_dashboard({})
+    assert plain["sidebar"]["openings_view"] == {
+        "hide_when_closed": False,
+        "only_open": False,
+    }
+    set_ = model.normalize_dashboard(
+        {"sidebar": {"openings_view": {"hide_when_closed": True, "only_open": True}}}
+    )
+    assert set_["sidebar"]["openings_view"] == {
+        "hide_when_closed": True,
+        "only_open": True,
+    }

@@ -42,6 +42,8 @@ MAX_STATUS_ICONS: Final = 6
 MAX_NOTIFICATION_PREFIXES: Final = 16
 CLOCK_STYLES: Final = ("digital", "analog")
 BACKGROUND_MODES: Final = ("image", "color")
+RULE_TYPES: Final = ("state", "numeric", "time", "sun", "home")
+MAX_RULES: Final = 6
 MAX_BUTTONS: Final = 5
 MAX_SECTION_STATUS: Final = 2
 MAX_SYSTEM_STATS: Final = 8
@@ -57,6 +59,7 @@ _ID = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 _PIN = re.compile(r"^[0-9]{4,8}$")
 _ENTITY_ID = re.compile(r"^[a-z0-9_]+\.[a-z0-9_]+$")
 _HEX_COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
+_TIME = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 
 
 def new_id() -> str:
@@ -239,6 +242,78 @@ def _named_entity(raw: Any, assign: Callable[[Any], str]) -> dict:
     }
 
 
+def _number_or_none(value: Any) -> float | None:
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        return None
+    try:
+        number = float(value)
+    except ValueError:
+        return None
+    return number if number == number and abs(number) != float("inf") else None
+
+
+def _time(value: Any) -> str:
+    """A time of day as HH:MM; the seconds a time picker adds are dropped."""
+    text = value[:5] if isinstance(value, str) else ""
+    return text if _TIME.match(text) else ""
+
+
+def _rule(raw: Any) -> dict | None:
+    """One condition for showing a quick action; None for one that cannot be read."""
+    raw = _dict(raw)
+    kind = raw.get("type")
+    if kind == "state":
+        return {
+            "type": "state",
+            "entity": _entity(raw.get("entity")),
+            "state": _text(raw.get("state"), "", 100),
+            "not": _bool(raw.get("not"), False),
+        }
+    if kind == "numeric":
+        return {
+            "type": "numeric",
+            "entity": _entity(raw.get("entity")),
+            "above": _number_or_none(raw.get("above")),
+            "below": _number_or_none(raw.get("below")),
+        }
+    if kind == "time":
+        return {
+            "type": "time",
+            "after": _time(raw.get("after")),
+            "before": _time(raw.get("before")),
+        }
+    if kind == "sun":
+        return {
+            "type": "sun",
+            "when": _choice(raw.get("when"), ("day", "night"), "day"),
+        }
+    if kind == "home":
+        return {
+            "type": "home",
+            "who": _choice(raw.get("who"), ("anyone", "nobody"), "anyone"),
+        }
+    return None
+
+
+def _rules(raw: Any) -> list:
+    """When a quick action shows: all of these met. None, always."""
+    if not isinstance(raw, list):
+        return []
+    return [rule for rule in (_rule(item) for item in raw) if rule is not None][
+        :MAX_RULES
+    ]
+
+
+def _quick_actions(raw: Any, assign: Callable[[Any], str]) -> list:
+    """The quick actions: named entities, each with the rules for showing it."""
+    if not isinstance(raw, list):
+        return []
+    return [
+        {**_named_entity(item, assign), "rules": _rules(_dict(item).get("rules"))}
+        for item in raw[:MAX_QUICK_ACTIONS]
+    ]
+
+
 def _named_entities(raw: Any, assign: Callable[[Any], str], limit: int) -> list:
     if not isinstance(raw, list):
         return []
@@ -312,6 +387,7 @@ def _sidebar(raw: Any, assign: Callable[[Any], str]) -> dict:
     status = _dict(raw.get("status"))
     wifi = _dict(raw.get("guest_wifi"))
     climate = _dict(raw.get("climate"))
+    openings_view = _dict(raw.get("openings_view"))
     travel = _dict(raw.get("travel"))
     calendar = _dict(raw.get("calendar"))
     weather = _dict(raw.get("weather"))
@@ -345,6 +421,12 @@ def _sidebar(raw: Any, assign: Callable[[Any], str]) -> dict:
         },
         "persons": _entities(raw.get("persons")),
         "openings": _entities(raw.get("openings"), 64),
+        # Added later: the row only while something is open, the popup's
+        # list only of what is. Both off: as it always was.
+        "openings_view": {
+            "hide_when_closed": _bool(openings_view.get("hide_when_closed"), False),
+            "only_open": _bool(openings_view.get("only_open"), False),
+        },
         "travel": {
             "entity": _entity(travel.get("entity")),
             "name": _text(travel.get("name")),
@@ -354,9 +436,8 @@ def _sidebar(raw: Any, assign: Callable[[Any], str]) -> dict:
             # sensor's own origin and destination.
             "maps_api_key": _text(travel.get("maps_api_key"), "", 100),
         },
-        "quick_actions": _named_entities(
-            raw.get("quick_actions"), assign, MAX_QUICK_ACTIONS
-        ),
+        # Added later: each with `rules` for when it shows; none, always.
+        "quick_actions": _quick_actions(raw.get("quick_actions"), assign),
         "calendar": {
             "entities": _entities(calendar.get("entities")),
             "days": _int(calendar.get("days"), 3, 1, MAX_CALENDAR_DAYS),

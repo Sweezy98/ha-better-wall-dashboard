@@ -53,6 +53,19 @@ export interface NamedEntity {
   icon: string;
 }
 
+/** A condition for showing a quick action (see lib/rules). */
+export type Rule =
+  | { type: 'state'; entity: EntityId; state: string; not: boolean }
+  | { type: 'numeric'; entity: EntityId; above: number | null; below: number | null }
+  | { type: 'time'; after: string; before: string }
+  | { type: 'sun'; when: 'day' | 'night' }
+  | { type: 'home'; who: 'anyone' | 'nobody' };
+
+/** A quick action, shown while all its rules are met; missing from a backend older than this page. */
+export interface QuickAction extends NamedEntity {
+  rules?: Rule[];
+}
+
 export interface BarButton {
   id: string;
   name: string;
@@ -78,8 +91,10 @@ export interface SidebarConfig {
   climate: { temperature: EntityId; humidity: EntityId; hours: number };
   persons: EntityId[];
   openings: EntityId[];
+  /** Missing from a backend older than this page: then, everything shown. */
+  openings_view?: { hide_when_closed: boolean; only_open: boolean };
   travel: { entity: EntityId; name: string; map_url: string; maps_api_key: string };
-  quick_actions: NamedEntity[];
+  quick_actions: QuickAction[];
   calendar: { entities: EntityId[]; days: number };
   weather: { entity: EntityId; temperature: EntityId };
   /** `prefixes` is missing from a backend older than this page, which sends only `prefix`. */

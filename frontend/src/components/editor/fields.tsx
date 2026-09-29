@@ -234,6 +234,29 @@ export const ColorField: React.FC<Base<string>> = ({ label, hint, value, onChang
   );
 };
 
+/** A time of day, HH:MM; empty for none. Home Assistant's picker adds seconds, dropped here. */
+export const TimeField: React.FC<Base<string>> = ({ label, hint, value, onChange }) => {
+  const ha = useHaControls();
+  if (ha) {
+    return (
+      <HaSelector
+        selector={{ time: {} }}
+        value={value || undefined}
+        label={label}
+        helper={hint}
+        onChange={next => onChange(typeof next === 'string' ? next.slice(0, 5) : '')}
+      />
+    );
+  }
+  return (
+    <StyledField>
+      <span className='label'>{label}</span>
+      <input type='time' value={value} onChange={event => onChange(event.target.value)} />
+      {hint && <small>{hint}</small>}
+    </StyledField>
+  );
+};
+
 export const SelectField: React.FC<Base<string> & { options: { value: string; label: string }[] }> = ({
   label,
   hint,

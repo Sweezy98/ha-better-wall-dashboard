@@ -1,10 +1,11 @@
 import { memo } from 'react';
 import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
-import type { NamedEntity } from '../../../config/types';
+import type { NamedEntity, QuickAction as QuickActionConfig } from '../../../config/types';
 import Bubble from '../../base/bubble/Bubble';
 import { StyledSidebarTitle } from '../Sidebar.styled';
 import { domainIcon, toggleService, useCallService, useEntity, useT } from '../../../hooks/useHa';
+import { useShown } from '../../../hooks/useRules';
 
 /** One per row up to three; from four on, two to a row. */
 const StyledGrid = styled.div<{ $columns: number }>`
@@ -40,9 +41,10 @@ const QuickAction: React.FC<{ action: NamedEntity }> = ({ action }) => {
   );
 };
 
-const QuickActions: React.FC<{ actions: NamedEntity[] }> = ({ actions }) => {
+const QuickActions: React.FC<{ actions: QuickActionConfig[] }> = ({ actions }) => {
   const t = useT();
-  const configured = actions.filter(action => action.entity);
+  // Only those whose rules the house meets now (see lib/rules).
+  const configured = useShown(actions.filter(action => action.entity));
   if (!configured.length) return null;
   return (
     <div>

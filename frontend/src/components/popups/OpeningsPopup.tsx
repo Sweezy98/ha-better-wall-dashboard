@@ -48,24 +48,41 @@ const Opening: React.FC<{ entityId: string }> = ({ entityId }) => {
   );
 };
 
-/** Every configured window and door, open ones first. */
-const OpeningsPopup: React.FC<{ open: boolean; onClose: () => void; entities: string[] }> = ({ open, onClose, entities }) => {
+const StyledNone = styled.p`
+  margin: 0;
+  padding: ${u(1)} 0;
+  text-align: center;
+  color: ${({ theme }) => theme.text.secondary};
+`;
+
+/** Every configured window and door, open ones first -- or, set so, only the open ones. */
+const OpeningsPopup: React.FC<{ open: boolean; onClose: () => void; entities: string[]; onlyOpen?: boolean }> = ({
+  open,
+  onClose,
+  entities,
+  onlyOpen = false,
+}) => {
   const t = useT();
   return (
     <Popup open={open} onClose={onClose} title={t('openings')} icon='mdi:window-open-variant' width={58}>
-      <OpeningsList entities={entities} />
+      <OpeningsList entities={entities} onlyOpen={onlyOpen} />
     </Popup>
   );
 };
 
-const OpeningsList: React.FC<{ entities: string[] }> = ({ entities }) => {
+const OpeningsList: React.FC<{ entities: string[]; onlyOpen: boolean }> = ({ entities, onlyOpen }) => {
+  const t = useT();
   const states = useHass(useShallow(state => entities.map(id => state.entities[id]?.state)));
   // Open first, then unknown, then closed; configured order within each.
   const rank = (index: number) => {
     const open = isOpen(entities[index], states[index]);
     return open ? 0 : open === null ? 1 : 2;
   };
-  const sorted = entities.map((id, index) => ({ id, rank: rank(index) })).sort((a, b) => a.rank - b.rank);
+  const sorted = entities
+    .map((id, index) => ({ id, rank: rank(index) }))
+    .filter(item => !onlyOpen || item.rank === 0)
+    .sort((a, b) => a.rank - b.rank);
+  if (!sorted.length) return <StyledNone>{t('none_open')}</StyledNone>;
   return (
     <StyledList>
       {sorted.map(({ id }) => (
