@@ -203,6 +203,19 @@ const SidebarScreen: React.FC<ScreenProps & { part: SidebarPart }> = ({ draft, u
               value={value.travel.map_url}
               onChange={map_url => set('travel', { map_url })}
             />
+            <EntityField
+              label={t('travel_work_zone')}
+              hint={t('travel_work_zone_hint')}
+              value={value.travel.work_zone ?? ''}
+              domains={['zone']}
+              onChange={work_zone => set('travel', { work_zone })}
+            />
+            <TextField
+              label={t('travel_work_address')}
+              hint={t('travel_work_address_hint')}
+              value={value.travel.work_address ?? ''}
+              onChange={work_address => set('travel', { work_address })}
+            />
           </StyledFieldset>
         </>
       );

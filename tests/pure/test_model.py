@@ -348,3 +348,12 @@ def test_the_openings_row_and_list_show_everything_until_told_otherwise() -> Non
         "hide_when_closed": True,
         "only_open": True,
     }
+
+
+def test_a_work_location_is_kept_for_the_map_and_empty_by_default() -> None:
+    plain = model.normalize_dashboard({})["sidebar"]["travel"]
+    assert (plain["work_zone"], plain["work_address"]) == ("", "")
+    set_ = model.normalize_dashboard(
+        {"sidebar": {"travel": {"work_zone": "zone.work", "work_address": "Main St 1"}}}
+    )["sidebar"]["travel"]
+    assert (set_["work_zone"], set_["work_address"]) == ("zone.work", "Main St 1")

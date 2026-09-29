@@ -93,7 +93,15 @@ export interface SidebarConfig {
   openings: EntityId[];
   /** Missing from a backend older than this page: then, everything shown. */
   openings_view?: { hide_when_closed: boolean; only_open: boolean };
-  travel: { entity: EntityId; name: string; map_url: string; maps_api_key: string };
+  travel: {
+    entity: EntityId;
+    name: string;
+    map_url: string;
+    maps_api_key: string;
+    /** Where work is, for the map: a zone, or an address; missing from an older backend. */
+    work_zone?: EntityId;
+    work_address?: string;
+  };
   quick_actions: QuickAction[];
   calendar: { entities: EntityId[]; days: number };
   weather: { entity: EntityId; temperature: EntityId };

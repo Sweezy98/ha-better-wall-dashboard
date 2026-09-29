@@ -6,7 +6,7 @@ import MiniGraph from '../base/miniGraph/MiniGraph';
 import { useEntity, useLanguage, useT } from '../../hooks/useHa';
 import { useHistory } from '../../hooks/useHistory';
 import { durationToMinutes, formatMinutes, formatTime } from '../../lib/format';
-import { mapEmbedUrl } from '../../lib/travel';
+import { mapEmbedUrl, workDestination } from '../../lib/travel';
 import TravelMap from './TravelMap';
 
 const StyledMap = styled.div`
@@ -76,11 +76,13 @@ const TravelContent: React.FC<{ config: SidebarConfig['travel'] }> = ({ config }
   const theme = useTheme();
   const entity = useEntity(config.entity || undefined);
   const samples = useHistory(config.entity || undefined, 24);
+  const workZone = useEntity(config.work_zone || undefined);
   const attributes = entity?.attributes ?? {};
   // Only for drawing the route. Not shown: everybody at home knows where
   // home and work are.
   const origin = attributes.origin as string | undefined;
-  const destination = attributes.destination as string | undefined;
+  // Work as set in the editor, where it is; the sensor's own otherwise.
+  const destination = workDestination(workZone, config.work_address, attributes.destination as string | undefined);
   // With a key the dashboard draws the map itself, free of Google's route
   // card; a pasted embed URL is the fallback, card and all.
   const ownMap = Boolean(config.maps_api_key && origin && destination);

@@ -435,6 +435,10 @@ def _sidebar(raw: Any, assign: Callable[[Any], str]) -> dict:
             # Or a Maps Embed API key, with which the route is drawn from the
             # sensor's own origin and destination.
             "maps_api_key": _text(travel.get("maps_api_key"), "", 100),
+            # Added later: where work is, for the map -- a zone, or an address
+            # typed in; neither, the sensor's own destination.
+            "work_zone": _entity(travel.get("work_zone")),
+            "work_address": _text(travel.get("work_address"), "", MAX_TEXT),
         },
         # Added later: each with `rules` for when it shows; none, always.
         "quick_actions": _quick_actions(raw.get("quick_actions"), assign),

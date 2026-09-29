@@ -20,3 +20,20 @@ export function mapEmbedUrl(config: { map_url: string }): string | null {
   }
   return null;
 }
+
+/**
+ * Where the map's route ends: the zone set as work (by its coordinates),
+ * else the address typed in, else the travel time sensor's own destination.
+ * Only the map: the minutes are the sensor's, to wherever it measures.
+ */
+export function workDestination(
+  zone: { attributes: Record<string, unknown> } | undefined,
+  address: string | undefined,
+  sensorDestination: string | undefined
+): string | undefined {
+  const latitude = Number(zone?.attributes.latitude);
+  const longitude = Number(zone?.attributes.longitude);
+  if (zone && Number.isFinite(latitude) && Number.isFinite(longitude)) return `${latitude},${longitude}`;
+  if (address?.trim()) return address.trim();
+  return sensorDestination;
+}

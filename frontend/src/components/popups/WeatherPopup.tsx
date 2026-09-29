@@ -213,7 +213,7 @@ const Hours: React.FC<{ hours: ForecastEntry[] }> = ({ hours }) => {
         {hours.map(entry => (
           <div className='hour' key={entry.datetime}>
             <span className='time'>{formatTime(new Date(entry.datetime), language)}</span>
-            <WeatherIcon condition={entry.condition} night={entry.is_daytime === false} size={u(2.6)} />
+            <WeatherIcon timeline='popup' condition={entry.condition} night={entry.is_daytime === false} size={u(2.6)} />
             <span className='temp'>{degrees(entry.temperature, language)}</span>
             <span className='rain'>{entry.precipitation_probability ? `${entry.precipitation_probability} %` : ''}</span>
           </div>
@@ -232,7 +232,7 @@ const Days: React.FC<{ days: ForecastEntry[] }> = ({ days }) => {
       {days.map((entry, index) => (
         <div key={entry.datetime}>
           <span className='day'>{index === 0 ? t('today') : formatWeekday(new Date(entry.datetime), language)}</span>
-          <WeatherIcon condition={entry.condition} size={u(3)} />
+          <WeatherIcon timeline='popup' condition={entry.condition} size={u(3)} />
           <span className='high'>{degrees(entry.temperature, language)}</span>
           <span className='low'>{degrees(entry.templow, language)}</span>
           {/* Only when there is a chance of it, so a dry week reads as dry. */}
@@ -310,7 +310,7 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
   return (
     <>
       <StyledNow>
-        <WeatherIcon condition={weather?.state} night={night} size={u(7.5)} />
+        <WeatherIcon timeline='popup' condition={weather?.state} night={night} size={u(7.5)} />
         <div>
           <div className='reading'>
             <span className='temperature'>{temperature}</span>
