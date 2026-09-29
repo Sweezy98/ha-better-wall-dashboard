@@ -448,7 +448,9 @@ says so on purpose.
 - The workflow then keeps only the **newest four releases**, newest by version
   (`sort -V`, so `0.2.10` > `0.2.9`), not by date, and deletes the older release
   entries — never their tags, so every version stays in the history. HACS lists
-  each release in its version picker; more than a handful is clutter.
+  each release in its version picker; more than a handful is clutter. The release
+  list lags a release just published by a few seconds, so the step waits until the
+  new tag shows in it. *Failure: read at once, it held one fewer and removed nothing.*
 - For a tag push the workflow file is read **from the tagged commit**: a tag on a
   commit older than a workflow change runs the old workflow (or none).
 - Check the order as GitHub sees it before telling the user a release is out:

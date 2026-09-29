@@ -73,7 +73,13 @@ jobs:
         # that is clutter. Newest by version, not by date -- a release written
         # again must not push a newer one out -- and only the releases go: the
         # tags stay, so every version remains in the history.
+        # The list lags a release just made by a few seconds; read before it
+        # shows, it held one fewer and nothing was removed. So it waits for it.
         run: |
+          for attempt in $(seq 1 12); do
+            gh api "repos/$GITHUB_REPOSITORY/releases" --jq '.[].tag_name' | grep -qx "$TAG" && break
+            sleep 5
+          done
           gh api --paginate "repos/$GITHUB_REPOSITORY/releases" --jq '.[] | "\(.tag_name) \(.id)"' \
             | sed 's/^v//' | sort -V -r -k1,1 | tail -n +$((KEEP + 1)) \
             | while read -r version id; do
