@@ -910,21 +910,49 @@ function print() { __p += __j.call(arguments, '') }
   text-align: left;
   ${Xd}
 
+  /* The head every card has: its icon in a circle, the name over the value. */
   .head {
     display: flex;
     align-items: center;
-    gap: ${K(.5)};
-    padding: ${K(.7)} ${K(.8)} 0;
-    font-size: ${K(.98)};
-    color: ${({theme:e})=>e.text.secondary};
+    gap: ${K(.8)};
+    min-width: 0;
+    padding: ${K(.8)} ${K(.8)} 0;
+  }
+
+  .icon {
+    flex: none;
+    width: ${K(2.8)};
+    height: ${K(2.8)};
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: ${K(1.4)};
+    background: color-mix(in srgb, var(--graph-color) 18%, transparent);
+    color: var(--graph-color);
+  }
+
+  .text {
+    display: flex;
+    flex-direction: column;
+    gap: ${K(.3)};
+    min-width: 0;
+  }
+
+  .name {
+    font-size: ${K(1.05)};
+    font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .value {
-    padding: ${K(.1)} ${K(.8)};
-    font-size: ${K(1.7)};
-    font-weight: 500;
+    font-size: ${K(.95)};
+    color: ${({theme:e})=>e.text.secondary};
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .graph {
@@ -932,7 +960,7 @@ function print() { __p += __j.call(arguments, '') }
     min-height: ${K(1.5)};
     pointer-events: none;
   }
-`,zp=(0,v.memo)(({tile:e})=>{let t=Y(e.entity||void 0),n=nd(e.entity||void 0),r=X(),i=Lu(),[a,o]=(0,v.useState)(!1),s=typeof e.options.hours==`number`?e.options.hours:24,c=typeof e.options.color==`string`?e.options.color:i.colors.temperature,l=gp(e.entity||void 0,s),u=e.name||t?.attributes.friendly_name||e.entity,d=e.icon||t?.attributes.icon||`mdi:chart-line`;return(0,C.jsxs)(C.Fragment,{children:[(0,C.jsxs)(Rp,{onClick:()=>o(!0),disabled:!e.entity,children:[(0,C.jsxs)(`span`,{className:`head`,children:[(0,C.jsx)(Q,{icon:d}),u]}),(0,C.jsx)(`span`,{className:`value`,children:Cp(t?.state,t?.attributes.unit_of_measurement,r,n)}),(0,C.jsx)(`span`,{className:`graph`,children:(0,C.jsx)(dp,{samples:l,hours:s,color:c})})]}),e.entity&&(0,C.jsx)(Ip,{open:a,onClose:()=>o(!1),entityId:e.entity,name:u,icon:d,color:c})]})});function Bp(e){return z(t=>{let n=e?t.entitiesRegistryDisplay[e]?.device_id:void 0;if(n)return Object.values(t.entitiesRegistryDisplay).find(e=>e.device_id===n&&e.entity_id.startsWith(`select.`))?.entity_id})}function Vp(e,t){if(!e)return null;let n=Math.round((Date.parse(e)-t)/1e3);return Number.isFinite(n)&&n>0?n:null}function Hp(e){let t=e=>String(e).padStart(2,`0`),n=Math.floor(e/60);return n<60?`${n}:${t(e%60)}`:`${Math.floor(n/60)}h ${t(n%60)}m`}function Up(e,t,n){if(!e.length)return;let r=t===void 0?-1:e.indexOf(t);return r<0?n>0?e[0]:e[e.length-1]:e[(r+n+e.length)%e.length]}function Wp(e,t,n){let r=[];return e.bl_presence===!0&&r.push(`presence`),e.bl_presence===!1&&r.push(`nobody`),e.bl_night===!0&&r.push(`night`),e.bl_simulating===!0&&r.push(`simulating`),t&&!n&&e.bl_held_by_hand!==void 0&&r.push(e.bl_held_by_hand?`by_hand`:`automatic`),r}var Gp={presence:{icon:`mdi:motion-sensor`,label:`bl_presence`},nobody:{icon:`mdi:motion-sensor-off`,label:`bl_nobody`},night:{icon:`mdi:weather-night`,label:`bl_night`},simulating:{icon:`mdi:home-clock`,label:`bl_simulating`},by_hand:{icon:`mdi:hand-back-right`,label:`bl_by_hand`},automatic:{icon:`mdi:auto-mode`,label:`bl_automatic`}},Kp=new Set([`off`,`closed`,`idle`,`unavailable`,`unknown`,``]),qp=G(Zd)`
+`,zp=(0,v.memo)(({tile:e})=>{let t=Y(e.entity||void 0),n=nd(e.entity||void 0),r=X(),i=Lu(),[a,o]=(0,v.useState)(!1),s=typeof e.options.hours==`number`?e.options.hours:24,c=typeof e.options.color==`string`?e.options.color:i.colors.temperature,l=gp(e.entity||void 0,s),u=e.name||t?.attributes.friendly_name||e.entity,d=t?.attributes.device_class,f=e.icon||t?.attributes.icon||(d===`temperature`?`mdi:thermometer`:d===`humidity`?`mdi:water-percent`:`mdi:chart-line`);return(0,C.jsxs)(C.Fragment,{children:[(0,C.jsxs)(Rp,{onClick:()=>o(!0),disabled:!e.entity,style:{"--graph-color":c},children:[(0,C.jsxs)(`span`,{className:`head`,children:[(0,C.jsx)(`span`,{className:`icon`,children:(0,C.jsx)(Q,{icon:f})}),(0,C.jsxs)(`span`,{className:`text`,children:[(0,C.jsx)(`span`,{className:`name`,children:u}),(0,C.jsx)(`span`,{className:`value`,children:Cp(t?.state,t?.attributes.unit_of_measurement,r,n)})]})]}),(0,C.jsx)(`span`,{className:`graph`,children:(0,C.jsx)(dp,{samples:l,hours:s,color:c})})]}),e.entity&&(0,C.jsx)(Ip,{open:a,onClose:()=>o(!1),entityId:e.entity,name:u,icon:f,color:c})]})});function Bp(e){return z(t=>{let n=e?t.entitiesRegistryDisplay[e]?.device_id:void 0;if(n)return Object.values(t.entitiesRegistryDisplay).find(e=>e.device_id===n&&e.entity_id.startsWith(`select.`))?.entity_id})}function Vp(e,t){if(!e)return null;let n=Math.round((Date.parse(e)-t)/1e3);return Number.isFinite(n)&&n>0?n:null}function Hp(e){let t=e=>String(e).padStart(2,`0`),n=Math.floor(e/60);return n<60?`${n}:${t(e%60)}`:`${Math.floor(n/60)}h ${t(n%60)}m`}function Up(e,t,n){if(!e.length)return;let r=t===void 0?-1:e.indexOf(t);return r<0?n>0?e[0]:e[e.length-1]:e[(r+n+e.length)%e.length]}function Wp(e,t,n){let r=[];return e.bl_presence===!0&&r.push(`presence`),e.bl_presence===!1&&r.push(`nobody`),e.bl_night===!0&&r.push(`night`),e.bl_simulating===!0&&r.push(`simulating`),t&&!n&&e.bl_held_by_hand!==void 0&&r.push(e.bl_held_by_hand?`by_hand`:`automatic`),r}var Gp={presence:{icon:`mdi:motion-sensor`,label:`bl_presence`},nobody:{icon:`mdi:motion-sensor-off`,label:`bl_nobody`},night:{icon:`mdi:weather-night`,label:`bl_night`},simulating:{icon:`mdi:home-clock`,label:`bl_simulating`},by_hand:{icon:`mdi:hand-back-right`,label:`bl_by_hand`},automatic:{icon:`mdi:auto-mode`,label:`bl_automatic`}},Kp=new Set([`off`,`closed`,`idle`,`unavailable`,`unknown`,``]),qp=G(Zd)`
   display: flex;
   flex-direction: column;
   gap: ${K(.6)};
@@ -3343,7 +3371,7 @@ function print() { __p += __j.call(arguments, '') }
     white-space: pre-line;
     overflow: hidden;
   }
-`;function Xx(e){for(let t of e.composedPath())if(t instanceof Element&&t.hasAttribute(`data-tip`))return t;return null}var Zx=()=>{let e=(0,v.useRef)(null);return(0,v.useEffect)(()=>{let t=e.current;if(!t?.showPopover)return;let n=null,r=0,i=()=>{window.clearTimeout(r),n=null,t.matches(`:popover-open`)&&t.hidePopover()},a=e=>{let n=e.getAttribute(`data-tip`);if(!n||!e.isConnected)return;t.textContent=n,t.matches(`:popover-open`)&&t.hidePopover(),t.showPopover();let r=e.getBoundingClientRect(),i=t.offsetWidth,a=t.offsetHeight,o=Math.min(window.innerWidth-i-Jx,Math.max(Jx,r.left+r.width/2-i/2)),s=r.top-a-Jx>=Jx?r.top-a-Jx:r.bottom+Jx;t.style.left=`${o}px`,t.style.top=`${s}px`},o=null,s=e=>{if(e.pointerType!==`mouse`)return;let t=e.composedPath()[0]??null;if(t===o)return;o=t;let s=Xx(e);s!==n&&(i(),s&&(n=s,r=window.setTimeout(()=>a(s),qx)))},c=e=>{e.relatedTarget||i()},l=()=>i();return window.addEventListener(`pointermove`,s,!0),window.addEventListener(`pointerout`,c,!0),window.addEventListener(`pointerdown`,i,!0),window.addEventListener(`wheel`,l,{capture:!0,passive:!0}),window.addEventListener(`keydown`,i,!0),()=>{i(),window.removeEventListener(`pointermove`,s,!0),window.removeEventListener(`pointerout`,c,!0),window.removeEventListener(`pointerdown`,i,!0),window.removeEventListener(`wheel`,l,{capture:!0}),window.removeEventListener(`keydown`,i,!0)}},[]),(0,C.jsx)(Yx,{ref:e,popover:`manual`,role:`tooltip`})},Qx=Kx(()=>j(()=>import(`./EditorPage-DN9KwzVI.js`),[],import.meta.url)),$x=()=>{let{mode:e}=Gx();return e===`editor`?(0,C.jsx)(v.Suspense,{fallback:(0,C.jsx)(hx,{}),children:(0,C.jsx)(Qx,{})}):(0,C.jsx)(jd,{children:(0,C.jsx)(Bx,{})})},eS=({hassUrl:e,hassToken:t,embedded:n,styleTarget:r})=>{let i=(0,v.useMemo)(()=>ct({key:`bwd`,container:r,speedy:!1}),[r]);return(0,C.jsx)(Fu,{target:r,disableCSSOMInjection:!0,children:(0,C.jsx)(di,{value:i,children:(0,C.jsxs)(Ru,{theme:Qu,children:[(0,C.jsx)($u,{}),(0,C.jsx)(Zx,{}),(0,C.jsx)(Us,{hassUrl:e,hassToken:t,loading:(0,C.jsx)(hx,{}),wrapperProps:{className:`bwd-connect`},options:{handleResumeOptions:{suspendWhenHidden:!n}},children:(0,C.jsx)($x,{})})]})})})},tS=null,nS=`
+`;function Xx(e){for(let t of e.composedPath())if(t instanceof Element&&t.hasAttribute(`data-tip`))return t;return null}var Zx=()=>{let e=(0,v.useRef)(null);return(0,v.useEffect)(()=>{let t=e.current;if(!t?.showPopover)return;let n=null,r=0,i=()=>{window.clearTimeout(r),n=null,t.matches(`:popover-open`)&&t.hidePopover()},a=e=>{let n=e.getAttribute(`data-tip`);if(!n||!e.isConnected)return;t.textContent=n,t.matches(`:popover-open`)&&t.hidePopover(),t.showPopover();let r=e.getBoundingClientRect(),i=t.offsetWidth,a=t.offsetHeight,o=Math.min(window.innerWidth-i-Jx,Math.max(Jx,r.left+r.width/2-i/2)),s=r.top-a-Jx>=Jx?r.top-a-Jx:r.bottom+Jx;t.style.left=`${o}px`,t.style.top=`${s}px`},o=null,s=e=>{if(e.pointerType!==`mouse`)return;let t=e.composedPath()[0]??null;if(t===o)return;o=t;let s=Xx(e);s!==n&&(i(),s&&(n=s,r=window.setTimeout(()=>a(s),qx)))},c=e=>{e.relatedTarget||i()},l=()=>i();return window.addEventListener(`pointermove`,s,!0),window.addEventListener(`pointerout`,c,!0),window.addEventListener(`pointerdown`,i,!0),window.addEventListener(`wheel`,l,{capture:!0,passive:!0}),window.addEventListener(`keydown`,i,!0),()=>{i(),window.removeEventListener(`pointermove`,s,!0),window.removeEventListener(`pointerout`,c,!0),window.removeEventListener(`pointerdown`,i,!0),window.removeEventListener(`wheel`,l,{capture:!0}),window.removeEventListener(`keydown`,i,!0)}},[]),(0,C.jsx)(Yx,{ref:e,popover:`manual`,role:`tooltip`})},Qx=Kx(()=>j(()=>import(`./EditorPage-CtcyAYZY.js`),[],import.meta.url)),$x=()=>{let{mode:e}=Gx();return e===`editor`?(0,C.jsx)(v.Suspense,{fallback:(0,C.jsx)(hx,{}),children:(0,C.jsx)(Qx,{})}):(0,C.jsx)(jd,{children:(0,C.jsx)(Bx,{})})},eS=({hassUrl:e,hassToken:t,embedded:n,styleTarget:r})=>{let i=(0,v.useMemo)(()=>ct({key:`bwd`,container:r,speedy:!1}),[r]);return(0,C.jsx)(Fu,{target:r,disableCSSOMInjection:!0,children:(0,C.jsx)(di,{value:i,children:(0,C.jsxs)(Ru,{theme:Qu,children:[(0,C.jsx)($u,{}),(0,C.jsx)(Zx,{}),(0,C.jsx)(Us,{hassUrl:e,hassToken:t,loading:(0,C.jsx)(hx,{}),wrapperProps:{className:`bwd-connect`},options:{handleResumeOptions:{suspendWhenHidden:!n}},children:(0,C.jsx)($x,{})})]})})})},tS=null,nS=`
   :host {
     display: block;
     position: relative;

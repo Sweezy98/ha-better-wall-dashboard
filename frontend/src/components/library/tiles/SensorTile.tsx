@@ -16,21 +16,49 @@ const StyledSensor = styled(StyledTile).attrs({ as: 'button', type: 'button' })`
   text-align: left;
   ${tileButton}
 
+  /* The head every card has: its icon in a circle, the name over the value. */
   .head {
     display: flex;
     align-items: center;
-    gap: ${u(0.5)};
-    padding: ${u(0.7)} ${u(0.8)} 0;
-    font-size: ${u(0.98)};
-    color: ${({ theme }) => theme.text.secondary};
+    gap: ${u(0.8)};
+    min-width: 0;
+    padding: ${u(0.8)} ${u(0.8)} 0;
+  }
+
+  .icon {
+    flex: none;
+    width: ${u(2.8)};
+    height: ${u(2.8)};
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: ${u(1.4)};
+    background: color-mix(in srgb, var(--graph-color) 18%, transparent);
+    color: var(--graph-color);
+  }
+
+  .text {
+    display: flex;
+    flex-direction: column;
+    gap: ${u(0.3)};
+    min-width: 0;
+  }
+
+  .name {
+    font-size: ${u(1.05)};
+    font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .value {
-    padding: ${u(0.1)} ${u(0.8)};
-    font-size: ${u(1.7)};
-    font-weight: 500;
+    font-size: ${u(0.95)};
+    color: ${({ theme }) => theme.text.secondary};
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .graph {
@@ -54,16 +82,24 @@ const SensorTile: React.FC<TileProps> = ({ tile }) => {
   const color = typeof tile.options.color === 'string' ? tile.options.color : theme.colors.temperature;
   const samples = useHistory(tile.entity || undefined, hours);
   const name = tile.name || (entity?.attributes.friendly_name as string) || tile.entity;
-  const icon = tile.icon || (entity?.attributes.icon as string | undefined) || 'mdi:chart-line';
+  const deviceClass = entity?.attributes.device_class as string | undefined;
+  const icon =
+    tile.icon ||
+    (entity?.attributes.icon as string | undefined) ||
+    (deviceClass === 'temperature' ? 'mdi:thermometer' : deviceClass === 'humidity' ? 'mdi:water-percent' : 'mdi:chart-line');
   return (
     <>
-      <StyledSensor onClick={() => setOpen(true)} disabled={!tile.entity}>
+      <StyledSensor onClick={() => setOpen(true)} disabled={!tile.entity} style={{ '--graph-color': color } as React.CSSProperties}>
         <span className='head'>
-          <Icon icon={icon} />
-          {name}
-        </span>
-        <span className='value'>
-          {formatMeasurement(entity?.state, entity?.attributes.unit_of_measurement as string | undefined, language, precision)}
+          <span className='icon'>
+            <Icon icon={icon} />
+          </span>
+          <span className='text'>
+            <span className='name'>{name}</span>
+            <span className='value'>
+              {formatMeasurement(entity?.state, entity?.attributes.unit_of_measurement as string | undefined, language, precision)}
+            </span>
+          </span>
         </span>
         <span className='graph'>
           <MiniGraph samples={samples} hours={hours} color={color} />
