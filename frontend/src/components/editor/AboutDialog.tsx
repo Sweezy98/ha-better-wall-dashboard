@@ -143,7 +143,7 @@ const AboutDialog: React.FC<{ open: boolean; onClose: () => void }> = ({ open, o
           )}
         </p>
       )}
-      <StyledIconButton type='button' className='shut' aria-label={t('close')} title={t('close')} onClick={onClose}>
+      <StyledIconButton type='button' className='shut' aria-label={t('close')} data-tip={t('close')} onClick={onClose}>
         <Icon icon='mdi:close' />
       </StyledIconButton>
     </StyledAbout>

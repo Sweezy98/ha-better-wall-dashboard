@@ -98,7 +98,7 @@ const ModeIcon: React.FC<{ item: NamedEntity }> = ({ item }) => {
   if (!presence) return null;
   const label = item.name || (entity?.attributes.friendly_name as string | undefined) || item.entity;
   return (
-    <StyledStatusIcon title={label} aria-label={label} data-presence={presence}>
+    <StyledStatusIcon data-tip={label} aria-label={label} data-presence={presence}>
       <Icon icon={item.icon || (entity?.attributes.icon as string | undefined) || domainIcon(item.entity)} />
     </StyledStatusIcon>
   );

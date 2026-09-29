@@ -292,7 +292,7 @@ const EditorPage: React.FC = () => {
             className='only-no-preview'
             aria-pressed={showPreview}
             aria-label={t('preview')}
-            title={t('preview')}
+            data-tip={t('preview')}
             onClick={() => setShowPreview(value => !value)}
           >
             <Icon icon={showPreview ? 'mdi:form-select' : 'mdi:tablet-dashboard'} />
@@ -382,7 +382,7 @@ const EditorPage: React.FC = () => {
                 type='button'
                 style={{ color: 'var(--secondary-text-color)' }}
                 aria-label={portrait ? t('landscape') : t('portrait')}
-                title={portrait ? t('landscape') : t('portrait')}
+                data-tip={portrait ? t('landscape') : t('portrait')}
                 onClick={() => setPortrait(value => !value)}
               >
                 <Icon icon={portrait ? 'mdi:phone-rotate-landscape' : 'mdi:phone-rotate-portrait'} />

@@ -88,7 +88,7 @@ const NotificationCard: React.FC<{ item: Notification; onDismiss: () => void }> 
   return (
     <StyledItem style={swipe.style} {...swipe.handlers} data-glow>
       <h4>{item.title || t('notifications')}</h4>
-      <button type='button' onClick={onDismiss} aria-label={t('dismiss')} title={t('dismiss')}>
+      <button type='button' onClick={onDismiss} aria-label={t('dismiss')} data-tip={t('dismiss')}>
         <Icon icon='mdi:close' />
       </button>
       <time dateTime={item.created_at}>{formatRelative(new Date(item.created_at), language)}</time>

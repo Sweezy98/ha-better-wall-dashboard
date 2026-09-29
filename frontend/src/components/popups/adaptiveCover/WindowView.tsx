@@ -137,6 +137,7 @@ const WindowView: React.FC<{ entities: AcpEntities }> = ({ entities }) => {
     const parsed = value ? Date.parse(value) : NaN;
     return Number.isFinite(parsed) ? new Date(parsed).toLocaleTimeString(language, { hour: '2-digit', minute: '2-digit' }) : '–';
   };
+  const norm = (value: number) => ((value % 360) + 360) % 360;
   const degrees = (value: number | undefined) => (value === undefined ? '–' : `${formatNumber(value, language, 0)}°`);
 
   const sunColor = theme.colors.warm;
@@ -167,7 +168,7 @@ const WindowView: React.FC<{ entities: AcpEntities }> = ({ entities }) => {
   return (
     <StyledWindow>
       <div className='compass'>
-        <svg viewBox={`${-R - 14} ${-R - 14} ${2 * R + 28} ${2 * R + 28}`} aria-hidden='true'>
+        <svg viewBox={`${-R - 14} ${-R - 14} ${2 * R + 28} ${2 * R + 28}`} role='img' aria-label={t('acp_window')}>
           {[R, (R * 2) / 3, R / 3].map(radius => (
             <circle key={radius} className='ring' r={radius} />
           ))}
@@ -177,10 +178,16 @@ const WindowView: React.FC<{ entities: AcpEntities }> = ({ entities }) => {
               fill={`color-mix(in srgb, ${theme.colors.accent} 16%, transparent)`}
               stroke={`color-mix(in srgb, ${theme.colors.accent} 45%, transparent)`}
               strokeDasharray='4 3'
+              data-tip={t('acp_tip_fov', { from: degrees(norm(windowAzimuth - left)), to: degrees(norm(windowAzimuth + right)) })}
             />
           )}
           {blindSpots.map(([from, to]) => (
-            <path key={`${from}-${to}`} d={wedgePath(from, to, R)} fill={`color-mix(in srgb, ${theme.colors.alert} 16%, transparent)`} />
+            <path
+              key={`${from}-${to}`}
+              d={wedgePath(from, to, R)}
+              fill={`color-mix(in srgb, ${theme.colors.alert} 16%, transparent)`}
+              data-tip={t('acp_tip_blind', { from: degrees(from), to: degrees(to) })}
+            />
           ))}
           {skyLine.length > 1 && (
             <polyline
@@ -192,7 +199,16 @@ const WindowView: React.FC<{ entities: AcpEntities }> = ({ entities }) => {
               strokeDasharray='2 4'
             />
           )}
-          {arrow && <line x1={0} y1={0} x2={arrow.x} y2={arrow.y} stroke={theme.colors.cover} strokeWidth={3} strokeLinecap='round' />}
+          {/* Thin lines are hard to rest a mouse on: an invisible, wider twin says what they are. */}
+          {skyLine.length > 1 && (
+            <polyline points={skyLine.join(' ')} fill='none' stroke='transparent' strokeWidth={10} data-tip={t('acp_tip_path')} />
+          )}
+          {arrow && (
+            <g data-tip={t('acp_tip_window', { bearing: degrees(windowAzimuth) })}>
+              <line x1={0} y1={0} x2={arrow.x} y2={arrow.y} stroke={theme.colors.cover} strokeWidth={3} strokeLinecap='round' />
+              <line x1={0} y1={0} x2={arrow.x} y2={arrow.y} stroke='transparent' strokeWidth={12} />
+            </g>
+          )}
           <circle r={3} fill={theme.colors.cover} />
           {(['N', 'E', 'S', 'W'] as const).map((letter, index) => {
             const point = skyPoint(index * 90, 0, R + 9);
@@ -203,10 +219,14 @@ const WindowView: React.FC<{ entities: AcpEntities }> = ({ entities }) => {
             );
           })}
           {sunNow && elevation !== undefined && elevation > 0 && (
-            <>
+            <g
+              data-tip={`${t('acp_tip_sun', { azimuth: degrees(azimuth), elevation: degrees(elevation) })}\n${
+                onWindow ? t('acp_sun_on_window') : t('acp_sun_off_window')
+              }`}
+            >
               {onWindow && <circle cx={sunNow.x} cy={sunNow.y} r={13} fill={sunColor} opacity={0.25} />}
               <circle cx={sunNow.x} cy={sunNow.y} r={7} fill={sunColor} />
-            </>
+            </g>
           )}
         </svg>
         <div className='caption'>

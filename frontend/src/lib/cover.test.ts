@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { coverActive, coverFeatures, coverView } from './cover';
+import { coverActive, coverFeatures, coverPresets, coverView } from './cover';
 
 describe('cover', () => {
   it('reads what a cover can do from its feature bits', () => {
@@ -31,5 +31,12 @@ describe('cover', () => {
     expect(coverActive(coverView('closing', 20), 'closed', true)).toBe(false);
     expect(coverActive(open, 'never', true)).toBe(false);
     expect(coverActive(closed, 'closed', false)).toBe(false);
+  });
+
+  it('keeps up to four whole positions between 0 and 100, each once', () => {
+    expect(coverPresets([0, '25', 50.4, 100])).toEqual([0, 25, 50, 100]);
+    expect(coverPresets([25, 25, 140, -3, 'x', '', null, 75, 10, 20])).toEqual([25, 75, 10, 20]);
+    expect(coverPresets('50')).toEqual([]);
+    expect(coverPresets(undefined)).toEqual([]);
   });
 });

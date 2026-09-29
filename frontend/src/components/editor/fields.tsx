@@ -474,7 +474,7 @@ export const EntityListField: React.FC<Base<string[]> & { domains?: string[]; ma
         </StyledRow>
       ))}
       {(max === undefined || value.length < max) && (
-        <StyledIconButton type='button' className='add' onClick={() => accept([...value, ''])} title={t('add')} aria-label={t('add')}>
+        <StyledIconButton type='button' className='add' onClick={() => accept([...value, ''])} data-tip={t('add')} aria-label={t('add')}>
           <Icon icon='mdi:plus' />
         </StyledIconButton>
       )}
@@ -498,7 +498,7 @@ export const ListControls: React.FC<{
         type='button'
         disabled={index === 0}
         onClick={() => onMove(index - 1)}
-        title={t('move_up')}
+        data-tip={t('move_up')}
         aria-label={t('move_up')}
       >
         <Icon icon='mdi:arrow-up' />
@@ -507,17 +507,17 @@ export const ListControls: React.FC<{
         type='button'
         disabled={index === length - 1}
         onClick={() => onMove(index + 1)}
-        title={t('move_down')}
+        data-tip={t('move_down')}
         aria-label={t('move_down')}
       >
         <Icon icon='mdi:arrow-down' />
       </StyledIconButton>
       {onDuplicate && (
-        <StyledIconButton type='button' onClick={onDuplicate} title={t('duplicate')} aria-label={t('duplicate')}>
+        <StyledIconButton type='button' onClick={onDuplicate} data-tip={t('duplicate')} aria-label={t('duplicate')}>
           <Icon icon='mdi:content-copy' />
         </StyledIconButton>
       )}
-      <StyledIconButton type='button' $danger onClick={onRemove} title={t('remove')} aria-label={t('remove')}>
+      <StyledIconButton type='button' $danger onClick={onRemove} data-tip={t('remove')} aria-label={t('remove')}>
         <Icon icon='mdi:delete-outline' />
       </StyledIconButton>
     </span>

@@ -243,7 +243,7 @@ const LightPanel: React.FC<{ entityId: string; presets: boolean }> = ({ entityId
             className='mode power'
             aria-pressed={on}
             aria-label={t('light_power')}
-            title={t('light_power')}
+            data-tip={t('light_power')}
             onClick={() => void callService('light', 'toggle', undefined, { entity_id: entityId })}
           >
             <Icon icon='mdi:power' />
@@ -255,7 +255,7 @@ const LightPanel: React.FC<{ entityId: string; presets: boolean }> = ({ entityId
               className='mode'
               data-selected={shown === 'brightness'}
               aria-label={t('brightness')}
-              title={t('brightness')}
+              data-tip={t('brightness')}
               onClick={() => setMode('brightness')}
             >
               <Icon icon='mdi:brightness-6' />
@@ -267,7 +267,7 @@ const LightPanel: React.FC<{ entityId: string; presets: boolean }> = ({ entityId
               className='mode'
               data-selected={shown === 'color'}
               aria-label={t('light_color')}
-              title={t('light_color')}
+              data-tip={t('light_color')}
               onClick={() => setMode('color')}
             >
               <span className='swatch wheel' />
@@ -279,7 +279,7 @@ const LightPanel: React.FC<{ entityId: string; presets: boolean }> = ({ entityId
               className='mode'
               data-selected={shown === 'temperature'}
               aria-label={t('light_temperature')}
-              title={t('light_temperature')}
+              data-tip={t('light_temperature')}
               onClick={() => setMode('temperature')}
             >
               <span className='swatch white' />

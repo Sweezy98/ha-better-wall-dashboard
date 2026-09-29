@@ -82,12 +82,12 @@ const HaButton: React.FC<HaButtonProps> = ({ children, onClick, icon, appearance
   if (native) {
     return createElement(
       'ha-button',
-      { appearance, variant: danger ? 'danger' : 'brand', disabled: disabled || undefined, title, onClick },
+      { appearance, variant: danger ? 'danger' : 'brand', disabled: disabled || undefined, 'data-tip': title, onClick },
       content
     );
   }
   return (
-    <StyledPill type='button' $appearance={appearance} $danger={danger} disabled={disabled} title={title} onClick={onClick}>
+    <StyledPill type='button' $appearance={appearance} $danger={danger} disabled={disabled} data-tip={title} onClick={onClick}>
       {content}
     </StyledPill>
   );

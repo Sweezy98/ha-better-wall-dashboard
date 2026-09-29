@@ -118,11 +118,11 @@ const Weather: React.FC<{ config: SidebarConfig['weather'] }> = ({ config }) => 
         <span className='condition'>{conditionLabel(weather?.state, language)}</span>
         {today && (
           <span className='range'>
-            <span title={t('high_short')}>
+            <span data-tip={t('high_short')}>
               <Icon className='icon' icon='mdi:arrow-up-thin' />
               {degrees(today.temperature)}
             </span>
-            <span title={t('low_short')}>
+            <span data-tip={t('low_short')}>
               <Icon className='icon' icon='mdi:arrow-down-thin' />
               {degrees(today.templow)}
             </span>

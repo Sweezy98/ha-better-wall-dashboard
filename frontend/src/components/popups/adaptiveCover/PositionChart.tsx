@@ -176,7 +176,7 @@ const PositionChart: React.FC<PositionChartProps> = ({ start, end, lines, bands,
           {bands.map(band => (
             <span
               key={`${band.from}-${band.key}`}
-              title={band.key}
+              data-tip={band.key}
               style={{
                 left: `${fractionOf(band.from, start, end) * 100}%`,
                 width: `${(fractionOf(band.to, start, end) - fractionOf(band.from, start, end)) * 100}%`,

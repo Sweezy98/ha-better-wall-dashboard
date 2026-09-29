@@ -50,7 +50,7 @@ const Chip: React.FC<ChipProps> = ({ icon, label, color, title, onClick, action 
     type={onClick ? 'button' : undefined}
     onClick={onClick}
     $color={color}
-    title={title ?? label}
+    data-tip={title ?? label}
   >
     <Icon className='chip-icon' icon={icon} />
     {/* Its own element, so a narrow tile can show the icon alone. */}

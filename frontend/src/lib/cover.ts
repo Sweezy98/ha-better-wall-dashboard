@@ -86,3 +86,22 @@ export function coverActive(view: CoverView, when: unknown, known: boolean): boo
   if (when === 'closed') return !view.open && !view.moving;
   return view.open;
 }
+
+export const MAX_COVER_PRESETS = 4;
+
+/**
+ * A tile's position presets (its `positions` option): whole percentages
+ * 0 to 100, each once, in the order given, at most four. Anything else a
+ * stored option holds is left out rather than shown wrong.
+ */
+export function coverPresets(raw: unknown): number[] {
+  if (!Array.isArray(raw)) return [];
+  const presets: number[] = [];
+  for (const value of raw) {
+    const number = Math.round(Number(value));
+    if (value === '' || value === null || !Number.isFinite(number) || number < 0 || number > 100 || presets.includes(number)) continue;
+    presets.push(number);
+    if (presets.length === MAX_COVER_PRESETS) break;
+  }
+  return presets;
+}

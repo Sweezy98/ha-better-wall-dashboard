@@ -7,7 +7,8 @@ import { StyledTile } from '../Tile.styled';
 import Icon from '../../../base/icon/Icon';
 import { domainIcon, useCallService, useEntity, useT } from '../../../../hooks/useHa';
 import { useTaps } from '../../../../hooks/useTaps';
-import { COVER_STATES, coverActive, coverFeatures, coverView } from '../../../../lib/cover';
+import { COVER_STATES, coverActive, coverFeatures, coverPresets, coverView } from '../../../../lib/cover';
+import CoverPresets from '../../../popups/cover/CoverPresets';
 
 /**
  * Moving, the icon holds still and its shade runs: slats sliding up under
@@ -189,6 +190,15 @@ const StyledCover = styled(StyledTile)<{ $color: string }>`
     opacity: 0.35;
   }
 
+  /* The presets where there is room for a row of them under the buttons
+     (head 2.8, buttons 2.8, presets 2.2 and their gaps, inside the
+     padding) and across it: left out otherwise, the buttons still there. */
+  @container (height < 9.2em) or (width < 12em) {
+    .presets {
+      display: none;
+    }
+  }
+
   /* Narrow, as a 1x1 is: where the cover stands by its number alone, and a
      smaller icon to leave it and its signs room. Last, as the query below,
      so they win over the layout above. */
@@ -257,7 +267,8 @@ interface CoverTileViewProps {
  * a double tap, its details.
  *
  * Options: `active_when` -- lit when `open` (the default), when `closed`,
- * or `never`; `stop_only_moving` -- the stop button only while it moves.
+ * or `never`; `stop_only_moving` -- the stop button only while it moves;
+ * `positions` -- up to four presets, a row of them where there is room.
  */
 const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, signs, action, onDetails }) => {
   const t = useT();
@@ -348,6 +359,7 @@ const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, signs, action, onDe
             </button>
           </div>
         </div>
+        <CoverPresets className='presets' entityId={tile.entity} presets={coverPresets(tile.options.positions)} />
       </div>
     </StyledCover>
   );

@@ -5,6 +5,7 @@ import AdaptiveCoverPopup from '../../popups/adaptiveCover/AdaptiveCoverPopup';
 import { useAdaptiveCover } from '../../../hooks/useAdaptiveCover';
 import AcpSigns from '../../popups/adaptiveCover/AcpSigns';
 import AcpResume from '../../popups/adaptiveCover/AcpResume';
+import { coverPresets } from '../../../lib/cover';
 
 /**
  * A cover Adaptive Cover Pro steers: the cover tile, with signs of what is
@@ -32,6 +33,7 @@ const AdaptiveCoverTile: React.FC<TileProps> = ({ tile }) => {
           entities={entities}
           name={tile.name}
           stopOnlyMoving={tile.options.stop_only_moving === true}
+          presets={coverPresets(tile.options.positions)}
         />
       )}
     </>

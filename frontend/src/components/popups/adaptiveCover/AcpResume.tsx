@@ -17,7 +17,7 @@ const AcpResume: React.FC<{ entities: AcpEntities }> = ({ entities }) => {
     <button
       type='button'
       className='round'
-      title={t('acp_reset_manual')}
+      data-tip={t('acp_reset_manual')}
       aria-label={t('acp_reset_manual')}
       onClick={() => void callService('button', 'press', undefined, { entity_id: entities.resetManual! })}
     >

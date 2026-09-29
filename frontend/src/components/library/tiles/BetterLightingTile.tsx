@@ -230,7 +230,7 @@ const Countdown: React.FC<{ offAt: string }> = ({ offAt }) => {
   const seconds = secondsUntilOff(offAt, now);
   if (seconds === null) return null;
   return (
-    <span className='countdown' title={t('bl_switching_off')}>
+    <span className='countdown' data-tip={t('bl_switching_off')}>
       <Icon className='badge' icon='mdi:timer-outline' />
       {formatCountdown(seconds)}
     </span>
@@ -246,7 +246,7 @@ const ExtraButton: React.FC<{ entityId: string; icon: string }> = ({ entityId, i
     <button
       type='button'
       className='round'
-      title={label}
+      data-tip={label}
       aria-label={label}
       aria-pressed={!IDLE.has(entity.state.toLowerCase())}
       onClick={() => {
@@ -417,7 +417,7 @@ const BetterLightingTile: React.FC<TileProps> = ({ tile }) => {
               <div className='state'>
                 <span>{on ? `${percent} %` : t('off')}</span>
                 {badges.map(badge => (
-                  <span key={badge} className='badge' title={t(BADGES[badge].label)} aria-label={t(BADGES[badge].label)}>
+                  <span key={badge} className='badge' data-tip={t(BADGES[badge].label)} aria-label={t(BADGES[badge].label)}>
                     <Icon icon={BADGES[badge].icon} />
                   </span>
                 ))}
@@ -429,7 +429,7 @@ const BetterLightingTile: React.FC<TileProps> = ({ tile }) => {
             <button
               type='button'
               className='round adaptive'
-              title={t('bl_back_to_adaptive')}
+              data-tip={t('bl_back_to_adaptive')}
               aria-label={t('bl_back_to_adaptive')}
               onClick={() => void callService('better_lighting', 'set_adaptive', { entity_id: tile.entity })}
             >

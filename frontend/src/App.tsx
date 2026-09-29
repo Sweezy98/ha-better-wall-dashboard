@@ -12,6 +12,7 @@ import { useModeState } from './panel/mode';
 import { Suspense } from 'react';
 import { lazyWithRetry } from './lazyWithRetry';
 import Splash from './components/base/splash/Splash';
+import TooltipLayer from './components/base/tooltip/TooltipLayer';
 
 export interface AppProps {
   hassUrl: string;
@@ -57,6 +58,7 @@ const App: React.FC<AppProps> = ({ hassUrl, hassToken, embedded, styleTarget }) 
       <CacheProvider value={emotionCache}>
         <ThemeProvider theme={theme}>
           <GlobalStyle />
+          <TooltipLayer />
           <HassConnect
             hassUrl={hassUrl}
             hassToken={hassToken}

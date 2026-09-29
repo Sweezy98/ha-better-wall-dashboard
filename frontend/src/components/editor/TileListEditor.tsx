@@ -7,11 +7,11 @@ import { useOfferedTiles, usePickerEntities } from './useOfferedTiles';
 import BetterLightingOptions from './BetterLightingOptions';
 import Icon from '../base/icon/Icon';
 import HaButton from './ha/HaButton';
-import { CheckField, EntityField, IconField, ListControls, NumberField, SelectField, TextField } from './fields';
+import { CheckField, ChipListField, EntityField, IconField, ListControls, NumberField, SelectField, TextField } from './fields';
 import { StyledField, StyledRow } from './fields.styled';
 import { StyledDetails, StyledEmpty } from './editor.styled';
 import { move, newId, replaceAt } from '../../lib/editing';
-import { COVER_ACTIVE_WHEN, type CoverActiveWhen } from '../../lib/cover';
+import { COVER_ACTIVE_WHEN, coverPresets, type CoverActiveWhen } from '../../lib/cover';
 
 /** A tile's component options, edited as JSON: each component defines its own. */
 const OptionsField: React.FC<{ value: Record<string, unknown>; onChange: (value: Record<string, unknown>) => void }> = ({
@@ -188,6 +188,15 @@ const TileListEditor: React.FC<TileListEditorProps> = ({ tiles, columns, rows, o
                   hint={t('cover_stop_only_moving_hint')}
                   value={tile.options.stop_only_moving === true}
                   onChange={stop_only_moving => set(index, { options: { ...tile.options, stop_only_moving } })}
+                />
+              )}
+              {(tile.type === 'cover' || tile.type === 'adaptive_cover') && (
+                <ChipListField
+                  label={t('cover_presets')}
+                  hint={t('cover_presets_hint')}
+                  suggestions={['0', '25', '50', '75', '100']}
+                  value={coverPresets(tile.options.positions).map(String)}
+                  onChange={values => set(index, { options: { ...tile.options, positions: coverPresets(values) } })}
                 />
               )}
               {tile.type === 'better_lighting' && <BetterLightingOptions tile={tile} onChange={options => set(index, { options })} />}

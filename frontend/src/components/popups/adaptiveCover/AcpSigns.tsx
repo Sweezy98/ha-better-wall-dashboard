@@ -21,7 +21,7 @@ const AcpSigns: React.FC<{ entities: AcpEntities }> = ({ entities }) => {
       {signs.map(kind => {
         const label = kind === 'manual' && until ? `${t(BADGE_LABELS.manual)} · ${until}` : t(BADGE_LABELS[kind]);
         return (
-          <span key={kind} className='sign' title={label} aria-label={label}>
+          <span key={kind} className='sign' data-tip={label} aria-label={label}>
             <Icon icon={ACP_BADGES[kind].icon} />
           </span>
         );

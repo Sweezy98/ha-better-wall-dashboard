@@ -90,12 +90,16 @@ const Barometer: React.FC<{ entityId: string; value: number; unit: string | unde
           <path d={arc(0, 1)} fill='none' stroke='rgba(255, 255, 255, 0.08)' strokeWidth={TRACK} strokeLinecap='round' />
           {shownRange && (
             <>
-              <polygon points={marker(toDial(shownRange.min))} fill={theme.colors.temperature}>
-                <title>{`${t('pressure_low')}: ${formatNumber(shownRange.min, language, digits)}`}</title>
-              </polygon>
-              <polygon points={marker(toDial(shownRange.max))} fill={theme.colors.alert}>
-                <title>{`${t('pressure_high')}: ${formatNumber(shownRange.max, language, digits)}`}</title>
-              </polygon>
+              <polygon
+                points={marker(toDial(shownRange.min))}
+                fill={theme.colors.temperature}
+                data-tip={`${t('pressure_low')}: ${formatNumber(shownRange.min, language, digits)}`}
+              />
+              <polygon
+                points={marker(toDial(shownRange.max))}
+                fill={theme.colors.alert}
+                data-tip={`${t('pressure_high')}: ${formatNumber(shownRange.max, language, digits)}`}
+              />
             </>
           )}
           <circle cx={now.x} cy={now.y} r={4.6} fill='#fff' stroke='#1c1c20' strokeWidth={2} />
