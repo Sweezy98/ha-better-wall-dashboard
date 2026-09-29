@@ -2196,7 +2196,10 @@ function print() { __p += __j.call(arguments, '') }
   /* Every block keeps its content's height; the calendar alone gives way. */
   flex: none;
 
-  &:not(:empty) {
+  /* Spaced from the next only when something in it shows: a block hidden by
+     its settings still holds its popup, closed, and was not empty -- its
+     spacing doubled the gap where it had been. */
+  &:has(> :not(dialog)) {
     padding-bottom: ${K(.6)};
   }
 
@@ -2209,7 +2212,7 @@ function print() { __p += __j.call(arguments, '') }
   }
 
   /* Its own block, set apart from the quick actions above it. */
-  &[data-area='calendar']:not(:empty) {
+  &[data-area='calendar']:has(> :not(dialog)) {
     margin-top: ${K(.6)};
   }
 
@@ -3372,7 +3375,7 @@ function print() { __p += __j.call(arguments, '') }
     white-space: pre-line;
     overflow: hidden;
   }
-`;function Qx(e){for(let t of e.composedPath())if(t instanceof Element&&t.hasAttribute(`data-tip`))return t;return null}var $x=()=>{let e=(0,v.useRef)(null);return(0,v.useEffect)(()=>{let t=e.current;if(!t?.showPopover)return;let n=null,r=0,i=()=>{window.clearTimeout(r),n=null,t.matches(`:popover-open`)&&t.hidePopover()},a=e=>{let n=e.getAttribute(`data-tip`);if(!n||!e.isConnected)return;t.textContent=n,t.matches(`:popover-open`)&&t.hidePopover(),t.showPopover();let r=e.getBoundingClientRect(),i=t.offsetWidth,a=t.offsetHeight,o=Math.min(window.innerWidth-i-Xx,Math.max(Xx,r.left+r.width/2-i/2)),s=r.top-a-Xx>=Xx?r.top-a-Xx:r.bottom+Xx;t.style.left=`${o}px`,t.style.top=`${s}px`},o=null,s=e=>{if(e.pointerType!==`mouse`)return;let t=e.composedPath()[0]??null;if(t===o)return;o=t;let s=Qx(e);s!==n&&(i(),s&&(n=s,r=window.setTimeout(()=>a(s),Yx)))},c=e=>{e.relatedTarget||i()},l=()=>i();return window.addEventListener(`pointermove`,s,!0),window.addEventListener(`pointerout`,c,!0),window.addEventListener(`pointerdown`,i,!0),window.addEventListener(`wheel`,l,{capture:!0,passive:!0}),window.addEventListener(`keydown`,i,!0),()=>{i(),window.removeEventListener(`pointermove`,s,!0),window.removeEventListener(`pointerout`,c,!0),window.removeEventListener(`pointerdown`,i,!0),window.removeEventListener(`wheel`,l,{capture:!0}),window.removeEventListener(`keydown`,i,!0)}},[]),(0,C.jsx)(Zx,{ref:e,popover:`manual`,role:`tooltip`})},eS=Jx(()=>j(()=>import(`./EditorPage-bXID13j4.js`),[],import.meta.url)),tS=()=>{let{mode:e}=qx();return e===`editor`?(0,C.jsx)(v.Suspense,{fallback:(0,C.jsx)(_x,{}),children:(0,C.jsx)(eS,{})}):(0,C.jsx)(jd,{children:(0,C.jsx)(Hx,{})})},nS=({hassUrl:e,hassToken:t,embedded:n,styleTarget:r})=>{let i=(0,v.useMemo)(()=>ct({key:`bwd`,container:r,speedy:!1}),[r]);return(0,C.jsx)(Fu,{target:r,disableCSSOMInjection:!0,children:(0,C.jsx)(di,{value:i,children:(0,C.jsxs)(Ru,{theme:Qu,children:[(0,C.jsx)($u,{}),(0,C.jsx)($x,{}),(0,C.jsx)(Us,{hassUrl:e,hassToken:t,loading:(0,C.jsx)(_x,{}),wrapperProps:{className:`bwd-connect`},options:{handleResumeOptions:{suspendWhenHidden:!n}},children:(0,C.jsx)(tS,{})})]})})})},rS=null,iS=`
+`;function Qx(e){for(let t of e.composedPath())if(t instanceof Element&&t.hasAttribute(`data-tip`))return t;return null}var $x=()=>{let e=(0,v.useRef)(null);return(0,v.useEffect)(()=>{let t=e.current;if(!t?.showPopover)return;let n=null,r=0,i=()=>{window.clearTimeout(r),n=null,t.matches(`:popover-open`)&&t.hidePopover()},a=e=>{let n=e.getAttribute(`data-tip`);if(!n||!e.isConnected)return;t.textContent=n,t.matches(`:popover-open`)&&t.hidePopover(),t.showPopover();let r=e.getBoundingClientRect(),i=t.offsetWidth,a=t.offsetHeight,o=Math.min(window.innerWidth-i-Xx,Math.max(Xx,r.left+r.width/2-i/2)),s=r.top-a-Xx>=Xx?r.top-a-Xx:r.bottom+Xx;t.style.left=`${o}px`,t.style.top=`${s}px`},o=null,s=e=>{if(e.pointerType!==`mouse`)return;let t=e.composedPath()[0]??null;if(t===o)return;o=t;let s=Qx(e);s!==n&&(i(),s&&(n=s,r=window.setTimeout(()=>a(s),Yx)))},c=e=>{e.relatedTarget||i()},l=()=>i();return window.addEventListener(`pointermove`,s,!0),window.addEventListener(`pointerout`,c,!0),window.addEventListener(`pointerdown`,i,!0),window.addEventListener(`wheel`,l,{capture:!0,passive:!0}),window.addEventListener(`keydown`,i,!0),()=>{i(),window.removeEventListener(`pointermove`,s,!0),window.removeEventListener(`pointerout`,c,!0),window.removeEventListener(`pointerdown`,i,!0),window.removeEventListener(`wheel`,l,{capture:!0}),window.removeEventListener(`keydown`,i,!0)}},[]),(0,C.jsx)(Zx,{ref:e,popover:`manual`,role:`tooltip`})},eS=Jx(()=>j(()=>import(`./EditorPage-BLE2fHmm.js`),[],import.meta.url)),tS=()=>{let{mode:e}=qx();return e===`editor`?(0,C.jsx)(v.Suspense,{fallback:(0,C.jsx)(_x,{}),children:(0,C.jsx)(eS,{})}):(0,C.jsx)(jd,{children:(0,C.jsx)(Hx,{})})},nS=({hassUrl:e,hassToken:t,embedded:n,styleTarget:r})=>{let i=(0,v.useMemo)(()=>ct({key:`bwd`,container:r,speedy:!1}),[r]);return(0,C.jsx)(Fu,{target:r,disableCSSOMInjection:!0,children:(0,C.jsx)(di,{value:i,children:(0,C.jsxs)(Ru,{theme:Qu,children:[(0,C.jsx)($u,{}),(0,C.jsx)($x,{}),(0,C.jsx)(Us,{hassUrl:e,hassToken:t,loading:(0,C.jsx)(_x,{}),wrapperProps:{className:`bwd-connect`},options:{handleResumeOptions:{suspendWhenHidden:!n}},children:(0,C.jsx)(tS,{})})]})})})},rS=null,iS=`
   :host {
     display: block;
     position: relative;

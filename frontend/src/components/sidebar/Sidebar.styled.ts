@@ -72,7 +72,10 @@ export const StyledArea = styled.div<{ $area: string }>`
   /* Every block keeps its content's height; the calendar alone gives way. */
   flex: none;
 
-  &:not(:empty) {
+  /* Spaced from the next only when something in it shows: a block hidden by
+     its settings still holds its popup, closed, and was not empty -- its
+     spacing doubled the gap where it had been. */
+  &:has(> :not(dialog)) {
     padding-bottom: ${u(0.6)};
   }
 
@@ -85,7 +88,7 @@ export const StyledArea = styled.div<{ $area: string }>`
   }
 
   /* Its own block, set apart from the quick actions above it. */
-  &[data-area='calendar']:not(:empty) {
+  &[data-area='calendar']:has(> :not(dialog)) {
     margin-top: ${u(0.6)};
   }
 
