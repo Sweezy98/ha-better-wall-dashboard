@@ -422,11 +422,22 @@ says so on purpose.
 
 ### Releases and HACS
 
-- Tag `vX.Y.Z-beta.N` and set `manifest.json` `version` to the same string without
-  the `v` (semver; AwesomeVersion accepts `0.1.0-beta.1`). HACS shows the manifest
-  version, so a mismatch reads as a different release.
-- Publish tags as **pre-releases** while in beta. HACS hides them unless the user
-  ticks "Show beta versions" on the repository (Redownload dialog) — say so.
+- **Version plain `MAJOR.MINOR.PATCH` — no `-beta.N` suffix.** Tag `vX.Y.Z` and
+  set `manifest.json` `version` to `X.Y.Z` (also `pyproject.toml`,
+  `frontend/package.json`). Count up the patch for each release: `0.2.0`,
+  `0.2.1`, … `0.2.10` — never reuse or move a published tag.
+  *Failure: releases published as `v0.1.0-beta.6` … `v0.1.0-beta.10` made GitHub —
+  and so HACS, which takes GitHub's newest — treat beta.6 as newer than beta.10.
+  GitHub compares the pre-release part as text ("6" > "1"); AwesomeVersion gets it
+  right, which is why it looked fine in every local check.* Plain numbers are
+  compared as numbers everywhere. The move from `0.1.0-beta.10` to `0.2.0` was
+  made so the next release sorts above every beta.
+- Check the order as GitHub sees it before telling the user a release is out:
+  `https://api.github.com/repos/<owner>/<repo>/releases` lists them newest first
+  (public, no token needed). The user publishes the release in GitHub's UI; a
+  release of a tag that is not the highest version will not become "Latest".
+- If a pre-release is ever wanted, HACS hides it unless the user ticks "Show beta
+  versions" on the repository (Redownload dialog) — say so.
 - A backend change needs an HA restart after the HACS update; a frontend-only
   change does not, but the integration must be reloaded (see fingerprint above).
 
