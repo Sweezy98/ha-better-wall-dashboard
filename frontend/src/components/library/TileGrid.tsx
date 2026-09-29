@@ -1,8 +1,9 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import styled from 'styled-components';
 import { u } from '../../themes/default.theme';
 import type { Tile as TileConfig } from '../../config/types';
 import Tile from './Tile';
+import { placeTiles } from '../../lib/placement';
 
 /**
  * The size container. Its own box is what the grid inside it measures
@@ -65,11 +66,12 @@ interface TileGridProps {
  * glass placeholder -- so the dashboard shows only what it controls.
  */
 const TileGrid: React.FC<TileGridProps> = ({ tiles, columns, rows, square }) => {
+  const placed = useMemo(() => placeTiles(tiles, columns, rows), [tiles, columns, rows]);
   return (
     <StyledBody data-cell-grid={square ? '' : undefined} data-columns={columns} data-rows={rows}>
       <StyledGrid $columns={columns} $rows={rows} $square={square}>
-        {tiles.map(tile => (
-          <Tile key={tile.id} tile={tile} />
+        {tiles.map((tile, index) => (
+          <Tile key={tile.id} tile={tile} place={placed[index]} />
         ))}
       </StyledGrid>
     </StyledBody>
