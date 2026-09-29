@@ -14,7 +14,16 @@ const CoverTile: React.FC<TileProps> = ({ tile }) => {
     <>
       <CoverTileView tile={tile} onDetails={entity ? () => setOpen(true) : undefined} />
       {/* Beside the tile, not in it: its class rules (.buttons) would reach into the popup. */}
-      {entity && <CoverPopup open={open} onClose={() => setOpen(false)} entityId={tile.entity} name={name} icon={icon} />}
+      {entity && (
+        <CoverPopup
+          open={open}
+          onClose={() => setOpen(false)}
+          entityId={tile.entity}
+          name={name}
+          icon={icon}
+          stopOnlyMoving={tile.options.stop_only_moving === true}
+        />
+      )}
     </>
   );
 };

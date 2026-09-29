@@ -257,7 +257,7 @@ interface CoverTileViewProps {
  * a double tap, its details.
  *
  * Options: `active_when` -- lit when `open` (the default), when `closed`,
- * or `never`.
+ * or `never`; `stop_only_moving` -- the stop button only while it moves.
  */
 const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, signs, action, onDetails }) => {
   const t = useT();
@@ -276,6 +276,8 @@ const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, signs, action, onDe
   const call = (service: string) => void callService('cover', service, undefined, { entity_id: tile.entity });
   const tap = useTaps(() => call('toggle'), onDetails);
   const active = coverActive(view, tile.options.active_when, Boolean(entity));
+  // For a cover that says when it moves: stop only then (the tile's `stop_only_moving`).
+  const stopOnlyMoving = tile.options.stop_only_moving === true;
   const moving = entity?.state === 'opening' ? 'up' : entity?.state === 'closing' ? 'down' : null;
   const lit = { '--on-color': theme.colors.cover } as React.CSSProperties;
 
@@ -328,7 +330,12 @@ const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, signs, action, onDe
             >
               <Icon icon='mdi:arrow-up' />
             </button>
-            <button type='button' aria-label={t('cover_stop')} disabled={!entity || !features.stop} onClick={() => call('stop_cover')}>
+            <button
+              type='button'
+              aria-label={t('cover_stop')}
+              disabled={!entity || !features.stop || (stopOnlyMoving && !view.moving)}
+              onClick={() => call('stop_cover')}
+            >
               <Icon icon='mdi:stop' />
             </button>
             <button

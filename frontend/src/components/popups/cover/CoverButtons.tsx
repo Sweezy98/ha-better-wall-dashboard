@@ -30,7 +30,7 @@ const StyledButtons = styled.div`
 `;
 
 /** Up, stop and down: the cover's own controls in its details. */
-const CoverButtons: React.FC<{ entityId: string }> = ({ entityId }) => {
+const CoverButtons: React.FC<{ entityId: string; stopOnlyMoving?: boolean }> = ({ entityId, stopOnlyMoving = false }) => {
   const t = useT();
   const entity = useEntity(entityId);
   const callService = useCallService();
@@ -48,7 +48,12 @@ const CoverButtons: React.FC<{ entityId: string }> = ({ entityId }) => {
       >
         <Icon icon='mdi:arrow-up' />
       </button>
-      <button type='button' aria-label={t('cover_stop')} disabled={!entity || !features.stop} onClick={() => call('stop_cover')}>
+      <button
+        type='button'
+        aria-label={t('cover_stop')}
+        disabled={!entity || !features.stop || (stopOnlyMoving && !view.moving)}
+        onClick={() => call('stop_cover')}
+      >
         <Icon icon='mdi:stop' />
       </button>
       <button

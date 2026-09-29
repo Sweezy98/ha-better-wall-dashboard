@@ -2,8 +2,8 @@ import { useState } from 'react';
 import type { Tile } from '../../config/types';
 import { LIMITS } from '../../config/types';
 import { useEntity, useT } from '../../hooks/useHa';
-import { LIBRARY_BY_TYPE } from '../library/registry';
-import { useOfferedTiles } from './useOfferedTiles';
+import { LIBRARY_BY_TYPE, type LibraryEntry } from '../library/registry';
+import { useOfferedTiles, usePickerEntities } from './useOfferedTiles';
 import BetterLightingOptions from './BetterLightingOptions';
 import Icon from '../base/icon/Icon';
 import HaButton from './ha/HaButton';
@@ -45,6 +45,26 @@ const OptionsField: React.FC<{ value: Record<string, unknown>; onChange: (value:
       />
       {invalid && <small>{t('json_invalid')}</small>}
     </StyledField>
+  );
+};
+
+/** A tile's entity, offered from what its type can use (see LibraryEntry). */
+const TileEntityField: React.FC<{ value: string; entry: LibraryEntry | undefined; onChange: (entity: string) => void }> = ({
+  value,
+  entry,
+  onChange,
+}) => {
+  const t = useT();
+  const include = usePickerEntities(entry);
+  return (
+    <EntityField
+      label={t('entity')}
+      value={value}
+      domains={entry?.domains}
+      integration={entry?.pickerIntegration}
+      include={include}
+      onChange={onChange}
+    />
   );
 };
 
@@ -120,13 +140,7 @@ const TileListEditor: React.FC<TileListEditorProps> = ({ tiles, columns, rows, o
                 }}
               />
               {entry?.needsEntity !== false && (
-                <EntityField
-                  label={t('entity')}
-                  value={tile.entity}
-                  domains={entry?.domains}
-                  integration={entry?.pickerIntegration}
-                  onChange={entity => set(index, { entity })}
-                />
+                <TileEntityField value={tile.entity} entry={entry} onChange={entity => set(index, { entity })} />
               )}
               <StyledRow>
                 <TextField label={t('name')} hint={t('name_hint')} value={tile.name} onChange={name => set(index, { name })} />
@@ -166,6 +180,14 @@ const TileListEditor: React.FC<TileListEditorProps> = ({ tiles, columns, rows, o
                   }
                   options={COVER_ACTIVE_WHEN.map(value => ({ value, label: t(`cover_active_${value}`) }))}
                   onChange={active_when => set(index, { options: { ...tile.options, active_when } })}
+                />
+              )}
+              {(tile.type === 'cover' || tile.type === 'adaptive_cover') && (
+                <CheckField
+                  label={t('cover_stop_only_moving')}
+                  hint={t('cover_stop_only_moving_hint')}
+                  value={tile.options.stop_only_moving === true}
+                  onChange={stop_only_moving => set(index, { options: { ...tile.options, stop_only_moving } })}
                 />
               )}
               {tile.type === 'better_lighting' && <BetterLightingOptions tile={tile} onChange={options => set(index, { options })} />}

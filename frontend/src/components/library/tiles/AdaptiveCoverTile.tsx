@@ -25,7 +25,14 @@ const AdaptiveCoverTile: React.FC<TileProps> = ({ tile }) => {
         onDetails={entities ? () => setOpen(true) : undefined}
       />
       {entities && (
-        <AdaptiveCoverPopup open={open} onClose={() => setOpen(false)} coverId={tile.entity} entities={entities} name={tile.name} />
+        <AdaptiveCoverPopup
+          open={open}
+          onClose={() => setOpen(false)}
+          coverId={tile.entity}
+          entities={entities}
+          name={tile.name}
+          stopOnlyMoving={tile.options.stop_only_moving === true}
+        />
       )}
     </>
   );

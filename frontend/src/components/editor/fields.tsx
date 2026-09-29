@@ -356,8 +356,9 @@ export const EntityCatalog: React.FC<{ children: React.ReactNode }> = ({ childre
   return <CatalogContext.Provider value={catalog}>{children}</CatalogContext.Provider>;
 };
 
-const entitySelector = (domains: string[] | undefined, extra: Record<string, unknown> = {}, integration?: string) => ({
+const entitySelector = (domains: string[] | undefined, extra: Record<string, unknown> = {}, integration?: string, include?: string[]) => ({
   entity: {
+    ...(include ? { include_entities: include } : {}),
     ...(domains?.length || integration
       ? { filter: { ...(domains?.length ? { domain: domains } : {}), ...(integration ? { integration } : {}) } }
       : {}),
@@ -396,13 +397,14 @@ const PlainEntityInput: React.FC<{ value: string; domains?: string[]; onChange: 
   );
 };
 
-export const EntityField: React.FC<Base<string> & { domains?: string[]; integration?: string }> = ({
+export const EntityField: React.FC<Base<string> & { domains?: string[]; integration?: string; include?: string[] }> = ({
   label,
   hint,
   value,
   onChange,
   domains,
   integration,
+  include,
 }) => {
   const ha = useHaControls();
   const catalog = useContext(CatalogContext);
@@ -410,7 +412,7 @@ export const EntityField: React.FC<Base<string> & { domains?: string[]; integrat
   if (ha) {
     return (
       <HaSelector
-        selector={entitySelector(domains, {}, integration)}
+        selector={entitySelector(domains, {}, integration, include)}
         value={value || undefined}
         label={label}
         helper={hint}

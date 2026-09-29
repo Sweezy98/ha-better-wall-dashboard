@@ -111,6 +111,30 @@ export function domainIcon(entityId: string): string {
   return icons[entityId.split('.')[0]] ?? 'mdi:gesture-tap';
 }
 
+/**
+ * The domains an entity tile can do something with in one tap: switch,
+ * toggle, run or press. Its picker offers these and no others.
+ */
+export const TAP_DOMAINS = [
+  'automation',
+  'button',
+  'climate',
+  'cover',
+  'fan',
+  'humidifier',
+  'input_boolean',
+  'input_button',
+  'light',
+  'media_player',
+  'remote',
+  'scene',
+  'script',
+  'siren',
+  'switch',
+  'vacuum',
+  'valve',
+];
+
 /** The service that toggles an entity of a given domain. */
 export function toggleService(entityId: string): [string, string] {
   const domain = entityId.split('.')[0];

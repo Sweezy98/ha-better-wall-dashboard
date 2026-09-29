@@ -190,7 +190,7 @@ const toTime = (value: unknown): number => {
   return typeof value === 'string' ? Date.parse(value) : NaN;
 };
 
-const Body: React.FC<{ coverId: string; entities: AcpEntities }> = ({ coverId, entities }) => {
+const Body: React.FC<{ coverId: string; entities: AcpEntities; stopOnlyMoving: boolean }> = ({ coverId, entities, stopOnlyMoving }) => {
   const t = useT();
   const theme = useTheme();
   const language = useLanguage();
@@ -273,7 +273,7 @@ const Body: React.FC<{ coverId: string; entities: AcpEntities }> = ({ coverId, e
           <section>
             <h3>{t('acp_switches')}</h3>
             <div className='cover-buttons'>
-              <CoverButtons entityId={coverId} />
+              <CoverButtons entityId={coverId} stopOnlyMoving={stopOnlyMoving} />
             </div>
             <div className='switches'>
               {SWITCHES.map(item => {
@@ -416,6 +416,8 @@ interface AdaptiveCoverPopupProps {
   coverId: string;
   entities: AcpEntities;
   name: string;
+  /** The tile's option: stop only while the cover moves. */
+  stopOnlyMoving?: boolean;
 }
 
 /**
@@ -423,7 +425,7 @@ interface AdaptiveCoverPopupProps {
  * what is steering it and why -- each handler in the order it decided --
  * its switches, today's plan and the last day, as ACP's own cards show it.
  */
-const AdaptiveCoverPopup: React.FC<AdaptiveCoverPopupProps> = ({ open, onClose, coverId, entities, name }) => {
+const AdaptiveCoverPopup: React.FC<AdaptiveCoverPopupProps> = ({ open, onClose, coverId, entities, name, stopOnlyMoving = false }) => {
   const theme = useTheme();
   const cover = useEntity(coverId);
   const target = useEntity(entities.target);
@@ -438,7 +440,7 @@ const AdaptiveCoverPopup: React.FC<AdaptiveCoverPopupProps> = ({ open, onClose, 
       iconColor={theme.colors.cover}
       width={72}
     >
-      <Body coverId={coverId} entities={entities} />
+      <Body coverId={coverId} entities={entities} stopOnlyMoving={stopOnlyMoving} />
     </Popup>
   );
 };

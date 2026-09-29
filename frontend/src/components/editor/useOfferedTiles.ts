@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useHass } from '@hakit/core';
 import { LIBRARY, type LibraryEntry } from '../library/registry';
 
@@ -14,4 +15,18 @@ export function useOfferedTiles(): LibraryEntry[] {
       .join(' ');
   });
   return LIBRARY.filter(item => offered.split(' ').includes(item.type));
+}
+
+/**
+ * The entities a tile type's picker offers, where it narrows them beyond
+ * domains (see LibraryEntry.pickerEntities); undefined where it does not.
+ * Compared as text, so the editor re-renders when the list changes, not on
+ * every state change in the house.
+ */
+export function usePickerEntities(entry: LibraryEntry | undefined): string[] | undefined {
+  const listed = useHass(state => {
+    if (!entry?.pickerEntities) return null;
+    return entry.pickerEntities(state.entities, id => state.entitiesRegistryDisplay[id]?.platform).join(' ');
+  });
+  return useMemo(() => (listed === null ? undefined : listed.split(' ').filter(Boolean)), [listed]);
 }

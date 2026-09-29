@@ -29,7 +29,7 @@ const StyledPanel = styled.div`
 `;
 
 /** What a cover can be set to, for the popup to show while it is open. */
-const CoverPanel: React.FC<{ entityId: string }> = ({ entityId }) => {
+const CoverPanel: React.FC<{ entityId: string; stopOnlyMoving: boolean }> = ({ entityId, stopOnlyMoving }) => {
   const t = useT();
   const theme = useTheme();
   const entity = useEntity(entityId);
@@ -72,7 +72,7 @@ const CoverPanel: React.FC<{ entityId: string }> = ({ entityId }) => {
           )}
         </div>
       )}
-      <CoverButtons entityId={entityId} />
+      <CoverButtons entityId={entityId} stopOnlyMoving={stopOnlyMoving} />
     </StyledPanel>
   );
 };
@@ -83,6 +83,8 @@ interface CoverPopupProps {
   entityId: string;
   name: string;
   icon: string;
+  /** The tile's option: stop only while the cover moves. */
+  stopOnlyMoving?: boolean;
 }
 
 /**
@@ -90,7 +92,7 @@ interface CoverPopupProps {
  * column dragged to where it should be, its tilt beside it where it has
  * one, and up, stop and down.
  */
-const CoverPopup: React.FC<CoverPopupProps> = ({ open, onClose, entityId, name, icon }) => {
+const CoverPopup: React.FC<CoverPopupProps> = ({ open, onClose, entityId, name, icon, stopOnlyMoving = false }) => {
   const t = useT();
   const theme = useTheme();
   const entity = useEntity(entityId);
@@ -98,7 +100,7 @@ const CoverPopup: React.FC<CoverPopupProps> = ({ open, onClose, entityId, name, 
   const subtitle = !entity ? t('not_found') : Number.isFinite(position) ? `${position} %` : undefined;
   return (
     <Popup open={open} onClose={onClose} title={name} subtitle={subtitle} icon={icon} iconColor={theme.colors.cover} width={34}>
-      <CoverPanel entityId={entityId} />
+      <CoverPanel entityId={entityId} stopOnlyMoving={stopOnlyMoving} />
     </Popup>
   );
 };

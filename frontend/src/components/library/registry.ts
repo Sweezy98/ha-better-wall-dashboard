@@ -1,5 +1,7 @@
 import type { Tile } from '../../config/types';
 import type { TranslationKey } from '../../lib/i18n';
+import { TAP_DOMAINS } from '../../hooks/useHa';
+import { coversSteered, hasNumericHistory } from '../../lib/entityFilters';
 import EntityTile from './tiles/EntityTile';
 import SensorTile from './tiles/SensorTile';
 import BetterLightingTile from './tiles/BetterLightingTile';
@@ -8,6 +10,11 @@ import AdaptiveCoverTile from './tiles/AdaptiveCoverTile';
 
 export interface TileProps {
   tile: Tile;
+}
+
+interface PickerEntity {
+  state: string;
+  attributes: Record<string, unknown>;
 }
 
 export interface LibraryEntry {
@@ -25,6 +32,8 @@ export interface LibraryEntry {
   integration?: string;
   /** The entity picker offers only this integration's entities. */
   pickerIntegration?: string;
+  /** Narrower still: the entities, of those, it can do anything with. */
+  pickerEntities?: (entities: Record<string, PickerEntity>, platformOf: (entityId: string) => string | undefined) => string[];
 }
 
 /**
@@ -43,7 +52,8 @@ export const LIBRARY: LibraryEntry[] = [
     icon: 'mdi:gesture-tap-button',
     component: EntityTile,
     needsEntity: true,
-    domains: [],
+    // What one tap can switch, toggle, run or press.
+    domains: TAP_DOMAINS,
     size: [1, 1],
   },
   {
@@ -53,6 +63,8 @@ export const LIBRARY: LibraryEntry[] = [
     component: SensorTile,
     needsEntity: true,
     domains: ['sensor', 'input_number', 'number', 'counter'],
+    // A graph needs numbers: not a sensor whose state is a word.
+    pickerEntities: entities => Object.keys(entities).filter(id => hasNumericHistory(id, entities[id])),
     size: [2, 1],
   },
   {
@@ -85,6 +97,8 @@ export const LIBRARY: LibraryEntry[] = [
     domains: ['cover'],
     size: [2, 2],
     integration: 'adaptive_cover_pro',
+    // Only the covers an instance steers.
+    pickerEntities: coversSteered,
   },
 ];
 
