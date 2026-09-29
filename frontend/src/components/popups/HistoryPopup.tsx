@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { u } from '../../themes/default.theme';
 import Popup from '../base/popup/Popup';
 import MiniGraph from '../base/miniGraph/MiniGraph';
+import Segmented from '../base/segmented/Segmented';
 import { useEntity, useLanguage, usePrecision, useT } from '../../hooks/useHa';
 import { useHistory } from '../../hooks/useHistory';
 import { useTick } from '../../hooks/useNow';
@@ -20,23 +21,6 @@ const StyledState = styled.div`
   strong {
     font-size: ${u(3.12)};
     font-weight: 400;
-  }
-`;
-
-const StyledRanges = styled.div`
-  display: flex;
-  gap: ${u(0.3)};
-
-  button {
-    padding: ${u(0.3)} ${u(0.7)};
-    border-radius: ${u(1)};
-    font-size: ${u(0.96)};
-    color: ${({ theme }) => theme.text.secondary};
-  }
-
-  button[aria-pressed='true'] {
-    background: ${({ theme }) => theme.bubble.header};
-    color: ${({ theme }) => theme.text.primary};
   }
 `;
 
@@ -145,13 +129,12 @@ const HistoryContent: React.FC<{ entityId: string; color: string }> = ({ entityI
     <>
       <StyledState>
         <strong>{formatMeasurement(entity?.state, unit, language, precision)}</strong>
-        <StyledRanges role='group' aria-label={t('history')}>
-          {RANGES.map(value => (
-            <button key={value} type='button' aria-pressed={value === hours} onClick={() => setHours(value)}>
-              {value < 48 ? `${value} h` : `${value / 24} d`}
-            </button>
-          ))}
-        </StyledRanges>
+        <Segmented
+          label={t('history')}
+          value={hours}
+          onChange={setHours}
+          options={RANGES.map(value => ({ value, label: value < 48 ? `${value} h` : `${value / 24} d` }))}
+        />
       </StyledState>
       <StyledGraph>
         <MiniGraph
