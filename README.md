@@ -34,7 +34,8 @@ inside Home Assistant. The tablet on the wall just shows it, and redraws the mom
 - **Quick actions**: three to six toggles for modes like night or guests.
 - **Upcoming events** from your Home Assistant calendars.
 - **Weather** with an animated icon, the temperature from your own outdoor sensor, and the
-  forecast behind a tap.
+  forecast behind a tap — with the moon's phase too, drawn as it is tonight, where Home
+  Assistant's Moon integration is set up.
 - **Notifications** with an unread count, and **settings** with system statistics.
 
 **The pages** to the right swipe sideways — with a finger on the tablet, or by dragging with the

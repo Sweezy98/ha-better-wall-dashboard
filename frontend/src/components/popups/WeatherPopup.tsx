@@ -6,6 +6,8 @@ import PopupScroll from '../base/popup/PopupScroll';
 import Icon from '../base/icon/Icon';
 import WeatherIcon from '../base/weatherIcon/WeatherIcon';
 import Barometer from './Barometer';
+import Moon from './Moon';
+import { useMoonSensor } from '../../hooks/useMoonSensor';
 import { StyledFacts } from './WeatherFacts.styled';
 import { LightningFacts, QuietLightningFact } from './Lightning';
 import { useLightning } from '../../hooks/useLightning';
@@ -302,6 +304,8 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
   const lightning = useLightning();
   const storm = lightning && lightning.strikes.length > 0 ? lightning : null;
   const pressure = typeof a.pressure === 'number' ? { value: a.pressure, unit: a.pressure_unit as string | undefined } : null;
+  // Home Assistant's Moon integration, when it is set up.
+  const moon = useMoonSensor();
 
   return (
     <>
@@ -333,9 +337,10 @@ const WeatherContent: React.FC<{ entityId: string; temperature: string }> = ({ e
         {hours.length > 1 ? <Hours hours={hours} /> : <span />}
       </StyledNow>
 
-      {(facts.length > 0 || pressure) && (
+      {(facts.length > 0 || pressure || moon) && (
         <StyledFacts>
           {pressure && <Barometer entityId={entityId} value={pressure.value} unit={pressure.unit} />}
+          {moon && <Moon entityId={moon} />}
           {lightning && !storm && <QuietLightningFact />}
           {facts.map(fact => (
             <div key={fact.label}>
