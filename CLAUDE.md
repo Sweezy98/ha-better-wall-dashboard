@@ -442,6 +442,9 @@ says so on purpose.
   templated, and its "Generate release notes" builds from pull requests — this
   repository commits to main, so they came out empty.* Commit subjects are the
   release notes, so write each as a sentence a user would want to read.
+- Publish **idempotently**: create, and if that answers "tag_name already exists",
+  fetch the release and update it. *Failure: `gh release create` made the release,
+  then failed its own second try with HTTP 422 and turned the run red.*
 - For a tag push the workflow file is read **from the tagged commit**: a tag on a
   commit older than a workflow change runs the old workflow (or none).
 - Check the order as GitHub sees it before telling the user a release is out:

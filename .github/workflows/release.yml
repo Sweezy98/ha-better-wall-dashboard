@@ -48,10 +48,19 @@ jobs:
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
+        # Create or update, whichever the release needs -- and settle for what
+        # is there: `gh release create` made the release and then reported
+        # "tag_name already exists" on a second try of its own, failing a run
+        # whose release was fine. A create that finds it made is an update.
         run: |
-          title="Better Wall Dashboard $TAG"
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release edit "$TAG" --title "$title" --notes-file notes.md --latest
-          else
-            gh release create "$TAG" --title "$title" --notes-file notes.md --verify-tag --latest
+          jq -n --arg tag "$TAG" --arg name "Better Wall Dashboard $TAG" --rawfile body notes.md \
+            '{tag_name: $tag, name: $name, body: $body, draft: false, prerelease: false, make_latest: "true"}' > release.json
+          update() {
+            id=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq .id)
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/releases/$id" --input release.json --jq .html_url
+          }
+          if gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --silent 2>/dev/null; then
+            update
+          elif ! gh api --method POST "repos/$GITHUB_REPOSITORY/releases" --input release.json --jq .html_url; then
+            update
           fi
