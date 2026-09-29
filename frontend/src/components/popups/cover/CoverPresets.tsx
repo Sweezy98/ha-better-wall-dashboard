@@ -10,20 +10,24 @@ const StyledPresets = styled.div<{ $count: number; $large: boolean }>`
   grid-template-columns: repeat(${({ $count }) => $count}, minmax(0, 1fr));
   gap: ${({ $large }) => u($large ? 0.6 : 0.5)};
 
+  /* The tile's own button pill (see CoverTileView), or the details' larger one. */
   button {
-    height: ${({ $large }) => u($large ? 3.4 : 2.2)};
-    border-radius: ${({ $large }) => u($large ? 1.7 : 1.1)};
-    font-size: ${({ $large }) => u($large ? 1 : 0.85)};
-    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: ${({ $large }) => u($large ? 3.4 : 2.8)};
+    border-radius: ${({ $large }) => u($large ? 1.7 : 1.4)};
+    font-size: ${({ $large }) => u($large ? 1 : 0.95)};
+    font-weight: 500;
     font-variant-numeric: tabular-nums;
-    color: ${({ theme }) => theme.text.secondary};
+    color: ${({ theme }) => theme.text.primary};
     background-color: ${({ theme, $large }) => ($large ? theme.bubble.background : theme.bubble.icon)};
     ${({ theme }) => pressable(theme.bubble.hover, theme.bubble.pressed)}
   }
 
   /* Where it stands already: that one lit, as a chosen range is. */
   button[aria-pressed='true'] {
-    color: ${({ theme }) => theme.text.primary};
+    font-weight: 700;
     background-color: ${({ theme }) => theme.bubble.header};
   }
 

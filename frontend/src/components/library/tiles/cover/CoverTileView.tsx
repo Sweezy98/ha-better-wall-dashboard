@@ -190,10 +190,10 @@ const StyledCover = styled(StyledTile)<{ $color: string }>`
     opacity: 0.35;
   }
 
-  /* The presets where there is room for a row of them under the buttons
-     (head 2.8, buttons 2.8, presets 2.2 and their gaps, inside the
+  /* The presets where there is room for a row of them above the buttons
+     (head 2.8, presets 2.8, buttons 2.8 and their gaps, inside the
      padding) and across it: left out otherwise, the buttons still there. */
-  @container (height < 9.2em) or (width < 12em) {
+  @container (height < 9.6em) or (width < 12em) {
     .presets {
       display: none;
     }
@@ -332,6 +332,8 @@ const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, signs, action, onDe
           {action}
         </div>
         <div className='controls'>
+          {/* Above the buttons: where to go, then how. */}
+          <CoverPresets className='presets' entityId={tile.entity} presets={coverPresets(tile.options.positions)} />
           <div className='buttons'>
             <button
               type='button'
@@ -359,7 +361,6 @@ const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, signs, action, onDe
             </button>
           </div>
         </div>
-        <CoverPresets className='presets' entityId={tile.entity} presets={coverPresets(tile.options.positions)} />
       </div>
     </StyledCover>
   );

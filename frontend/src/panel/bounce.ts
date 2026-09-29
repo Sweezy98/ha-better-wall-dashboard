@@ -11,8 +11,8 @@ const KEYFRAMES: Keyframe[] = [
 ];
 
 /**
- * On a click, the thing pressed gives: inside a tile the whole tile, in the
- * sidebar and the button bar (`data-bounce`) the button itself. Not on a slider -- dragging one
+ * On a click, the thing pressed gives: a button, or a tile that was pressed
+ * as a whole -- in a tile, in the sidebar and in the button bar (`data-bounce`). Not on a slider -- dragging one
  * is not a tap -- nor inside a popup opened from there. Listened for once on
  * the dashboard, as the glow is, rather than wired into every button.
  */
@@ -27,5 +27,8 @@ export function bouncePress(event: React.MouseEvent): void {
   // A popup opened from here sits inside it; a tap there is not on it.
   const dialog = target.closest('dialog');
   if (dialog && region.contains(dialog)) return;
-  (tile ?? button).animate(KEYFRAMES, { duration: 560 });
+  // A button in a tile gives by itself; the tile gives when it is what was
+  // pressed -- its own surface (data-press), or a tile that is one button.
+  const whole = !tile || button.hasAttribute('data-press') || button.parentElement === tile;
+  (whole ? (tile ?? button) : button).animate(KEYFRAMES, { duration: 560 });
 }
