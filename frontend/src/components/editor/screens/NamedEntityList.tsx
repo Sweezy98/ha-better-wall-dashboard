@@ -1,4 +1,4 @@
-import type { QuickAction } from '../../../config/types';
+import type { NamedEntity, QuickAction } from '../../../config/types';
 import { domainIcon, useEntity, useT } from '../../../hooks/useHa';
 import { move, newId, replaceAt } from '../../../lib/editing';
 import Icon from '../../base/icon/Icon';
@@ -9,7 +9,7 @@ import { StyledDetails, StyledEmpty } from '../editor.styled';
 import RulesEditor from '../RulesEditor';
 
 /** What a folded row says: the name it will show, and the entity behind it. */
-const Summary: React.FC<{ item: QuickAction }> = ({ item }) => {
+const Summary: React.FC<{ item: NamedEntity & Pick<QuickAction, 'rules'> }> = ({ item }) => {
   const entity = useEntity(item.entity || undefined);
   const t = useT();
   const name = item.name || (entity?.attributes.friendly_name as string | undefined) || item.entity || t('not_set');
@@ -29,23 +29,37 @@ const Summary: React.FC<{ item: QuickAction }> = ({ item }) => {
   );
 };
 
-interface NamedEntityListProps {
-  items: QuickAction[];
+interface NamedEntityListProps<T extends NamedEntity> {
+  items: T[];
   max: number;
   domains?: string[];
   addLabel: string;
   /** Each entry with rules for when it shows: the quick actions. */
   withRules?: boolean;
-  onChange: (items: QuickAction[]) => void;
+  /** A new entry, for entries that carry more than a name and an icon. */
+  create?: () => T;
+  /** An entry's own further fields, under its name and icon. */
+  extra?: (item: T, set: (patch: Partial<T>) => void) => React.ReactNode;
+  onChange: (items: T[]) => void;
 }
 
 /**
  * A short list of entities that each carry a name and an icon of their own:
  * one folded panel per entry, opened to edit it, in the order they show.
  */
-const NamedEntityList: React.FC<NamedEntityListProps> = ({ items, max, domains, addLabel, withRules = false, onChange }) => {
+function NamedEntityList<T extends NamedEntity & Pick<QuickAction, 'rules'>>({
+  items,
+  max,
+  domains,
+  addLabel,
+  withRules = false,
+  create,
+  extra,
+  onChange,
+}: NamedEntityListProps<T>) {
   const t = useT();
-  const set = (index: number, patch: Partial<QuickAction>) => onChange(replaceAt(items, index, { ...items[index], ...patch }));
+  const set = (index: number, patch: Partial<T>) => onChange(replaceAt(items, index, { ...items[index], ...patch }));
+  const blank = (): T => create?.() ?? ({ id: newId(), entity: '', name: '', icon: '', ...(withRules ? { rules: [] } : {}) } as T);
   return (
     <>
       {items.length === 0 && (
@@ -70,27 +84,28 @@ const NamedEntityList: React.FC<NamedEntityListProps> = ({ items, max, domains, 
             </span>
           </summary>
           <div className='fold-body'>
-            <EntityField label={t('entity')} value={item.entity} domains={domains} onChange={entity => set(index, { entity })} />
+            <EntityField
+              label={t('entity')}
+              value={item.entity}
+              domains={domains}
+              onChange={entity => set(index, { entity } as Partial<T>)}
+            />
             <StyledRow>
-              <TextField label={t('name')} hint={t('name_hint')} value={item.name} onChange={name => set(index, { name })} />
-              <IconField label={t('icon')} value={item.icon} onChange={icon => set(index, { icon })} />
+              <TextField label={t('name')} hint={t('name_hint')} value={item.name} onChange={name => set(index, { name } as Partial<T>)} />
+              <IconField label={t('icon')} value={item.icon} onChange={icon => set(index, { icon } as Partial<T>)} />
             </StyledRow>
-            {withRules && <RulesEditor rules={item.rules ?? []} onChange={rules => set(index, { rules })} />}
+            {extra?.(item, patch => set(index, patch))}
+            {withRules && <RulesEditor rules={item.rules ?? []} onChange={rules => set(index, { rules } as Partial<T>)} />}
           </div>
         </StyledDetails>
       ))}
       <div>
-        <HaButton
-          icon='mdi:plus'
-          appearance='filled'
-          disabled={items.length >= max}
-          onClick={() => onChange([...items, { id: newId(), entity: '', name: '', icon: '', ...(withRules ? { rules: [] } : {}) }])}
-        >
+        <HaButton icon='mdi:plus' appearance='filled' disabled={items.length >= max} onClick={() => onChange([...items, blank()])}>
           {addLabel} ({items.length}/{max})
         </HaButton>
       </div>
     </>
   );
-};
+}
 
 export default NamedEntityList;

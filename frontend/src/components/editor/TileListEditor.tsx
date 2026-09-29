@@ -5,6 +5,7 @@ import { useEntity, useT } from '../../hooks/useHa';
 import { LIBRARY_BY_TYPE, type LibraryEntry } from '../library/registry';
 import { useOfferedTiles, usePickerEntities } from './useOfferedTiles';
 import BetterLightingOptions from './BetterLightingOptions';
+import MediaOptions from './MediaOptions';
 import Icon from '../base/icon/Icon';
 import HaButton from './ha/HaButton';
 import { CheckField, ChipListField, EntityField, IconField, ListControls, NumberField, SelectField, TextField } from './fields';
@@ -200,6 +201,7 @@ const TileListEditor: React.FC<TileListEditorProps> = ({ tiles, columns, rows, o
                 />
               )}
               {tile.type === 'better_lighting' && <BetterLightingOptions tile={tile} onChange={options => set(index, { options })} />}
+              {tile.type === 'media' && <MediaOptions tile={tile} onChange={options => set(index, { options })} />}
             </div>
           </StyledDetails>
         );

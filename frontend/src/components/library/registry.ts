@@ -7,6 +7,7 @@ import SensorTile from './tiles/SensorTile';
 import BetterLightingTile from './tiles/BetterLightingTile';
 import CoverTile from './tiles/CoverTile';
 import AdaptiveCoverTile from './tiles/AdaptiveCoverTile';
+import MediaTile from './tiles/MediaTile';
 
 export interface TileProps {
   tile: Tile;
@@ -99,6 +100,17 @@ export const LIBRARY: LibraryEntry[] = [
     integration: 'adaptive_cover_pro',
     // Only the covers an instance steers.
     pickerEntities: coversSteered,
+  },
+  {
+    // Given the main player -- the receiver, where there is one -- and, in
+    // its options, the players that play through it.
+    type: 'media',
+    label: 'tile_media',
+    icon: 'mdi:multimedia',
+    component: MediaTile,
+    needsEntity: true,
+    domains: ['media_player'],
+    size: [2, 2],
   },
 ];
 

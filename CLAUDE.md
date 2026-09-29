@@ -493,6 +493,15 @@ says so on purpose.
   the physical cover's device). The covers an instance steers are the keys of the
   Target Position sensor's `actual_positions`. During a manual hold that sensor's
   state is the held position while `linear_position` stays the sun's target.
+- **Denon receivers**: Home Assistant's `denonavr` gives `volume_level` as
+  `(dB + 80) / 100` and the rendered mode as `sound_mode_raw`; nothing about
+  the source's channels. The HACS `denon_avr` integration adds sensors on the
+  receiver's device -- volume in dB, `audio_format` ("3/2/.1"), `decoder`,
+  `input_signal`, `mode_info` -- found by `translation_key`, which the kit's
+  display registry does carry (`tk`), with `device_id` and `platform`.
+- Which speakers play is derived, not reported: upmixers and object formats
+  fill all, stereo the front pair (subwoofers silent), a plain decoder the
+  source's own channels. A mode that says neither is `unknown`, never a guess.
 - **Moon** integration: `sensor.moon_phase`, eight named states; compute the shape
   yourself from the moon's age if you want to draw it.
 
@@ -524,6 +533,10 @@ says so on purpose.
   the container's font size — set it to the layout unit to query in units.
   Rules inside `@container` lose to later rules of equal specificity: put the
   queries last.
+- **Grid auto placement overflows silently.** A tile two rows high placed in a
+  section's last row spills into an implicit row of no height and comes out one
+  gap taller than its neighbours. Tiles are placed in JS (`lib/placement`), as
+  the grid would, and cut to the rows left.
 - A `filter` (or `transform`) on an element makes it the containing block of its
   `position: fixed` descendants. Apply a dimming filter only while needed.
 - **Touch**: an element that uses double tap needs `touch-action: manipulation`,
