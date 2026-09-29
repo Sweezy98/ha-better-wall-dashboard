@@ -28,6 +28,7 @@ const StyledFrame = styled.div`
     0 0 0 12px rgba(120, 200, 255, 0.25),
     0 30px 80px rgba(0, 0, 0, 0.6);
   transform-origin: center center;
+  will-change: transform;
 `;
 
 /**
@@ -79,10 +80,17 @@ const EditorPreview: React.FC<{ dashboard: Dashboard; device: (typeof DEVICES)[n
     const to = `translate(-50%, -50%) scale(${scale})`;
     const easing = 'cubic-bezier(0.3, 0, 0.2, 1)';
     if (before.portrait !== portrait) {
-      // The new shape, turned back a quarter, has the old one's outline.
+      // The new shape, turned back a quarter, has the old one's outline. It
+      // eases in and out, and dips a little half way, as a tablet turned in
+      // the hand seems to; only the transform moves, on the compositor.
+      const middle = Math.min(before.scale, scale) * 0.92;
       element.animate(
-        [{ transform: `translate(-50%, -50%) scale(${before.scale}) rotate(${portrait ? 90 : -90}deg)` }, { transform: to }],
-        { duration: 550, easing }
+        [
+          { transform: `translate(-50%, -50%) scale(${before.scale}) rotate(${portrait ? 90 : -90}deg)` },
+          { transform: `translate(-50%, -50%) scale(${middle}) rotate(${portrait ? 45 : -45}deg)`, offset: 0.5 },
+          { transform: to },
+        ],
+        { duration: 750, easing: 'cubic-bezier(0.45, 0, 0.25, 1)' }
       );
     } else if (before.width !== width || before.height !== height) {
       element.animate(
