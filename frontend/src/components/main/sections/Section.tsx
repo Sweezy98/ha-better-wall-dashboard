@@ -5,7 +5,8 @@ import type { Section as SectionConfig } from '../../../config/types';
 import Icon from '../../base/icon/Icon';
 import TileGrid from '../../library/TileGrid';
 import { useEntity, useLanguage, usePrecision } from '../../../hooks/useHa';
-import { formatMeasurement } from '../../../lib/format';
+import { formatMeasurement, formatRelative } from '../../../lib/format';
+import { useTick } from '../../../hooks/useNow';
 
 const StyledSection = styled.section<{ $headed: boolean }>`
   display: grid;
@@ -79,6 +80,25 @@ const StyledReading = styled.span`
   }
 `;
 
+/**
+ * A moment -- the next alarm on a phone -- said as Home Assistant's own
+ * badge says it, "In 18 hours", moved on each minute; the date itself on
+ * hover. The raw state is an ISO timestamp nobody reads at a glance.
+ */
+const Moment: React.FC<{ iso: string }> = ({ iso }) => {
+  const language = useLanguage();
+  const now = useTick(60_000);
+  const date = new Date(iso);
+  const text = formatRelative(date, language, now);
+  return (
+    <span
+      data-tip={date.toLocaleString(language, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+    >
+      {text.charAt(0).toLocaleUpperCase(language) + text.slice(1)}
+    </span>
+  );
+};
+
 const Reading: React.FC<{ entityId: string }> = ({ entityId }) => {
   const entity = useEntity(entityId);
   const precision = usePrecision(entityId);
@@ -86,11 +106,22 @@ const Reading: React.FC<{ entityId: string }> = ({ entityId }) => {
   const deviceClass = entity?.attributes.device_class as string | undefined;
   const icon =
     (entity?.attributes.icon as string | undefined) ??
-    (deviceClass === 'temperature' ? 'mdi:thermometer' : deviceClass === 'humidity' ? 'mdi:water' : 'mdi:information-outline');
+    (deviceClass === 'temperature'
+      ? 'mdi:thermometer'
+      : deviceClass === 'humidity'
+        ? 'mdi:water'
+        : deviceClass === 'timestamp'
+          ? 'mdi:clock-outline'
+          : 'mdi:information-outline');
+  const moment = deviceClass === 'timestamp' && entity && Number.isFinite(Date.parse(entity.state));
   return (
     <StyledReading>
       <Icon className='reading-icon' icon={icon} />
-      {formatMeasurement(entity?.state, entity?.attributes.unit_of_measurement as string | undefined, language, precision)}
+      {moment ? (
+        <Moment iso={entity.state} />
+      ) : (
+        formatMeasurement(entity?.state, entity?.attributes.unit_of_measurement as string | undefined, language, precision)
+      )}
     </StyledReading>
   );
 };
