@@ -21,6 +21,8 @@ interface PickerEntity {
 export interface LibraryEntry {
   type: string;
   label: TranslationKey;
+  /** What it is for, a line in the editor's picker. */
+  description: TranslationKey;
   icon: string;
   component: React.FC<TileProps>;
   /** Whether the tile is pointless without an entity. */
@@ -50,6 +52,7 @@ export const LIBRARY: LibraryEntry[] = [
   {
     type: 'entity',
     label: 'tile_entity',
+    description: 'tile_entity_hint',
     icon: 'mdi:gesture-tap-button',
     component: EntityTile,
     needsEntity: true,
@@ -60,6 +63,7 @@ export const LIBRARY: LibraryEntry[] = [
   {
     type: 'sensor',
     label: 'tile_sensor',
+    description: 'tile_sensor_hint',
     icon: 'mdi:chart-bell-curve-cumulative',
     component: SensorTile,
     needsEntity: true,
@@ -71,6 +75,7 @@ export const LIBRARY: LibraryEntry[] = [
   {
     type: 'cover',
     label: 'tile_cover',
+    description: 'tile_cover_hint',
     icon: 'mdi:window-shutter',
     component: CoverTile,
     needsEntity: true,
@@ -80,6 +85,7 @@ export const LIBRARY: LibraryEntry[] = [
   {
     type: 'better_lighting',
     label: 'tile_better_lighting',
+    description: 'tile_better_lighting_hint',
     icon: 'mdi:lightbulb-group',
     component: BetterLightingTile,
     needsEntity: true,
@@ -92,6 +98,7 @@ export const LIBRARY: LibraryEntry[] = [
     // Given the cover it steers, which people know, not the instance.
     type: 'adaptive_cover',
     label: 'tile_adaptive_cover',
+    description: 'tile_adaptive_cover_hint',
     icon: 'mdi:window-shutter-auto',
     component: AdaptiveCoverTile,
     needsEntity: true,
@@ -106,6 +113,7 @@ export const LIBRARY: LibraryEntry[] = [
     // its options, the players that play through it.
     type: 'media',
     label: 'tile_media',
+    description: 'tile_media_hint',
     icon: 'mdi:multimedia',
     component: MediaTile,
     needsEntity: true,

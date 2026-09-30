@@ -5,6 +5,7 @@ import { useEntity, useT } from '../../hooks/useHa';
 import { LIBRARY_BY_TYPE, type LibraryEntry } from '../library/registry';
 import { useOfferedTiles, usePickerEntities } from './useOfferedTiles';
 import BetterLightingOptions from './BetterLightingOptions';
+import TilePicker from './TilePicker';
 import MediaOptions from './MediaOptions';
 import Icon from '../base/icon/Icon';
 import HaButton from './ha/HaButton';
@@ -99,6 +100,7 @@ interface TileListEditorProps {
 const TileListEditor: React.FC<TileListEditorProps> = ({ tiles, columns, rows, onChange }) => {
   const t = useT();
   const offered = useOfferedTiles();
+  const [picking, setPicking] = useState(false);
   const set = (index: number, patch: Partial<Tile>) => onChange(replaceAt(tiles, index, { ...tiles[index], ...patch }));
   return (
     <>
@@ -207,15 +209,24 @@ const TileListEditor: React.FC<TileListEditorProps> = ({ tiles, columns, rows, o
         );
       })}
       <div>
-        <HaButton
-          icon='mdi:plus'
-          appearance='filled'
-          disabled={tiles.length >= LIMITS.tiles}
-          onClick={() => onChange([...tiles, { id: newId(), type: 'entity', entity: '', name: '', icon: '', w: 1, h: 1, options: {} }])}
-        >
+        <HaButton icon='mdi:plus' appearance='filled' disabled={tiles.length >= LIMITS.tiles} onClick={() => setPicking(true)}>
           {t('add_tile')}
         </HaButton>
       </div>
+      <TilePicker
+        open={picking}
+        types={offered}
+        onClose={() => setPicking(false)}
+        onPick={type => {
+          setPicking(false);
+          const size = LIBRARY_BY_TYPE[type]?.size ?? [1, 1];
+          // A new tile opens by itself: it has no entity yet (see the fold above).
+          onChange([
+            ...tiles,
+            { id: newId(), type, entity: '', name: '', icon: '', w: Math.min(size[0], columns), h: Math.min(size[1], rows), options: {} },
+          ]);
+        }}
+      />
     </>
   );
 };
