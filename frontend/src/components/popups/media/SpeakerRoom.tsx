@@ -119,19 +119,10 @@ const StyledRoom = styled.figure`
   }
 
   /* Not the lines' own width here: a limb's stroke is its thickness, and scales with the room. */
-  .person .limb,
-  .person .light {
+  .person .limb {
     vector-effect: none;
     stroke-linecap: round;
-  }
-
-  .person .limb {
-    stroke: #465467;
-  }
-
-  .person .light {
-    stroke: #6f8098;
-    opacity: 0.55;
+    stroke: #56657a;
   }
 
   .screen polygon {
@@ -295,10 +286,11 @@ function screenLength(point: Point3, metres: number, camera: Camera): number {
 }
 
 /**
- * The listener, seated: each limb a rounded stroke as thick as it is, with
- * a lighter one along its top for the light on it -- and a shaded head.
- * Each part painted in turn with the room, so the sofa's back hides what it
- * should.
+ * The listener, seated: each limb a rounded stroke as thick as it is, all in
+ * one colour, and a shaded head. One colour because two limbs meeting at a
+ * joint have no one right order: a lighter stripe along each showed through
+ * the limb before it whenever the view turned. Each limb is still painted in
+ * turn with the room, so the sofa hides what it should.
  */
 function figure(camera: Camera, id: string): Drawn[] {
   const { limbs, head, headRadius } = listenerFigure();
@@ -313,7 +305,6 @@ function figure(camera: Camera, id: string): Drawn[] {
       element: (
         <g className='person'>
           <line className='limb' x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} strokeWidth={width} />
-          <line className='light' x1={a[0]} y1={a[1] - width * 0.18} x2={b[0]} y2={b[1] - width * 0.18} strokeWidth={width * 0.45} />
         </g>
       ),
     };
