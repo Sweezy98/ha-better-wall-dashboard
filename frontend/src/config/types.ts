@@ -29,6 +29,8 @@ export interface Section {
   icon: string;
   /** Zero to two readings drawn at the right of the header. */
   status: EntityId[];
+  /** A reading's own icon, by its entity; missing from a backend older than this page. */
+  status_icons?: Record<EntityId, string>;
   columns: number;
   rows: number;
   /** Square cells sized to fit, so 1x1 tiles match across sections. */
@@ -112,6 +114,27 @@ export interface SidebarConfig {
   /** Missing from a backend older than this page. */
   clock?: { style: 'digital' | 'analog'; seconds?: boolean };
   system: NamedEntity[];
+  /** Buttons in the settings popup; missing from a backend older than this page. */
+  system_buttons?: SystemButton[];
+  /** Missing from a backend older than this page: then, no battery row. */
+  batteries?: BatteriesConfig;
+}
+
+/** A button in the settings popup: a script, a scene, a device's button -- pressed after a second tap when `confirm`. */
+export interface SystemButton extends NamedEntity {
+  confirm: boolean;
+}
+
+export interface BatteriesConfig {
+  enabled: boolean;
+  /** The row only while a battery is critical. */
+  hide_when_ok: boolean;
+  /** The popup lists only the critical ones. */
+  only_critical: boolean;
+  /** Percent at or under which a battery is critical. */
+  threshold: number;
+  /** Batteries left out, e.g. a phone's. */
+  hidden: EntityId[];
 }
 
 export interface Dashboard {
@@ -170,6 +193,7 @@ export const LIMITS = {
   buttons: 5,
   sectionStatus: 2,
   system: 8,
+  systemButtons: 12,
   sectionCells: 12,
   tiles: 64,
   calendarDays: 14,

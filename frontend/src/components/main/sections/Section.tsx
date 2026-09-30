@@ -99,13 +99,14 @@ const Moment: React.FC<{ iso: string }> = ({ iso }) => {
   );
 };
 
-const Reading: React.FC<{ entityId: string }> = ({ entityId }) => {
+const Reading: React.FC<{ entityId: string; icon?: string }> = ({ entityId, icon: own }) => {
   const entity = useEntity(entityId);
   const precision = usePrecision(entityId);
   const language = useLanguage();
   const deviceClass = entity?.attributes.device_class as string | undefined;
   const icon =
-    (entity?.attributes.icon as string | undefined) ??
+    own ||
+    (entity?.attributes.icon as string | undefined) ||
     (deviceClass === 'temperature'
       ? 'mdi:thermometer'
       : deviceClass === 'humidity'
@@ -138,7 +139,7 @@ const Section: React.FC<{ section: SectionConfig }> = ({ section }) => {
           {section.status.map((id, index) => (
             <Fragment key={id}>
               {index > 0 && <span className='dot' />}
-              <Reading entityId={id} />
+              <Reading entityId={id} icon={section.status_icons?.[id]} />
             </Fragment>
           ))}
         </StyledHeader>

@@ -1,6 +1,6 @@
 import type { Page, Section } from '../../../config/types';
 import { LIMITS } from '../../../config/types';
-import { useT } from '../../../hooks/useHa';
+import { useEntity, useT } from '../../../hooks/useHa';
 import { copyOf, move, newId, replaceAt } from '../../../lib/editing';
 import Icon from '../../base/icon/Icon';
 import HaButton from '../ha/HaButton';
@@ -10,7 +10,25 @@ import { StyledRow } from '../fields.styled';
 import { StyledFieldset, StyledList } from '../editor.styled';
 import { ScreenTitle, type ScreenProps } from './common';
 
-const emptySection = (): Section => ({ id: newId(), name: '', icon: '', status: [], columns: 2, rows: 2, square: true, tiles: [] });
+const emptySection = (): Section => ({
+  id: newId(),
+  name: '',
+  icon: '',
+  status: [],
+  status_icons: {},
+  columns: 2,
+  rows: 2,
+  square: true,
+  tiles: [],
+});
+
+/** A header reading's own icon, named after the reading it is for. */
+const StatusIconField: React.FC<{ entity: string; value: string; onChange: (icon: string) => void }> = ({ entity, value, onChange }) => {
+  const t = useT();
+  const state = useEntity(entity);
+  const name = (state?.attributes.friendly_name as string | undefined) ?? entity;
+  return <IconField label={t('status_icon', { name })} hint={t('status_icon_hint')} value={value} onChange={onChange} />;
+};
 
 const emptyPage = (): Page => ({ id: newId(), columns: [75, 25], rows: [50, 50], sections: [] });
 
@@ -207,6 +225,14 @@ export const SectionScreen: React.FC<ScreenProps & { page: number; section: numb
           domains={['sensor', 'binary_sensor']}
           onChange={status => set({ status })}
         />
+        {section.status.map(entity => (
+          <StatusIconField
+            key={entity}
+            entity={entity}
+            value={section.status_icons?.[entity] ?? ''}
+            onChange={icon => set({ status_icons: { ...section.status_icons, [entity]: icon } })}
+          />
+        ))}
       </StyledFieldset>
       <StyledFieldset>
         <h3>{t('grid')}</h3>

@@ -1,4 +1,4 @@
-import type { SidebarConfig } from '../../../config/types';
+import type { SidebarConfig, SystemButton } from '../../../config/types';
 import { LIMITS } from '../../../config/types';
 import { useT } from '../../../hooks/useHa';
 import { SIDEBAR_PARTS, type SidebarPart } from '../../../lib/editorNav';
@@ -8,6 +8,9 @@ import { CheckField, EntityField, EntityListField, NumberField, SelectField, Tex
 import { StyledRow } from '../fields.styled';
 import { StyledFieldset } from '../editor.styled';
 import NamedEntityList from './NamedEntityList';
+import BatteriesOptions from '../BatteriesOptions';
+import { BATTERY_DEFAULTS } from '../../../lib/batteries';
+import { newId } from '../../../lib/editing';
 import { ScreenTitle, type ScreenProps } from './common';
 
 /** What can switch a mode on: a helper, a switch, or a template's binary sensor. */
@@ -316,6 +319,33 @@ const SidebarScreen: React.FC<ScreenProps & { part: SidebarPart }> = ({ draft, u
             addLabel={t('add_statistic')}
             onChange={system => change({ ...value, system })}
           />
+          <StyledFieldset>
+            <h3>{t('system_buttons')}</h3>
+            <p>{t('system_buttons_hint')}</p>
+            <NamedEntityList<SystemButton>
+              items={value.system_buttons ?? []}
+              max={LIMITS.systemButtons}
+              domains={['button', 'input_button', 'script', 'scene', 'automation', 'switch', 'input_boolean']}
+              addLabel={t('add_system_button')}
+              create={() => ({ id: newId(), entity: '', name: '', icon: '', confirm: false })}
+              extra={(button, patch) => (
+                <CheckField
+                  label={t('system_button_confirm_option')}
+                  hint={t('system_button_confirm_option_hint')}
+                  value={button.confirm}
+                  onChange={confirm => patch({ confirm })}
+                />
+              )}
+              onChange={system_buttons => change({ ...value, system_buttons })}
+            />
+          </StyledFieldset>
+        </>
+      );
+    case 'batteries':
+      return (
+        <>
+          {title}
+          <BatteriesOptions value={value.batteries ?? BATTERY_DEFAULTS} onChange={batteries => change({ ...value, batteries })} />
         </>
       );
   }

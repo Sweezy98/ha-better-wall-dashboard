@@ -357,3 +357,69 @@ def test_a_work_location_is_kept_for_the_map_and_empty_by_default() -> None:
         {"sidebar": {"travel": {"work_zone": "zone.work", "work_address": "Main St 1"}}}
     )["sidebar"]["travel"]
     assert (set_["work_zone"], set_["work_address"]) == ("zone.work", "Main St 1")
+
+
+def test_system_buttons_are_kept_to_twelve_each_with_its_confirmation() -> None:
+    plain = model.normalize_dashboard({})["sidebar"]
+    assert plain["system_buttons"] == []
+    raw = [{"entity": "script.restart", "name": "Restart", "confirm": True}] + [
+        {"entity": "button.x"}
+    ] * 20
+    buttons = model.normalize_dashboard({"sidebar": {"system_buttons": raw}})[
+        "sidebar"
+    ]["system_buttons"]
+    assert len(buttons) == model.MAX_SYSTEM_BUTTONS
+    assert buttons[0]["entity"] == "script.restart"
+    assert buttons[0]["confirm"] is True
+    assert buttons[1]["confirm"] is False
+
+
+def test_batteries_are_off_until_switched_on_and_their_threshold_bounded() -> None:
+    plain = model.normalize_dashboard({})["sidebar"]["batteries"]
+    assert plain == {
+        "enabled": False,
+        "hide_when_ok": False,
+        "only_critical": False,
+        "threshold": 20,
+        "hidden": [],
+    }
+    set_ = model.normalize_dashboard(
+        {
+            "sidebar": {
+                "batteries": {
+                    "enabled": True,
+                    "only_critical": True,
+                    "threshold": 300,
+                    "hidden": ["sensor.phone_battery", "not an entity"],
+                }
+            }
+        }
+    )["sidebar"]["batteries"]
+    assert set_["enabled"] and set_["only_critical"] and not set_["hide_when_ok"]
+    assert set_["threshold"] == 90
+    assert set_["hidden"] == ["sensor.phone_battery"]
+
+
+def test_a_readings_own_icon_is_kept_by_its_entity_and_only_for_a_reading_shown() -> (
+    None
+):
+    section = model.normalize_dashboard(
+        {
+            "pages": [
+                {
+                    "sections": [
+                        {
+                            "status": ["sensor.alarm", "not an entity", "sensor.co2"],
+                            "status_icons": {
+                                "sensor.alarm": "mdi:alarm",
+                                "sensor.gone": "mdi:ghost",
+                                "sensor.co2": 5,
+                            },
+                        }
+                    ]
+                }
+            ]
+        }
+    )["pages"][0]["sections"][0]
+    assert section["status"] == ["sensor.alarm", "sensor.co2"]
+    assert section["status_icons"] == {"sensor.alarm": "mdi:alarm"}

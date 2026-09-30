@@ -12,6 +12,7 @@ export const SIDEBAR_PARTS = [
   { part: 'climate', icon: 'mdi:home-thermometer-outline', label: 'room_climate' },
   { part: 'persons', icon: 'mdi:account-multiple-outline', label: 'persons' },
   { part: 'openings', icon: 'mdi:window-open-variant', label: 'openings' },
+  { part: 'batteries', icon: 'mdi:battery-high', label: 'batteries' },
   { part: 'travel', icon: 'mdi:car-clock', label: 'travel_time' },
   { part: 'quick', icon: 'mdi:gesture-tap-button', label: 'quick_actions' },
   { part: 'calendar', icon: 'mdi:calendar-month-outline', label: 'calendar' },

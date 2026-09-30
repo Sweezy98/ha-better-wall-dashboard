@@ -4,6 +4,7 @@ import SidebarHeader from './header/SidebarHeader';
 import RoomClimate from './climate/RoomClimate';
 import Persons from './persons/Persons';
 import Openings from './openings/Openings';
+import Batteries from './batteries/Batteries';
 import TravelTime from './travel/TravelTime';
 import QuickActions from './quickActions/QuickActions';
 import CalendarAgenda from './calendar/CalendarAgenda';
@@ -31,6 +32,9 @@ const Sidebar: React.FC = () => {
           </StyledArea>
           <StyledArea $area='openings' data-area='openings'>
             <Openings entities={sidebar.openings} view={sidebar.openings_view} />
+          </StyledArea>
+          <StyledArea $area='batteries' data-area='batteries'>
+            <Batteries config={sidebar.batteries} />
           </StyledArea>
           <StyledArea $area='travel' data-area='travel'>
             <TravelTime config={sidebar.travel} />

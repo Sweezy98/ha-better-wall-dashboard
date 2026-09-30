@@ -5,6 +5,7 @@
  * Pure, so the rules test without Home Assistant.
  */
 import { parseLayout, type SpeakerLayout } from './speakers';
+import { runService } from './actions';
 import { SOFAS, type Sofa } from './room';
 
 /** Home Assistant's MediaPlayerEntityFeature bits. */
@@ -194,10 +195,8 @@ export type ServiceCall = { domain: string; service: string; data?: Record<strin
 /** What pressing a preset calls, in order: a player that is off is switched on first. */
 export function presetCalls(preset: MediaPreset, player: PlayerLike | undefined): ServiceCall[] {
   if (preset.kind === 'run') {
-    const domain = preset.entity.split('.')[0];
-    if (domain === 'button' || domain === 'input_button') return [{ domain, service: 'press' }];
-    if (domain === 'script' || domain === 'scene') return [{ domain, service: 'turn_on' }];
-    return [{ domain: 'homeassistant', service: 'turn_on' }];
+    const [domain, service] = runService(preset.entity);
+    return [{ domain, service }];
   }
   const wake: ServiceCall[] = playerOn(player) ? [] : [{ domain: 'media_player', service: 'turn_on' }];
   if (preset.kind === 'app') {

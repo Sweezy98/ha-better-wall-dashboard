@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import styled, { keyframes, useTheme } from 'styled-components';
 import { u } from '../../themes/default.theme';
-import type { NamedEntity, SidebarConfig } from '../../config/types';
+import type { NamedEntity, SidebarConfig, SystemButton } from '../../config/types';
 import Popup from '../base/popup/Popup';
 import GraphCard from '../base/graphCard/GraphCard';
 import Bubble from '../base/bubble/Bubble';
 import HistoryPopup from './HistoryPopup';
-import { useConnection, useEntity, useLanguage, usePrecision, useT } from '../../hooks/useHa';
+import { domainIcon, useCallService, useConnection, useEntity, useLanguage, usePrecision, useT } from '../../hooks/useHa';
+import { runService } from '../../lib/actions';
 import { useDashboardContext } from '../../config/DashboardProvider';
 import { formatMeasurement } from '../../lib/format';
 import { loadedFingerprint, reloadDashboard } from '../../lib/reload';
@@ -108,6 +109,54 @@ const Stat: React.FC<{ stat: NamedEntity; color: string }> = ({ stat, color }) =
   );
 };
 
+/** The popup's buttons, two to a row, as the sidebar's quick actions. */
+const StyledButtons = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(${u(15)}, 1fr));
+  gap: ${u(0.6)};
+`;
+
+/** How long a button that asks for a second tap waits for it. */
+const CONFIRM_MS = 4000;
+
+/**
+ * One of the popup's buttons: pressed at once, or -- for a restart, say --
+ * only on a second tap within a few seconds, so a brush against the tablet
+ * does not restart the house.
+ */
+const SystemButtonBubble: React.FC<{ button: SystemButton }> = ({ button }) => {
+  const t = useT();
+  const theme = useTheme();
+  const entity = useEntity(button.entity);
+  const callService = useCallService();
+  const [asking, setAsking] = useState(false);
+  useEffect(() => {
+    if (!asking) return;
+    const timer = window.setTimeout(() => setAsking(false), CONFIRM_MS);
+    return () => window.clearTimeout(timer);
+  }, [asking]);
+  const name = button.name || (entity?.attributes.friendly_name as string | undefined) || button.entity;
+  return (
+    <Bubble
+      name={name}
+      state={asking ? t('system_button_confirm') : entity ? undefined : t('not_found')}
+      icon={button.icon || (entity?.attributes.icon as string | undefined) || domainIcon(button.entity)}
+      iconColor={asking ? theme.colors.warm : undefined}
+      lit={asking}
+      onClick={() => {
+        if (!entity) return;
+        if (button.confirm && !asking) {
+          setAsking(true);
+          return;
+        }
+        setAsking(false);
+        const [domain, service] = runService(button.entity);
+        void callService(domain, service, undefined, { entity_id: button.entity });
+      }}
+    />
+  );
+};
+
 interface Version {
   app: string;
   version: string;
@@ -131,6 +180,7 @@ const SettingsContent: React.FC<{ config: SidebarConfig }> = ({ config }) => {
 
   const outdated = Boolean(loaded && version && version.app !== loaded);
   const stats = config.system.filter(stat => stat.entity);
+  const buttons = (config.system_buttons ?? []).filter(button => button.entity);
 
   const reload = async () => {
     // The newest entry, by the fingerprint the integration reports -- the
@@ -156,6 +206,17 @@ const SettingsContent: React.FC<{ config: SidebarConfig }> = ({ config }) => {
               <Stat key={stat.id} stat={stat} color={theme.colors[COLORS[index % COLORS.length]]} />
             ))}
           </StyledStats>
+        </StyledSection>
+      )}
+
+      {buttons.length > 0 && (
+        <StyledSection>
+          <h3>{t('system_buttons')}</h3>
+          <StyledButtons>
+            {buttons.map(button => (
+              <SystemButtonBubble key={button.id} button={button} />
+            ))}
+          </StyledButtons>
         </StyledSection>
       )}
 

@@ -455,13 +455,14 @@ export const EntityField: React.FC<Base<string> & { domains?: string[]; integrat
 };
 
 /** Several entities, in order: Home Assistant's multi-entity picker, which reorders by dragging. */
-export const EntityListField: React.FC<Base<string[]> & { domains?: string[]; max?: number }> = ({
+export const EntityListField: React.FC<Base<string[]> & { domains?: string[]; max?: number; include?: string[] }> = ({
   label,
   hint,
   value,
   onChange,
   domains,
   max,
+  include,
 }) => {
   const ha = useHaControls();
   const t = useT();
@@ -470,7 +471,7 @@ export const EntityListField: React.FC<Base<string[]> & { domains?: string[]; ma
   if (ha) {
     return (
       <HaSelector
-        selector={entitySelector(domains, { multiple: true, reorder: true })}
+        selector={entitySelector(domains, { multiple: true, reorder: true }, undefined, include)}
         value={value}
         label={label}
         helper={hint}

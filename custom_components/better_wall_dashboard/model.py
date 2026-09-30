@@ -47,6 +47,7 @@ MAX_RULES: Final = 6
 MAX_BUTTONS: Final = 5
 MAX_SECTION_STATUS: Final = 2
 MAX_SYSTEM_STATS: Final = 8
+MAX_SYSTEM_BUTTONS: Final = 12
 MAX_LIST: Final = 32
 MAX_CALENDAR_DAYS: Final = 14
 MAX_TEXT: Final = 200
@@ -191,13 +192,22 @@ def _section(raw: Any, assign: Callable[[Any], str]) -> dict:
     raw = _dict(raw)
     columns = _int(raw.get("columns"), 2, 1, MAX_SECTION_CELLS)
     rows = _int(raw.get("rows"), 2, 1, MAX_SECTION_CELLS)
+    status = _entities(raw.get("status"), MAX_SECTION_STATUS)
+    icons = _dict(raw.get("status_icons"))
     return {
         "id": assign(raw.get("id")),
         "name": _text(raw.get("name")),
         "icon": _text(raw.get("icon"), "", 64),
         # Zero to two readings drawn at the right of the header, after the
         # separator line.
-        "status": _entities(raw.get("status"), MAX_SECTION_STATUS),
+        "status": status,
+        # Added later: an icon of one's own for a reading, by its entity --
+        # not by position, which a reading dropped would shift onto another.
+        "status_icons": {
+            entity: _text(icons.get(entity), "", 64)
+            for entity in status
+            if _text(icons.get(entity), "", 64)
+        },
         "columns": columns,
         "rows": rows,
         # Square cells, sized to the smaller of width and height, so a 1x1
@@ -314,6 +324,19 @@ def _quick_actions(raw: Any, assign: Callable[[Any], str]) -> list:
     ]
 
 
+def _system_buttons(raw: Any, assign: Callable[[Any], str]) -> list:
+    """The settings popup's buttons: named entities, each pressed with or without a second tap."""
+    if not isinstance(raw, list):
+        return []
+    return [
+        {
+            **_named_entity(item, assign),
+            "confirm": _bool(_dict(item).get("confirm"), False),
+        }
+        for item in raw[:MAX_SYSTEM_BUTTONS]
+    ]
+
+
 def _named_entities(raw: Any, assign: Callable[[Any], str], limit: int) -> list:
     if not isinstance(raw, list):
         return []
@@ -388,6 +411,7 @@ def _sidebar(raw: Any, assign: Callable[[Any], str]) -> dict:
     wifi = _dict(raw.get("guest_wifi"))
     climate = _dict(raw.get("climate"))
     openings_view = _dict(raw.get("openings_view"))
+    batteries = _dict(raw.get("batteries"))
     travel = _dict(raw.get("travel"))
     calendar = _dict(raw.get("calendar"))
     weather = _dict(raw.get("weather"))
@@ -467,6 +491,20 @@ def _sidebar(raw: Any, assign: Callable[[Any], str]) -> dict:
             "prefixes": _prefixes(notifications),
         },
         "system": _named_entities(raw.get("system"), assign, MAX_SYSTEM_STATS),
+        # Added later: buttons in the settings popup, a restart or letting
+        # devices join the Zigbee network; `confirm` asks for a second tap.
+        "system_buttons": _system_buttons(raw.get("system_buttons"), assign),
+        # Added later: every battery Home Assistant has, found rather than
+        # listed, so one added tomorrow shows too -- all but those hidden.
+        # Off until switched on: a new row on every tablet after an update
+        # would be a surprise.
+        "batteries": {
+            "enabled": _bool(batteries.get("enabled"), False),
+            "hide_when_ok": _bool(batteries.get("hide_when_ok"), False),
+            "only_critical": _bool(batteries.get("only_critical"), False),
+            "threshold": _int(batteries.get("threshold"), 20, 5, 90),
+            "hidden": _entities(batteries.get("hidden")),
+        },
     }
 
 
