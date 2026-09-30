@@ -25,7 +25,6 @@ import {
   winding,
   type Box,
   type Bounds,
-  type Limb,
   type Camera,
   type Point2,
   type Point3,
@@ -120,25 +119,11 @@ const StyledRoom = styled.figure`
   }
 
   /* Not the lines' own width here: a limb's stroke is its thickness, and scales with the room. */
-  .person .limb,
-  .person .outline {
+  .person .limb {
     vector-effect: none;
     stroke-linecap: round;
-  }
-
-  /* Well lighter than the sofa, so one sitting on it stands out. */
-  .person .limb {
+    /* Well lighter than the sofa, so one sitting on it stands out. */
     stroke: #8596ad;
-  }
-
-  .person .outline {
-    stroke: #2c3644;
-  }
-
-  .person circle {
-    stroke: #2c3644;
-    stroke-width: 1.6;
-    vector-effect: none;
   }
 
   .screen polygon {
@@ -233,8 +218,6 @@ interface Drawn {
   key: string;
   depth: number;
   bounds: Bounds;
-  /** A limb of the listener, ordered against another by its own shape. */
-  limb?: Limb;
   element: React.ReactNode;
 }
 
@@ -303,16 +286,12 @@ function screenLength(point: Point3, metres: number, camera: Camera): number {
   return Math.hypot(ex - x, ey - y);
 }
 
-/** The dark edge round each limb, in the drawing's units. */
-const LIMB_EDGE = 1.6;
-
 /**
- * The listener, seated: each limb a rounded stroke as thick as it is, edged
- * in a darker line, and a shaded head. Painted far to near with the room,
- * the edge of the nearer limb is what shows where an arm crosses the body or
- * one leg the other -- in one colour alone they ran into a single shape. No
- * lighter stripe along each: at a joint neither limb is the nearer, and a
- * stripe showed through the limb before it whenever the view turned.
+ * The listener, seated: each limb a rounded stroke as thick as it is, all in
+ * one colour, and a shaded head. One colour because two limbs meeting at a
+ * joint have no one right order: a lighter stripe along each showed through
+ * the limb before it whenever the view turned. Each limb is still painted in
+ * turn with the room, so the sofa hides what it should.
  */
 function figure(camera: Camera, id: string): Drawn[] {
   const { limbs, head, headRadius } = listenerFigure();
@@ -324,10 +303,8 @@ function figure(camera: Camera, id: string): Drawn[] {
       key: `limb-${index}`,
       depth: project(middle, camera).depth,
       bounds: limbBounds(limb),
-      limb,
       element: (
         <g className='person'>
-          <line className='outline' x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} strokeWidth={width + LIMB_EDGE * 2} />
           <line className='limb' x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} strokeWidth={width} />
         </g>
       ),
@@ -338,7 +315,6 @@ function figure(camera: Camera, id: string): Drawn[] {
     key: 'head',
     depth: project(head, camera).depth,
     bounds: sphereBounds(head, headRadius),
-    limb: { from: head, to: head, radius: headRadius },
     element: (
       <g className='person'>
         <circle cx={cx} cy={cy} r={screenLength(head, headRadius, camera)} fill={`url(#${id}-head)`} />
@@ -529,7 +505,7 @@ const SpeakerRoom: React.FC<SpeakerRoomProps> = ({ layout, sofa, states, on, lis
   }
   // Painted from the far end forwards, so the nearer covers the further (see paintOrder).
   const painted = paintOrder(
-    drawn.map(item => ({ bounds: item.bounds, depth: item.depth, rect: screenRect(item.bounds, camera), limb: item.limb })),
+    drawn.map(item => ({ bounds: item.bounds, depth: item.depth, rect: screenRect(item.bounds, camera) })),
     camera.eye
   ).map(index => drawn[index]);
 
