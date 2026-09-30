@@ -1,5 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { FACES, LISTENER, ROOM, clampView, corners, project, roomCamera, sofaBoxes, speakerBoxes, winding } from './room';
+import {
+  FACES,
+  LISTENER,
+  ROOM,
+  boxBounds,
+  clampView,
+  corners,
+  paintOrder,
+  paintsBefore,
+  project,
+  roomCamera,
+  sofaBoxes,
+  speakerBoxes,
+  winding,
+} from './room';
 import { parseLayout } from './speakers';
 
 const camera = roomCamera();
@@ -66,5 +80,35 @@ describe('view', () => {
     const inside = moved.eye[0] > -ROOM.width / 2 && moved.eye[0] < ROOM.width / 2 && moved.eye[1] > 0 && moved.eye[1] < ROOM.depth;
     expect(inside).toBe(false);
     expect(moved.eye[2]).toBeGreaterThan(0);
+  });
+});
+
+describe('painting order', () => {
+  it('paints the far side of a parting plane first, whatever the centres say', () => {
+    // A long low seat, and a tall back behind it: seen from behind, the back is nearer.
+    const seat = boxBounds({ x: 0, y: 4, z: 0, w: 3, d: 0.8, h: 0.3 });
+    const back = boxBounds({ x: 0, y: 4.5, z: 0, w: 3, d: 0.2, h: 0.8 });
+    expect(paintsBefore(seat, back, [0, 8, 5])).toBe(true);
+    expect(paintsBefore(seat, back, [0, -3, 5])).toBe(false);
+    expect(paintsBefore(seat, seat, [0, 8, 5])).toBeNull();
+    const rect: [number, number, number, number] = [0, 0, 10, 10];
+    expect(
+      paintOrder(
+        [
+          { bounds: back, depth: 1, rect },
+          { bounds: seat, depth: 9, rect },
+        ],
+        [0, -3, 5]
+      )
+    ).toEqual([0, 1]);
+    expect(
+      paintOrder(
+        [
+          { bounds: back, depth: 9, rect },
+          { bounds: seat, depth: 1, rect },
+        ],
+        [0, 8, 5]
+      )
+    ).toEqual([1, 0]);
   });
 });

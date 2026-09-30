@@ -332,3 +332,78 @@ export function winding(points: Point2[]): number {
   }
   return -area;
 }
+
+// --- painting order ------------------------------------------------------------
+
+/** An axis-aligned box round something, in the room's metres. */
+export interface Bounds {
+  min: Point3;
+  max: Point3;
+}
+
+function boundsOf(points: Point3[], pad = 0): Bounds {
+  const min = [0, 1, 2].map(axis => Math.min(...points.map(point => point[axis])) - pad) as Point3;
+  const max = [0, 1, 2].map(axis => Math.max(...points.map(point => point[axis])) + pad) as Point3;
+  return { min, max };
+}
+
+export const boxBounds = (b: Box): Bounds => boundsOf(corners(b));
+export const limbBounds = (limb: Limb): Bounds => boundsOf([limb.from, limb.to], limb.radius);
+export const sphereBounds = (centre: Point3, radius: number): Bounds => boundsOf([centre], radius);
+
+/**
+ * Whether `a` must be painted before `b`: true or false where a plane across
+ * one of the room's axes parts them -- the one on the camera's side of it is
+ * the nearer -- and null where none does.
+ */
+export function paintsBefore(a: Bounds, b: Bounds, eye: Point3): boolean | null {
+  for (const axis of [0, 1, 2]) {
+    if (a.max[axis] <= b.min[axis] + 1e-6) return eye[axis] >= a.max[axis];
+    if (b.max[axis] <= a.min[axis] + 1e-6) return eye[axis] <= b.max[axis];
+  }
+  return null;
+}
+
+/**
+ * The order to paint things in, far to near.
+ *
+ * Not by the distance of their centres alone: a long, low part -- a sofa's
+ * seat -- has its centre nearer than the end of a back rest it passes under,
+ * and was painted over it, so turning the view made the sofa fold into
+ * itself. Where a plane parts two things whose outlines overlap on screen,
+ * the far one goes first; the distance only settles the rest, and breaks the
+ * rare loop.
+ */
+export function paintOrder(items: { bounds: Bounds; depth: number; rect: [number, number, number, number] }[], eye: Point3): number[] {
+  const count = items.length;
+  const after: number[][] = items.map(() => []);
+  const waiting = new Array<number>(count).fill(0);
+  const overlap = (p: number[], q: number[]) => p[0] < q[2] && q[0] < p[2] && p[1] < q[3] && q[1] < p[3];
+  for (let i = 0; i < count; i++) {
+    for (let j = i + 1; j < count; j++) {
+      if (!overlap(items[i].rect, items[j].rect)) continue;
+      const first = paintsBefore(items[i].bounds, items[j].bounds, eye);
+      if (first === null) continue;
+      const [from, to] = first ? [i, j] : [j, i];
+      after[from].push(to);
+      waiting[to] += 1;
+    }
+  }
+  const order: number[] = [];
+  const done = new Array<boolean>(count).fill(false);
+  while (order.length < count) {
+    // The farthest of those nothing else must precede -- or, in a loop, the farthest left.
+    let next = -1;
+    for (let i = 0; i < count; i++) {
+      if (done[i] || waiting[i] > 0) continue;
+      if (next < 0 || items[i].depth > items[next].depth) next = i;
+    }
+    if (next < 0) {
+      for (let i = 0; i < count; i++) if (!done[i] && (next < 0 || items[i].depth > items[next].depth)) next = i;
+    }
+    done[next] = true;
+    order.push(next);
+    for (const to of after[next]) waiting[to] -= 1;
+  }
+  return order;
+}

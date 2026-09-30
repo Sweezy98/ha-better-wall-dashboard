@@ -13,6 +13,10 @@ import {
   corners,
   driverRing,
   listenerFigure,
+  boxBounds,
+  limbBounds,
+  paintOrder,
+  sphereBounds,
   project,
   roomCamera,
   sofaBoxes,
@@ -20,6 +24,7 @@ import {
   speakerKind,
   winding,
   type Box,
+  type Bounds,
   type Camera,
   type Point2,
   type Point3,
@@ -220,7 +225,63 @@ const depthOf = (b: Box, camera: Camera) => project([b.x, b.y, b.z + b.h / 2], c
 interface Drawn {
   key: string;
   depth: number;
+  bounds: Bounds;
   element: React.ReactNode;
+}
+
+/** Where something's bounds come out on screen, as a rectangle to test overlaps with. */
+function screenRect(bounds: Bounds, camera: Camera): [number, number, number, number] {
+  const points = [0, 1, 2, 3, 4, 5, 6, 7].map(i =>
+    onScreen([(i & 1 ? bounds.max : bounds.min)[0], (i & 2 ? bounds.max : bounds.min)[1], (i & 4 ? bounds.max : bounds.min)[2]], camera)
+  );
+  const xs = points.map(p => p[0]);
+  const ys = points.map(p => p[1]);
+  return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+}
+
+/** Cells the screen's picture is drawn in, across and down. */
+const PICTURE_CELLS = [6, 4];
+
+/**
+ * A picture laid flat on the screen's face, in perspective: in cells, each
+ * mapped onto its own piece of the face. One mapping for the whole of it is a
+ * parallelogram, and the face a trapezoid -- turned, the picture slid off it.
+ * In the face's own metres, so the picture fits at its own proportions.
+ */
+function screenPicture(href: string, camera: Camera, id: string): React.ReactNode {
+  const { x, y, z, w, d, h } = SCREEN;
+  // Seen from the seat: across from its left edge, down from its top.
+  const at = (u: number, v: number) => onScreen([x - w / 2 + u, y + d / 2, z + h - v], camera);
+  const [across, down] = PICTURE_CELLS;
+  const cells: React.ReactNode[] = [];
+  for (let i = 0; i < across; i++) {
+    for (let j = 0; j < down; j++) {
+      const [u0, u1, v0, v1] = [(i * w) / across, ((i + 1) * w) / across, (j * h) / down, ((j + 1) * h) / down];
+      const [topLeft, topRight, bottomLeft] = [at(u0, v0), at(u1, v0), at(u0, v1)];
+      const a = [(topRight[0] - topLeft[0]) / (u1 - u0), (topRight[1] - topLeft[1]) / (u1 - u0)];
+      const c = [(bottomLeft[0] - topLeft[0]) / (v1 - v0), (bottomLeft[1] - topLeft[1]) / (v1 - v0)];
+      const matrix = [a[0], a[1], c[0], c[1], topLeft[0] - a[0] * u0 - c[0] * v0, topLeft[1] - a[1] * u0 - c[1] * v0];
+      // A hair wider than the cell, so no seam shows between them.
+      const pad = 0.004;
+      cells.push(
+        <g key={`${i}-${j}`} transform={`matrix(${matrix.join(' ')})`}>
+          <clipPath id={`${id}-cell-${i}-${j}`}>
+            <rect x={u0 - pad} y={v0 - pad} width={u1 - u0 + pad * 2} height={v1 - v0 + pad * 2} />
+          </clipPath>
+          <image
+            href={href}
+            x={w * 0.03}
+            y={h * 0.05}
+            width={w * 0.94}
+            height={h * 0.9}
+            preserveAspectRatio='xMidYMid meet'
+            clipPath={`url(#${id}-cell-${i}-${j})`}
+          />
+        </g>
+      );
+    }
+  }
+  return cells;
 }
 
 /** How big a length in metres comes out on screen at a point, as the camera sees it across. */
@@ -248,6 +309,7 @@ function figure(camera: Camera, id: string): Drawn[] {
     return {
       key: `limb-${index}`,
       depth: project(middle, camera).depth,
+      bounds: limbBounds(limb),
       element: (
         <g className='person'>
           <line className='limb' x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} strokeWidth={width} />
@@ -260,6 +322,7 @@ function figure(camera: Camera, id: string): Drawn[] {
   parts.push({
     key: 'head',
     depth: project(head, camera).depth,
+    bounds: sphereBounds(head, headRadius),
     element: (
       <g className='person'>
         <circle cx={cx} cy={cy} r={screenLength(head, headRadius, camera)} fill={`url(#${id}-head)`} />
@@ -392,47 +455,22 @@ const SpeakerRoom: React.FC<SpeakerRoomProps> = ({ layout, sofa, states, on, lis
   for (let y = 0.6; y < D - 0.01; y += 0.6) grid.push([at([-W, y, 0]), at([W, y, 0])]);
 
   const drawn: Drawn[] = [];
-  const solid = (key: string, className: string, b: Box, extra?: Record<string, unknown>) =>
+  const solid = (key: string, className: string, b: Box, extra?: Record<string, unknown>, over?: React.ReactNode) => {
+    const { faces, shown } = boxFaces(b, camera);
     drawn.push({
       key,
       depth: depthOf(b, camera),
+      bounds: boxBounds(b),
       element: (
         <g className={`solid ${className}`} {...extra}>
-          {boxFaces(b, camera).faces}
+          {faces}
+          {shown.has('back') && over}
         </g>
       ),
     });
-  solid('screen', 'screen', SCREEN, { 'data-on': on });
-  if (screen) {
-    // On the screen's face, mapped from its top left, top right and bottom
-    // left corners: the parallelogram they span is all but exact for a face
-    // this flat, and a picture needs no more.
-    const face = FACES.find(item => item.name === 'back')!;
-    const points = corners(SCREEN).map(point => onScreen(point, camera));
-    const [bottomLeft, , topRight, topLeft] = face.corners.map(index => points[index]);
-    if (winding(face.corners.map(index => points[index])) > 0) {
-      // In the screen's own metres, so the picture fits it at its own proportions.
-      const [w, h] = [SCREEN.w, SCREEN.h];
-      const matrix = [
-        (topRight[0] - topLeft[0]) / w,
-        (topRight[1] - topLeft[1]) / w,
-        (bottomLeft[0] - topLeft[0]) / h,
-        (bottomLeft[1] - topLeft[1]) / h,
-        topLeft[0],
-        topLeft[1],
-      ];
-      drawn.push({
-        key: 'picture',
-        // Just in front of the screen it lies on.
-        depth: depthOf(SCREEN, camera) - 0.001,
-        element: (
-          <g transform={`matrix(${matrix.join(' ')})`}>
-            <image href={screen} x={w * 0.03} y={h * 0.05} width={w * 0.94} height={h * 0.9} preserveAspectRatio='xMidYMid meet' />
-          </g>
-        ),
-      });
-    }
-  }
+  };
+  // The picture as part of the screen it lies on, so nothing can come between them.
+  solid('screen', 'screen', SCREEN, { 'data-on': on }, screen ? screenPicture(screen, camera, id) : null);
   sofaBoxes(sofa).forEach((part, index) => solid(`sofa-${index}`, 'sofa', part));
   if (listener) drawn.push(...figure(camera, id));
 
@@ -457,6 +495,8 @@ const SpeakerRoom: React.FC<SpeakerRoomProps> = ({ layout, sofa, states, on, lis
     drawn.push({
       key: channel,
       depth: depthOf(place, camera),
+      // Down to the floor for one on a stand, so the stand is painted with it.
+      bounds: standing ? { ...boxBounds(place), min: [boxBounds(place).min[0], boxBounds(place).min[1], 0] } : boxBounds(place),
       element: (
         <g
           className='speaker'
@@ -471,8 +511,11 @@ const SpeakerRoom: React.FC<SpeakerRoomProps> = ({ layout, sofa, states, on, lis
       ),
     });
   }
-  // Painted from the far end forwards, so the nearer covers the further.
-  drawn.sort((a, b) => b.depth - a.depth);
+  // Painted from the far end forwards, so the nearer covers the further (see paintOrder).
+  const painted = paintOrder(
+    drawn.map(item => ({ bounds: item.bounds, depth: item.depth, rect: screenRect(item.bounds, camera) })),
+    camera.eye
+  ).map(index => drawn[index]);
 
   return (
     <StyledRoom data-movable={movable}>
@@ -517,7 +560,7 @@ const SpeakerRoom: React.FC<SpeakerRoomProps> = ({ layout, sofa, states, on, lis
         {walls}
         {camera.eye[2] > 0 && grid.map(([a, b], index) => <line key={index} className='grid' x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} />)}
         {pools}
-        {drawn.map(item => (
+        {painted.map(item => (
           <g key={item.key}>{item.element}</g>
         ))}
       </svg>
