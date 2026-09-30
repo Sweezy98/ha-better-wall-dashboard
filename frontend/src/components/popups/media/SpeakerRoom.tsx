@@ -25,6 +25,7 @@ import {
   winding,
   type Box,
   type Bounds,
+  type Limb,
   type Camera,
   type Point2,
   type Point3,
@@ -232,6 +233,8 @@ interface Drawn {
   key: string;
   depth: number;
   bounds: Bounds;
+  /** A limb of the listener, ordered against another by its own shape. */
+  limb?: Limb;
   element: React.ReactNode;
 }
 
@@ -321,6 +324,7 @@ function figure(camera: Camera, id: string): Drawn[] {
       key: `limb-${index}`,
       depth: project(middle, camera).depth,
       bounds: limbBounds(limb),
+      limb,
       element: (
         <g className='person'>
           <line className='outline' x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} strokeWidth={width + LIMB_EDGE * 2} />
@@ -334,6 +338,7 @@ function figure(camera: Camera, id: string): Drawn[] {
     key: 'head',
     depth: project(head, camera).depth,
     bounds: sphereBounds(head, headRadius),
+    limb: { from: head, to: head, radius: headRadius },
     element: (
       <g className='person'>
         <circle cx={cx} cy={cy} r={screenLength(head, headRadius, camera)} fill={`url(#${id}-head)`} />
@@ -524,7 +529,7 @@ const SpeakerRoom: React.FC<SpeakerRoomProps> = ({ layout, sofa, states, on, lis
   }
   // Painted from the far end forwards, so the nearer covers the further (see paintOrder).
   const painted = paintOrder(
-    drawn.map(item => ({ bounds: item.bounds, depth: item.depth, rect: screenRect(item.bounds, camera) })),
+    drawn.map(item => ({ bounds: item.bounds, depth: item.depth, rect: screenRect(item.bounds, camera), limb: item.limb })),
     camera.eye
   ).map(index => drawn[index]);
 

@@ -328,8 +328,9 @@ export function listenerFigure(): { limbs: Limb[]; head: Point3; headRadius: num
       limb([x - 0.19, y + 0.18, 0.93], [x + 0.19, y + 0.18, 0.93], 0.075),
       limb([x, y + 0.17, 0.96], [x, y + 0.15, 1.06], 0.05),
       // Arms: down at the sides, the forearms on the lap.
-      ...both(side => limb([x + side * 0.22, y + 0.18, 0.9], [x + side * 0.25, y + 0.08, 0.66], 0.055)),
-      ...both(side => limb([x + side * 0.25, y + 0.06, 0.64], [x + side * 0.16, y - 0.2, 0.63], 0.048)),
+      // The forearms rest just clear of the thighs, so a plane parts them (see paintsBeforeLimb).
+      ...both(side => limb([x + side * 0.22, y + 0.18, 0.9], [x + side * 0.25, y + 0.08, 0.68], 0.055)),
+      ...both(side => limb([x + side * 0.25, y + 0.06, 0.67], [x + side * 0.16, y - 0.2, 0.68], 0.048)),
     ],
     head: [x, y + 0.13, 1.17],
     headRadius: 0.1,
@@ -385,6 +386,56 @@ export function paintsBefore(a: Bounds, b: Bounds, eye: Point3): boolean | null 
   return null;
 }
 
+type V3 = [number, number, number];
+const minus = (a: V3, b: V3): V3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const times = (a: V3, k: number): V3 => [a[0] * k, a[1] * k, a[2] * k];
+const plus = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const dot3 = (a: V3, b: V3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
+
+/** The closest points of two segments. */
+export function closestPoints(p1: V3, q1: V3, p2: V3, q2: V3): [V3, V3] {
+  const d1 = minus(q1, p1);
+  const d2 = minus(q2, p2);
+  const r = minus(p1, p2);
+  const [a, e, f] = [dot3(d1, d1), dot3(d2, d2), dot3(d2, r)];
+  let s = 0;
+  let t = 0;
+  if (a <= 1e-9 && e <= 1e-9) return [p1, p2];
+  if (a <= 1e-9) t = clamp01(f / e);
+  else {
+    const c = dot3(d1, r);
+    if (e <= 1e-9) s = clamp01(-c / a);
+    else {
+      const b = dot3(d1, d2);
+      const denominator = a * e - b * b;
+      s = denominator > 1e-9 ? clamp01((b * f - c * e) / denominator) : 0;
+      t = (b * s + f) / e;
+      if (t < 0) [t, s] = [0, clamp01(-c / a)];
+      else if (t > 1) [t, s] = [1, clamp01((b - c) / a)];
+    }
+  }
+  return [plus(p1, times(d1, s)), plus(p2, times(d2, t))];
+}
+
+/**
+ * Whether limb `a` must be painted before limb `b`: where they do not touch,
+ * the plane square to the line between their closest points parts them, and
+ * the one on the camera's side is the nearer. Null where they touch -- a
+ * knee, an elbow -- and either order looks the same. Their boxes are no use
+ * here: a forearm resting on a thigh shares the thigh's, and by the distance
+ * of their middles the forearm went under the thigh it lay on.
+ */
+export function paintsBeforeLimb(a: Limb, b: Limb, eye: Point3): boolean | null {
+  const [pa, pb] = closestPoints(a.from, a.to, b.from, b.to);
+  const between = minus(pb, pa);
+  const distance = Math.hypot(...between);
+  if (distance <= a.radius + b.radius) return null;
+  const middle = plus(pa, times(between, (a.radius + (distance - a.radius - b.radius) / 2) / distance));
+  // The eye on b's side of the plane: b is the nearer, a goes first.
+  return dot3(minus(eye, middle), between) > 0;
+}
+
 /**
  * The order to paint things in, far to near.
  *
@@ -395,7 +446,10 @@ export function paintsBefore(a: Bounds, b: Bounds, eye: Point3): boolean | null 
  * the far one goes first; the distance only settles the rest, and breaks the
  * rare loop.
  */
-export function paintOrder(items: { bounds: Bounds; depth: number; rect: [number, number, number, number] }[], eye: Point3): number[] {
+export function paintOrder(
+  items: { bounds: Bounds; depth: number; rect: [number, number, number, number]; limb?: Limb }[],
+  eye: Point3
+): number[] {
   const count = items.length;
   const after: number[][] = items.map(() => []);
   const waiting = new Array<number>(count).fill(0);
@@ -403,7 +457,9 @@ export function paintOrder(items: { bounds: Bounds; depth: number; rect: [number
   for (let i = 0; i < count; i++) {
     for (let j = i + 1; j < count; j++) {
       if (!overlap(items[i].rect, items[j].rect)) continue;
-      const first = paintsBefore(items[i].bounds, items[j].bounds, eye);
+      const [a, b] = [items[i], items[j]];
+      // Two limbs by their own shape; anything else by its box.
+      const first = a.limb && b.limb ? paintsBeforeLimb(a.limb, b.limb, eye) : paintsBefore(a.bounds, b.bounds, eye);
       if (first === null) continue;
       const [from, to] = first ? [i, j] : [j, i];
       after[from].push(to);

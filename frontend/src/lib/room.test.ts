@@ -10,12 +10,14 @@ import {
   clampView,
   corners,
   paintOrder,
+  paintsBeforeLimb,
   paintsBefore,
   project,
   roomCamera,
   sofaBoxes,
   speakerBoxes,
   winding,
+  type Point3,
 } from './room';
 import { parseLayout } from './speakers';
 
@@ -125,5 +127,22 @@ describe('listener', () => {
         expect(paintsBefore(sphereBounds(figure.head, figure.headRadius), boxBounds(part), [0, 9, 6])).not.toBeNull();
       }
     }
+  });
+});
+
+describe('limbs', () => {
+  it('parts two limbs that do not touch by the plane between them', () => {
+    const upper = { from: [0, 0, 1] as Point3, to: [1, 0, 1] as Point3, radius: 0.1 };
+    const lower = { from: [0, 0, 0] as Point3, to: [1, 0, 0] as Point3, radius: 0.1 };
+    expect(paintsBeforeLimb(lower, upper, [0.5, 0, 9])).toBe(true);
+    expect(paintsBeforeLimb(lower, upper, [0.5, 0, -9])).toBe(false);
+    expect(paintsBeforeLimb(lower, { ...upper, from: [0, 0, 0.1] as Point3 }, [0.5, 0, 9])).toBeNull();
+  });
+
+  it("keeps the listener's limbs that are not joined apart, forearms clear of the thighs", () => {
+    const { limbs } = listenerFigure();
+    const [thighs, forearms] = [limbs.slice(0, 2), limbs.slice(-2)];
+    for (const forearm of forearms) for (const thigh of thighs) expect(paintsBeforeLimb(forearm, thigh, [0, 0, 5])).not.toBeNull();
+    expect(paintsBeforeLimb(thighs[0], thighs[1], [3, 4, 2])).not.toBeNull();
   });
 });
