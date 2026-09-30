@@ -93,8 +93,8 @@ export type Sofa = (typeof SOFAS)[number];
 /**
  * The seat, from parts that do not overlap -- overlapping boxes painted in
  * the wrong order made ragged edges: a back from the floor up, the seat with
- * its cushions, an arm at each end -- and for an L, a chaise running forward
- * on one side in place of that arm, as long as the seat is deep.
+ * its cushions, an arm at each end -- and for an L, a second seat running
+ * forward on one side, with a back of its own, in place of that arm.
  */
 export function sofaBoxes(sofa: Sofa): Box[] {
   if (sofa === 'none') return [];
@@ -120,12 +120,15 @@ export function sofaBoxes(sofa: Sofa): Box[] {
     ];
   }
   const chaiseEnd = left + 0.86;
+  // The extension has a back of its own along its outer side, as a corner sofa does.
+  const side = left + 0.2;
   const l = [
     ...parts,
     span(chaiseEnd, right - arm, front, rear, 0, seat),
     ...cushions(chaiseEnd, right - arm, 2),
-    span(left, chaiseEnd, 2.45, rear, 0, seat),
-    span(left + 0.02, chaiseEnd - 0.02, 2.47, rear, seat, seat + cushion),
+    span(left, side, 2.45, rear, 0, 0.83),
+    span(side, chaiseEnd, 2.45, rear, 0, seat),
+    span(side + 0.02, chaiseEnd - 0.02, 2.47, rear, seat, seat + cushion),
   ];
   return sofa === 'l_right' ? l.map(mirror) : l;
 }
@@ -293,24 +296,28 @@ export interface Limb {
  * resting on the lap, legs down to the floor, as rounded limbs -- and a head.
  */
 export function listenerFigure(): { limbs: Limb[]; head: Point3; headRadius: number } {
-  const [x, y] = [LISTENER[0], LISTENER[1]];
+  // Seated clear of the sofa -- thighs just above the cushion, back just
+  // before the back rest, shins before the seat's edge -- so a plane parts
+  // each limb from each part of it, and turning the view cannot paint the
+  // sofa over the one sitting on it (see paintOrder).
+  const [x, y] = [LISTENER[0], LISTENER[1] - 0.04];
   const limb = (from: Point3, to: Point3, radius: number): Limb => ({ from, to, radius });
   const both = (make: (side: number) => Limb) => [make(-1), make(1)];
   return {
     limbs: [
       // Legs: thighs along the seat, shins down, feet forward.
-      ...both(side => limb([x + side * 0.1, y + 0.1, 0.5], [x + side * 0.12, y - 0.38, 0.52], 0.08)),
-      ...both(side => limb([x + side * 0.12, y - 0.4, 0.48], [x + side * 0.13, y - 0.46, 0.09], 0.06)),
-      ...both(side => limb([x + side * 0.13, y - 0.44, 0.04], [x + side * 0.14, y - 0.6, 0.04], 0.045)),
+      ...both(side => limb([x + side * 0.1, y + 0.1, 0.53], [x + side * 0.12, y - 0.34, 0.54], 0.08)),
+      ...both(side => limb([x + side * 0.12, y - 0.4, 0.5], [x + side * 0.13, y - 0.44, 0.1], 0.06)),
+      ...both(side => limb([x + side * 0.13, y - 0.44, 0.045], [x + side * 0.14, y - 0.6, 0.045], 0.045)),
       // The body, leaning back a little, and the shoulders across it.
-      limb([x, y + 0.12, 0.55], [x, y + 0.18, 0.86], 0.16),
-      limb([x - 0.19, y + 0.18, 0.92], [x + 0.19, y + 0.18, 0.92], 0.075),
-      limb([x, y + 0.17, 0.95], [x, y + 0.15, 1.05], 0.05),
+      limb([x, y + 0.12, 0.6], [x, y + 0.18, 0.88], 0.16),
+      limb([x - 0.19, y + 0.18, 0.93], [x + 0.19, y + 0.18, 0.93], 0.075),
+      limb([x, y + 0.17, 0.96], [x, y + 0.15, 1.06], 0.05),
       // Arms: down at the sides, the forearms on the lap.
-      ...both(side => limb([x + side * 0.22, y + 0.18, 0.9], [x + side * 0.25, y + 0.08, 0.64], 0.055)),
-      ...both(side => limb([x + side * 0.25, y + 0.06, 0.62], [x + side * 0.16, y - 0.2, 0.6], 0.048)),
+      ...both(side => limb([x + side * 0.22, y + 0.18, 0.9], [x + side * 0.25, y + 0.08, 0.66], 0.055)),
+      ...both(side => limb([x + side * 0.25, y + 0.06, 0.64], [x + side * 0.16, y - 0.2, 0.63], 0.048)),
     ],
-    head: [x, y + 0.13, 1.16],
+    head: [x, y + 0.13, 1.17],
     headRadius: 0.1,
   };
 }

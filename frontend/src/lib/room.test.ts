@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   FACES,
   LISTENER,
+  listenerFigure,
+  limbBounds,
+  sphereBounds,
   ROOM,
   boxBounds,
   clampView,
@@ -110,5 +113,17 @@ describe('painting order', () => {
         [0, 8, 5]
       )
     ).toEqual([1, 0]);
+  });
+});
+
+describe('listener', () => {
+  it('sits clear of every part of the sofa, so a plane parts each limb from each part', () => {
+    const figure = listenerFigure();
+    for (const sofa of ['straight', 'l_left', 'l_right'] as const) {
+      for (const part of sofaBoxes(sofa)) {
+        for (const limb of figure.limbs) expect(paintsBefore(limbBounds(limb), boxBounds(part), [0, 9, 6])).not.toBeNull();
+        expect(paintsBefore(sphereBounds(figure.head, figure.headRadius), boxBounds(part), [0, 9, 6])).not.toBeNull();
+      }
+    }
   });
 });
