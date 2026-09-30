@@ -26,6 +26,11 @@ const AcpSigns: React.FC<{ entities: AcpEntities }> = ({ entities }) => {
           </span>
         );
       })}
+      {steering.sunAway && (
+        <span className='sign' data-tip={t('acp_sun_away')} aria-label={t('acp_sun_away')}>
+          <Icon icon='mdi:weather-sunny-off' />
+        </span>
+      )}
     </>
   );
 };

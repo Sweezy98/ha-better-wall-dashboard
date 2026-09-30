@@ -11,6 +11,11 @@ export interface Steering {
   manualUntil: Date | null;
   trace: TraceStep[];
   winner: string | undefined;
+  /**
+   * Automatic control is on, and nothing moves the cover only because the
+   * sun is not in front of the window: why it has not moved yet.
+   */
+  sunAway: boolean;
 }
 
 /** What Adaptive Cover Pro is doing with a cover, from its switches, sensors and decision trace. */
@@ -20,6 +25,7 @@ export function useSteering(entities: AcpEntities): Steering {
   const manual = useEntity(entities.manual);
   const decision = useEntity(entities.decision);
   const manualEnd = useEntity(entities.manualEnd);
+  const sunInFront = useEntity(entities.sunInFront);
   const on = (state: string | undefined) => (state === 'on' ? true : state === 'off' ? false : undefined);
   const trace = Array.isArray(decision?.attributes.trace) ? (decision.attributes.trace as TraceStep[]) : [];
   const input = {
@@ -39,5 +45,6 @@ export function useSteering(entities: AcpEntities): Steering {
     manualUntil: input.manual && Number.isFinite(until) ? new Date(until) : null,
     trace,
     winner: decision?.state,
+    sunAway: input.enabled !== false && input.automatic === true && !input.manual && sunInFront?.state === 'off',
   };
 }
