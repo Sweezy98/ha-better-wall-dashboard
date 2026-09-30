@@ -59,7 +59,7 @@ const TooltipLayer: React.FC = () => {
     };
     const show = (element: Element) => {
       const text = element.getAttribute('data-tip');
-      if (!text || !element.isConnected) return;
+      if (!text || !element.isConnected || !tip.isConnected) return;
       tip.textContent = text;
       if (tip.matches(':popover-open')) tip.hidePopover();
       tip.showPopover();

@@ -80,7 +80,9 @@ const Popup: React.FC<PopupProps> = ({
   useEffect(() => {
     const dialog = ref.current;
     if (!dialog) return;
-    if (open && !dialog.open) {
+    // Not while the panel is out of the page (a hidden tab): showModal()
+    // throws there. Put back, the mount opens what should be open.
+    if (open && !dialog.open && dialog.isConnected) {
       // The dialog takes the first focus itself, so its close button is not
       // drawn with a focus ring the moment it opens.
       dialog.setAttribute('autofocus', '');

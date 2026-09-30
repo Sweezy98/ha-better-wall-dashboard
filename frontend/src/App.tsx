@@ -13,6 +13,7 @@ import { Suspense } from 'react';
 import { lazyWithRetry } from './lazyWithRetry';
 import Splash from './components/base/splash/Splash';
 import TooltipLayer from './components/base/tooltip/TooltipLayer';
+import ErrorBoundary from './components/base/errorBoundary/ErrorBoundary';
 
 export interface AppProps {
   hassUrl: string;
@@ -32,15 +33,20 @@ const Content: React.FC = () => {
   const { mode } = useModeState();
   if (mode === 'editor') {
     return (
-      <Suspense fallback={<Splash />}>
-        <EditorPage />
-      </Suspense>
+      // No reload by itself here: somebody editing would lose their changes.
+      <ErrorBoundary key='editor' autoReload={false}>
+        <Suspense fallback={<Splash />}>
+          <EditorPage />
+        </Suspense>
+      </ErrorBoundary>
     );
   }
   return (
-    <DashboardProvider>
-      <Dashboard />
-    </DashboardProvider>
+    <ErrorBoundary key='dashboard' autoReload>
+      <DashboardProvider>
+        <Dashboard />
+      </DashboardProvider>
+    </ErrorBoundary>
   );
 };
 

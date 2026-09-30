@@ -110,8 +110,18 @@ const ConnectionLost: React.FC<{ since: number }> = ({ since }) => {
   useEffect(() => {
     const element = ref.current;
     if (!element?.showPopover) return;
-    element.showPopover();
+    // Only while it is in the page, and again whenever it is put back:
+    // Home Assistant takes the panel out of a tab hidden for five minutes,
+    // suspending the connection as it goes -- showPopover() on the detached
+    // overlay threw, the error took the whole app down, and the tab came
+    // back blank. Taken out, a popover closes; put back, it shows again.
+    const show = () => {
+      if (element.isConnected && !element.matches(':popover-open')) element.showPopover();
+    };
+    show();
+    const timer = window.setInterval(show, 500);
     return () => {
+      window.clearInterval(timer);
       if (element.matches(':popover-open')) element.hidePopover();
     };
   }, []);
