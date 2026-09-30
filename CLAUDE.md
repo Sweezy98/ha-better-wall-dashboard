@@ -552,6 +552,16 @@ says so on purpose.
 - Don't call `Date.now()` in render, or `setState` synchronously in an effect: the
   React hooks lint rejects both. Tick with a timer hook; derive state instead.
 
+### The README is the feature list
+
+- **`README.md` describes every feature the dashboard has**, grouped as the app is: sidebar,
+  pages, tiles, the media tile, the rest, the editor, and where each block's data comes from.
+  Any change a user could notice — a new tile, block, option or behaviour, or one that changes
+  or goes — updates the README **in the same commit**, before it is tagged. The release notes
+  come from commit subjects, the README is what someone reads before installing; both have to
+  be true. *Failure: the README still said "early, the device controls come next" three releases
+  after covers, lights and a media system had shipped.*
+
 ### Testing against a live instance
 
 - Keep a **local** HA (e.g. `hass -c <scratch>/ha-config` on port 18123) with the

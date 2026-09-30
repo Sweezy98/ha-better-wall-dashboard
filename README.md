@@ -14,61 +14,104 @@ Everything is configured from your desk, as an admin, in its own **Wall Dashboar
 a separate, admin-only sidebar entry with a live preview at your tablet's size — and stored
 inside Home Assistant. The tablet on the wall just shows it, and redraws the moment you save.
 
-> **Status: early.** The layout, the sidebar and the editor are here. The device controls for
-> the tiles (lights, shading, climate, media, appliances, vacuum …) come next, as components in
-> the tile library.
-
 ## What is on it
 
-**The sidebar**, top to bottom:
+### The sidebar
 
-- **Clock and date**, in your locale.
-- **Status icons** that appear only while their mode is on — absence, guests, night — and the
-  **Wi-Fi symbol**, which shows the tablet's own signal strength and opens the **guest Wi-Fi QR
-  code**.
+Top to bottom, each block drawn only once it is configured:
+
+- **Clock and date**, in your locale — digital, with or without seconds, or analog. Hold it for
+  three seconds to get Home Assistant's own sidebar back in kiosk mode.
+- **Status icons** that appear only while their mode is on — absence, guests, night, anything you
+  pick — and the **Wi-Fi symbol**, which shows the tablet's own signal strength and opens the
+  **guest Wi-Fi QR code**.
 - **Temperature and humidity** of the room the tablet hangs in, each with a day of history drawn
   the way [mini-graph-card] draws it. Tap either for the detailed history.
 - **People** and where they are: home, away, or the zone they are in.
-- **Open windows and doors**, counted, red when any are open. Tap for the list.
-- **Travel time to work**, from the Google Travel Time sensor, with the route on a map.
-- **Quick actions**: three to six toggles for modes like night or guests.
-- **Upcoming events** from your Home Assistant calendars.
+- **Open windows and doors**, counted, red when any are open; if you like, shown only while
+  something is open. Tap for the list — everything, or only what is open.
+- **Batteries**: every battery Home Assistant knows of, found by itself, so one added tomorrow
+  shows too. Counted when they run low (at a threshold you set), red then; if you like, shown
+  only while one is. Tap for the list, the emptiest first — or only those running out. Leave out
+  the ones you do not care about, such as a phone's.
+- **Travel time to work**, from the Google Travel Time sensor, with the route on a map to a work
+  location of your choice (a zone or an address).
+- **Quick actions**: up to six toggles for modes like night or guests, each shown only while its
+  **rules** hold — an entity's state or value, a time of day, day or night, someone home or not.
+- **Upcoming events** from your Home Assistant calendars, for as many days as you choose.
 - **Weather** with an animated icon, the temperature from your own outdoor sensor, and the
-  forecast behind a tap — with the moon's phase too, drawn as it is tonight, where Home
-  Assistant's Moon integration is set up.
-- **Notifications** with an unread count, and **settings** with system statistics.
+  forecast behind a tap — with pressure, the moon's phase drawn as it is tonight (with Home
+  Assistant's Moon integration) and nearby lightning (with [Blitzortung]).
+- **Notifications** with an unread count, filtered by id prefix if you like.
+- **Settings**: system statistics with their graphs, up to twelve **actions** — restarting Home
+  Assistant, letting devices join the Zigbee network, any button, script or scene, the risky ones
+  asking for a second tap — and a **reload** that fetches a new version past the app's cache.
 
-**The pages** to the right swipe sideways — with a finger on the tablet, or by dragging with the
-mouse on a PC. Each page is a grid of up to four sections — 75/25
-across and 50/50 down by default — and each section has a header (icon, name, up to two readings)
-over a grid of tiles. Every 1×1 tile on the dashboard is the same size and a bigger tile is a whole
-multiple of it, so everything lines up. The cell takes the shape the screen has room for, but
-never more than 3:2, so tiles fill their section without being stretched.
+### The pages
 
-**Tiles** come from a library: an entity button, a sensor with its graph, and — where
-[Better Lighting] is installed — a **Better Lighting room**: switched by its icon, how it is lit
-and why (presence, night, by hand or automatically, the countdown to switching off), a brightness
-bar in the room's own colour, its scenes a step either way or all of them a tap away, back to
-adaptive in one press, and one extra button of your choice.
+The pages to the right swipe sideways — with a finger on the tablet, or by dragging with the
+mouse on a PC. Each page is a grid of up to four sections — 75/25 across and 50/50 down by
+default — and each section has a header (icon, name, up to two readings, each with an icon of
+its own if you like; a moment such as a phone's next alarm reads as *In 18 hours*) over a grid of
+tiles. Every 1×1 tile on the dashboard is the same size and a bigger tile is a whole multiple of
+it, so everything lines up.
 
-A **cover** tile shows where a blind stands, with up, stop and down. Where
-[Adaptive Cover Pro] steers it, the **Adaptive Cover Pro** tile adds what is steering it — auto,
-solar tracking, cloudy, climate, a hand's hold with its end time and a press to give it back —
-and a double tap opens the details: target and position, its switches, each step of its
-decision, the window and the sun (a sky compass and today's sun curve), today's plan and the
-last day's history.
+### The tiles
 
-A **double tap on a light** — an entity tile or a room — opens it up close: on and off,
-brightness, colour and white in one tall control, colour presets (hidden per tile if you like),
-and each lamp of a group or room on its own row. A tap gives the tile a little bounce, and a
-tile that is on wears a shine in its own colour.
+Picked from a library in the editor; each offers only the entities it can work with.
 
-The background is a picture — the built-in one, your own, or one from the media library — or a
-plain colour.
+- **Entity button** — switches, toggles, runs or presses one thing. A **double tap on a light**
+  opens it up close: on and off, brightness, colour and white in one tall control, colour presets
+  (hidden per tile if you like), and each lamp of a group on its own row.
+- **Sensor with graph** — a reading with its last day; a tap shows the history.
+- **Cover** — where a blind stands, with up, stop and down (stop only while it moves, if your
+  cover reports that), up to four favourite positions, and its position to drag on a double tap.
+- **Better Lighting room** — where [Better Lighting] is installed: switched by its icon, how it is
+  lit and why (presence, night, by hand or automatically, the countdown to switching off), a
+  brightness bar in the room's own colour, its scenes a step either way or all a tap away, back to
+  adaptive in one press, and one extra button of your choice.
+- **Adaptive Cover Pro** — a cover [Adaptive Cover Pro] steers: signs of what is steering it
+  (auto, solar tracking, cloudy, climate, a hand's hold with its end time and a press to give it
+  back; the sun not on the window yet, so nothing needed doing). A double tap opens the details:
+  target and position, the cover's controls and presets, its switches, each step of its decision,
+  the window and the sun on a sky compass, today's plan and the last day as charts to touch for
+  their values, and the activity log.
+- **Media player** — see [below](#the-media-player-tile).
 
-**The button bar** along the bottom: up to five buttons, each opening a popup of tiles. The first
-is the **Intercom** — where the doorbell's camera, talk-back, door opener and canned spoken replies
-are going, opening by itself when somebody rings.
+A tap gives the button pressed a little bounce, and a tile that is on wears a shine in its own
+colour. Hover anything with more to say for a tooltip.
+
+### The media player tile
+
+What plays, with its album art behind it: the source, title and artist, where it is in the track,
+previous / play / next, a **power button** for the device of your choice and the **volume** of the
+device of your choice — in dB for a Denon receiver. It shows whichever of its players has the most
+going on, so the streaming box that plays wins over the receiver it plays through.
+
+A **double tap** opens the whole system on one screen:
+
+- **Sources** along the top: what plays now, and presets that switch to another — a receiver's
+  input, an app on an Android TV box, or a script or scene.
+- **Audio**: the sound mode, the source's channels (*7.1*), decoder, input signal and sample rate
+  where the receiver reports them; the **volume** with quieter, mute and louder; **night mode**.
+- **The room in 3D**: your speakers — any layout from 2.0 to 7.4.6 — where they stand, each aimed
+  at the seat, lit while the receiver plays through it: Atmos, DTS:X and the upmixers fill them
+  all, stereo the front pair, a plain decoder the source's own channels. A subwoofer whose outlet
+  is switched off is drawn switched off. Optionally with an L-shaped or straight sofa, a listener
+  on it, no walls, what is playing (or a picture of your own) on the screen, and turned, panned
+  and zoomed by hand.
+- **Devices and outlets**: the TV and the box with their power and what they show (*4K HDR*,
+  *HDMI 3*), and the outlets to switch, such as the subwoofers'.
+- **The player** along the foot: the track to drag, shuffle, repeat, previous, play, next, stop.
+
+### The rest
+
+- **The button bar** along the bottom: up to five buttons, each opening a popup of tiles.
+- **The background** is a picture — the built-in one, your own, or one from the media library —
+  or a plain colour, darkened and blurred as you like.
+- **It looks after itself on the wall.** While Home Assistant restarts it says so and reconnects
+  by itself; a tab left in the background comes back as it was; and should anything fail to draw,
+  it says so and reloads by itself a moment later.
 
 ## Several tablets, several dashboards
 
@@ -111,7 +154,8 @@ landscape or portrait — updating as you type. Nothing reaches the tablets unti
 
 - **General** — name, background image (e.g. `/local/wall.jpg`), how much to darken and blur it.
 - **Sidebar** — the entities for each block. Anything left empty simply is not drawn.
-- **Pages** — sections, their size in cells, their header readings, and their tiles.
+- **Pages** — sections, their size in cells, their header readings, and their tiles. **Add tile**
+  opens a picker of every tile type there is, each with what it is for.
 - **Buttons** — the bottom bar and what each popup contains.
 - **Users** — which dashboard each person sees, kiosk mode, start page.
 - **JSON** — the whole dashboard as stored, for copying between dashboards or bulk edits.
@@ -129,6 +173,30 @@ Save, and every tablet showing that dashboard updates immediately.
 | Calendar | Any `calendar.*` entities. |
 | Weather | A `weather.*` entity for the condition and forecast, and optionally your own outdoor temperature sensor. |
 | Notifications | Home Assistant's persistent notifications. An automation that runs `persistent_notification.create` shows up here; set an id prefix (e.g. `wall_`) to show only yours. |
+| Batteries | Found by themselves: every sensor of device class *battery* (a percentage) and every binary sensor of that class (on when low). |
+| Actions | Buttons, scripts, scenes, automations (triggered, not toggled) and switches. A restart is a script calling `homeassistant.restart`; Zigbee pairing is Zigbee2MQTT's *permit join* switch or a ZHA script. |
+
+### Setting up the media player tile
+
+An example: a receiver the sound goes through, a streaming box (Android TV / NVIDIA Shield) and a
+TV, all on HDMI-CEC.
+
+| Setting | What to choose |
+| --- | --- |
+| **Entity** | The receiver's media player — its volume, sound mode and its own streams (Tidal Connect, Bluetooth, HEOS). |
+| **Further players** | The box's Google Cast player first (it knows the title and the art), then its Android TV Remote player, then the TV. The tile shows whichever has the most going on. |
+| **Power button switches** | The box's Android TV Remote player: switching it on wakes the receiver and the TV by CEC. |
+| **Volume of** | The receiver. |
+| **Source presets** | *Choose an input* on the receiver for its own sources; *Open an app* on the box's Android TV Remote player with the app's package (`com.plexapp.android`, `com.google.android.youtube.tv`); *Choose an input* on the TV for its own apps. |
+| **Devices** | The TV and the box, each with a sensor for what it shows if you have one. |
+| **Outlets** | The subwoofers' switches, each ticked for the subwoofers it powers — so they are drawn switched off when they are. |
+| **Night mode** | A script or switch that sets the receiver's night settings and turns the subwoofers off. |
+| **Speakers in the room** | Your layout (e.g. 7 at ear height, 4 subwoofers, 4 height speakers) and your sofa. |
+
+For a Denon or Marantz receiver, Home Assistant's own [Denon AVR] integration gives the volume in
+dB and the sound mode, which is enough for Atmos, DTS:X, the upmixers and stereo. Which speakers a
+plain Dolby Digital or DTS source plays on needs its channels, which the [Denon AVR (HACS)]
+integration adds as sensors — the tile finds them on the receiver by itself.
 
 ### Privacy
 
@@ -199,3 +267,6 @@ MIT
 [Google Travel Time]: https://www.home-assistant.io/integrations/google_travel_time/
 [Better Lighting]: https://github.com/Sweezy98/ha-better-lighting
 [Adaptive Cover Pro]: https://github.com/jrhubott/adaptive-cover-pro
+[Blitzortung]: https://github.com/mrk-its/homeassistant-blitzortung
+[Denon AVR]: https://www.home-assistant.io/integrations/denonavr/
+[Denon AVR (HACS)]: https://github.com/LaserGuruGuy/denon_avr
