@@ -122,7 +122,8 @@ const StyledRoom = styled.figure`
   .person .limb {
     vector-effect: none;
     stroke-linecap: round;
-    stroke: #56657a;
+    /* Well lighter than the sofa, so one sitting on it stands out. */
+    stroke: #8596ad;
   }
 
   .screen polygon {
@@ -531,8 +532,8 @@ const SpeakerRoom: React.FC<SpeakerRoomProps> = ({ layout, sofa, states, on, lis
             <stop offset='1' stopColor='var(--lit)' stopOpacity='0' />
           </radialGradient>
           <radialGradient id={`${id}-head`} cx='0.38' cy='0.32' r='0.75'>
-            <stop offset='0' stopColor='#8394ab' />
-            <stop offset='1' stopColor='#3e4a5c' />
+            <stop offset='0' stopColor='#b4c2d4' />
+            <stop offset='1' stopColor='#7788a0' />
           </radialGradient>
           <linearGradient id={`${id}-screen`} x1='0' y1='0' x2='1' y2='1'>
             <stop offset='0' stopColor='#12314a' />

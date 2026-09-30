@@ -38,8 +38,9 @@ export function speakerBoxes(layout: SpeakerLayout): Partial<Record<Channel, Box
     SL: box(-1.8, 4.05, 0.95, 0.22, 0.26, 0.36),
     SR: box(1.8, 4.05, 0.95, 0.22, 0.26, 0.36),
     // Behind the sofa's corners.
-    SBL: box(-1.2, back - 0.3, 0.95, 0.26, 0.26, 0.4),
-    SBR: box(1.2, back - 0.3, 0.95, 0.26, 0.26, 0.4),
+    // Three-way bookshelves, a little taller than the other small ones.
+    SBL: box(-1.2, back - 0.3, 0.9, 0.28, 0.28, 0.52),
+    SBR: box(1.2, back - 0.3, 0.9, 0.28, 0.28, 0.52),
     FHL: box(-1.3, 0.13, 2.05, 0.24, 0.22, 0.32),
     FHR: box(1.3, 0.13, 2.05, 0.24, 0.22, 0.32),
     TML: box(-0.8, 2.9, ROOM.height - 0.08, 0.3, 0.3, 0.08),
@@ -141,12 +142,13 @@ export function sofaBoxes(sofa: Sofa): Box[] {
 
 export const SCREEN = box(0, 0.05, 0.95, 1.5, 0.06, 0.86);
 
-export type SpeakerKind = 'tower' | 'center' | 'sub' | 'ceiling' | 'bookshelf';
+export type SpeakerKind = 'tower' | 'center' | 'sub' | 'ceiling' | 'bookshelf' | 'threeWay';
 
 export function speakerKind(channel: Channel): SpeakerKind {
   if (channel === 'FL' || channel === 'FR') return 'tower';
   if (channel === 'C') return 'center';
   if (channel.startsWith('SW')) return 'sub';
+  if (channel === 'SBL' || channel === 'SBR') return 'threeWay';
   return channel === 'TML' || channel === 'TMR' ? 'ceiling' : 'bookshelf';
 }
 
@@ -161,6 +163,12 @@ export const DRIVERS: Record<SpeakerKind, [number, number, number][]> = {
   bookshelf: [
     [0.5, 0.8, 0.14],
     [0.5, 0.4, 0.32],
+  ],
+  // Tweeter, mid and woofer.
+  threeWay: [
+    [0.5, 0.87, 0.12],
+    [0.5, 0.67, 0.2],
+    [0.5, 0.33, 0.32],
   ],
   center: [
     [0.22, 0.5, 0.13],
