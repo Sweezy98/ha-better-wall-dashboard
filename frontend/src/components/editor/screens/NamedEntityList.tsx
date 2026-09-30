@@ -38,6 +38,8 @@ interface NamedEntityListProps<T extends NamedEntity> {
   withRules?: boolean;
   /** A new entry, for entries that carry more than a name and an icon. */
   create?: () => T;
+  /** Each entry with a name of its own; without, an icon alone -- a header reading. */
+  named?: boolean;
   /** An entry's own further fields, under its name and icon. */
   extra?: (item: T, set: (patch: Partial<T>) => void) => React.ReactNode;
   onChange: (items: T[]) => void;
@@ -54,6 +56,7 @@ function NamedEntityList<T extends NamedEntity & Pick<QuickAction, 'rules'>>({
   addLabel,
   withRules = false,
   create,
+  named = true,
   extra,
   onChange,
 }: NamedEntityListProps<T>) {
@@ -90,10 +93,24 @@ function NamedEntityList<T extends NamedEntity & Pick<QuickAction, 'rules'>>({
               domains={domains}
               onChange={entity => set(index, { entity } as Partial<T>)}
             />
-            <StyledRow>
-              <TextField label={t('name')} hint={t('name_hint')} value={item.name} onChange={name => set(index, { name } as Partial<T>)} />
-              <IconField label={t('icon')} value={item.icon} onChange={icon => set(index, { icon } as Partial<T>)} />
-            </StyledRow>
+            {named ? (
+              <StyledRow>
+                <TextField
+                  label={t('name')}
+                  hint={t('name_hint')}
+                  value={item.name}
+                  onChange={name => set(index, { name } as Partial<T>)}
+                />
+                <IconField label={t('icon')} value={item.icon} onChange={icon => set(index, { icon } as Partial<T>)} />
+              </StyledRow>
+            ) : (
+              <IconField
+                label={t('icon')}
+                hint={t('status_icon_hint')}
+                value={item.icon}
+                onChange={icon => set(index, { icon } as Partial<T>)}
+              />
+            )}
             {extra?.(item, patch => set(index, patch))}
             {withRules && <RulesEditor rules={item.rules ?? []} onChange={rules => set(index, { rules } as Partial<T>)} />}
           </div>

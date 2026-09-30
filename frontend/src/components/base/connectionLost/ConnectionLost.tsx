@@ -17,9 +17,10 @@ const breathe = keyframes`
   50% { opacity: 1; transform: scale(1); }
 `;
 
-const StyledOverlay = styled.div`
-  /* A popover in the top layer: over the dashboard and any popup open on it. */
-  &:popover-open {
+const StyledOverlay = styled.dialog`
+  /* A modal dialog, opened last: over the dashboard and any popup open on it,
+     and the one thing that takes a touch -- everything under it is inert. */
+  &[open] {
     position: fixed;
     inset: 0;
     width: 100%;
@@ -40,6 +41,10 @@ const StyledOverlay = styled.div`
     font-family: ${({ theme }) => theme.font};
     user-select: none;
     -webkit-user-select: none;
+  }
+
+  &::backdrop {
+    background: transparent;
   }
 
   .card {
@@ -104,30 +109,37 @@ function elapsed(ms: number): string {
  */
 const ConnectionLost: React.FC<{ since: number }> = ({ since }) => {
   const t = useT();
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDialogElement>(null);
   const now = useTick(1000);
 
   useEffect(() => {
-    const element = ref.current;
-    if (!element?.showPopover) return;
-    // Only while it is in the page, and again whenever it is put back:
-    // Home Assistant takes the panel out of a tab hidden for five minutes,
-    // suspending the connection as it goes -- showPopover() on the detached
-    // overlay threw, the error took the whole app down, and the tab came
-    // back blank. Taken out, a popover closes; put back, it shows again.
+    const dialog = ref.current;
+    if (!dialog) return;
+    // A modal dialog, not a popover: a popup already open is modal too, and
+    // left everything outside it -- a popover over it included -- inert, so
+    // the overlay showed while the popup under it still took every touch.
+    // Only while it is in the page, and again whenever it is put back: Home
+    // Assistant takes the panel out of a tab hidden for five minutes, and
+    // showModal() on the detached dialog threw, taking the whole app down.
     const show = () => {
-      if (element.isConnected && !element.matches(':popover-open')) element.showPopover();
+      if (dialog.isConnected && !dialog.open) dialog.showModal();
     };
     show();
     const timer = window.setInterval(show, 500);
     return () => {
       window.clearInterval(timer);
-      if (element.matches(':popover-open')) element.hidePopover();
+      if (dialog.open) dialog.close();
     };
   }, []);
 
   return (
-    <StyledOverlay ref={ref} popover='manual' role='alert' aria-live='assertive'>
+    <StyledOverlay
+      ref={ref}
+      role='alert'
+      aria-live='assertive'
+      // Not to be closed by hand: it goes when the connection is back.
+      onCancel={event => event.preventDefault()}
+    >
       <div className='card'>
         <span className='mark'>
           <svg viewBox='0 0 24 24' width='1em' height='1em' fill='currentColor' aria-hidden='true'>

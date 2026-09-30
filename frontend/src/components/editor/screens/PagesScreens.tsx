@@ -1,13 +1,14 @@
 import type { Page, Section } from '../../../config/types';
 import { LIMITS } from '../../../config/types';
-import { useEntity, useT } from '../../../hooks/useHa';
+import { useT } from '../../../hooks/useHa';
 import { copyOf, move, newId, replaceAt } from '../../../lib/editing';
 import Icon from '../../base/icon/Icon';
 import HaButton from '../ha/HaButton';
 import TileListEditor from '../TileListEditor';
-import { CheckField, EntityListField, IconField, ListControls, NumberField, TextField } from '../fields';
-import { StyledRow } from '../fields.styled';
+import { CheckField, IconField, ListControls, NumberField, TextField } from '../fields';
+import { StyledField, StyledRow } from '../fields.styled';
 import { StyledFieldset, StyledList } from '../editor.styled';
+import NamedEntityList from './NamedEntityList';
 import { ScreenTitle, type ScreenProps } from './common';
 
 const emptySection = (): Section => ({
@@ -21,14 +22,6 @@ const emptySection = (): Section => ({
   square: true,
   tiles: [],
 });
-
-/** A header reading's own icon, named after the reading it is for. */
-const StatusIconField: React.FC<{ entity: string; value: string; onChange: (icon: string) => void }> = ({ entity, value, onChange }) => {
-  const t = useT();
-  const state = useEntity(entity);
-  const name = (state?.attributes.friendly_name as string | undefined) ?? entity;
-  return <IconField label={t('status_icon', { name })} hint={t('status_icon_hint')} value={value} onChange={onChange} />;
-};
 
 const emptyPage = (): Page => ({ id: newId(), columns: [75, 25], rows: [50, 50], sections: [] });
 
@@ -218,21 +211,27 @@ export const SectionScreen: React.FC<ScreenProps & { page: number; section: numb
           <TextField label={t('name')} value={section.name} onChange={name => set({ name })} />
           <IconField label={t('icon')} value={section.icon} onChange={icon => set({ icon })} />
         </StyledRow>
-        <EntityListField
-          label={t('status_entities')}
-          value={section.status}
-          max={2}
+        <StyledField as='div'>
+          <span className='label'>{t('status_entities')}</span>
+        </StyledField>
+        <NamedEntityList
+          items={section.status.map((entity, position) => ({
+            id: `status-${position}`,
+            entity,
+            name: '',
+            icon: section.status_icons?.[entity] ?? '',
+          }))}
+          max={LIMITS.sectionStatus}
           domains={['sensor', 'binary_sensor']}
-          onChange={status => set({ status })}
+          addLabel={t('add_status')}
+          named={false}
+          onChange={items =>
+            set({
+              status: items.map(item => item.entity),
+              status_icons: Object.fromEntries(items.filter(item => item.entity && item.icon).map(item => [item.entity, item.icon])),
+            })
+          }
         />
-        {section.status.map(entity => (
-          <StatusIconField
-            key={entity}
-            entity={entity}
-            value={section.status_icons?.[entity] ?? ''}
-            onChange={icon => set({ status_icons: { ...section.status_icons, [entity]: icon } })}
-          />
-        ))}
       </StyledFieldset>
       <StyledFieldset>
         <h3>{t('grid')}</h3>

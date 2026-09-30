@@ -120,15 +120,21 @@ export function sofaBoxes(sofa: Sofa): Box[] {
     ];
   }
   const chaiseEnd = left + 0.86;
-  // The extension has a back of its own along its outer side, as a corner sofa does.
+  // The extension has a back of its own along its outer side, as a corner
+  // sofa does -- from the corner two thirds of the way, the end left open.
   const side = left + 0.2;
+  const sideBackEnd = 3.1;
   const l = [
     ...parts,
     span(chaiseEnd, right - arm, front, rear, 0, seat),
     ...cushions(chaiseEnd, right - arm, 2),
-    span(left, side, 2.45, rear, 0, 0.83),
-    span(side, chaiseEnd, 2.45, rear, 0, seat),
-    span(side + 0.02, chaiseEnd - 0.02, 2.47, rear, seat, seat + cushion),
+    span(left, side, sideBackEnd, rear, 0, 0.83),
+    // Its seat and cushion run the whole of it: behind the back rest's end
+    // narrower, past it the full width -- no gap where the back stops.
+    span(side, chaiseEnd, sideBackEnd, rear, 0, seat),
+    span(left, chaiseEnd, 2.45, sideBackEnd, 0, seat),
+    span(side + 0.02, chaiseEnd - 0.02, sideBackEnd, rear, seat, seat + cushion),
+    span(left + 0.02, chaiseEnd - 0.02, 2.47, sideBackEnd - 0.01, seat, seat + cushion),
   ];
   return sofa === 'l_right' ? l.map(mirror) : l;
 }
