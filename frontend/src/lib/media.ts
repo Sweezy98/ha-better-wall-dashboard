@@ -454,35 +454,61 @@ const BY_NAME = new Map([
 ]);
 
 /**
- * Brands' own logos, in the Simple Icons set ("si:"), for where it is
- * installed -- Material Design Icons dropped most brands. Only those the set
- * has: Disney+, ARD and ORF are in neither.
+ * Brands' own logos, for where an icon set that has them is installed --
+ * Material Design Icons dropped most brands: "custom-brand-icons" ("phu:")
+ * first, which has the most, then "Simple Icons" ("si:"). ORF is in neither.
  */
-const BRANDS: Record<string, string> = {
-  Tidal: 'si:tidal',
-  'Prime Video': 'si:primevideo',
-  'amazon prime video': 'si:primevideo',
-  Netflix: 'si:netflix',
-  YouTube: 'si:youtube',
-  'YouTube Music': 'si:youtubemusic',
-  Plex: 'si:plex',
-  Spotify: 'si:spotify',
-  Twitch: 'si:twitch',
-  Kodi: 'si:kodi',
-  Jellyfin: 'si:jellyfin',
-  Deezer: 'si:deezer',
-  'Apple TV': 'si:appletv',
+const BRANDS: Record<string, { phu?: string; si?: string }> = {
+  tidal: { phu: 'phu:tidal-logo', si: 'si:tidal' },
+  'prime video': { phu: 'phu:prime-video', si: 'si:primevideo' },
+  'amazon prime video': { phu: 'phu:prime-video', si: 'si:primevideo' },
+  'disney+': { phu: 'phu:disney-plus' },
+  netflix: { phu: 'phu:netflix', si: 'si:netflix' },
+  youtube: { phu: 'phu:youtube', si: 'si:youtube' },
+  'youtube music': { phu: 'phu:youtube-music', si: 'si:youtubemusic' },
+  'youtube kids': { phu: 'phu:youtube-kids' },
+  'youtube tv': { phu: 'phu:youtube-tv' },
+  plex: { phu: 'phu:plex', si: 'si:plex' },
+  spotify: { phu: 'phu:spotify', si: 'si:spotify' },
+  twitch: { phu: 'phu:twitch', si: 'si:twitch' },
+  kodi: { phu: 'phu:kodi', si: 'si:kodi' },
+  jellyfin: { phu: 'phu:jellyfin', si: 'si:jellyfin' },
+  emby: { phu: 'phu:emby' },
+  deezer: { phu: 'phu:deezer-logo', si: 'si:deezer' },
+  'apple tv': { phu: 'phu:apple-tv', si: 'si:appletv' },
+  'amazon music': { phu: 'phu:amazon-music' },
+  'steam link': { phu: 'phu:steam' },
+  'geforce now': { phu: 'phu:nvidia-geforce' },
+  chromecast: { phu: 'phu:chromecast' },
+  ard: { phu: 'phu:ARD' },
+  'ard mediathek': { phu: 'phu:ARD' },
+  zdf: { phu: 'phu:zdf' },
+  'zdf mediathek': { phu: 'phu:zdf' },
+  dazn: { phu: 'phu:dazn' },
+  'waipu.tv': { phu: 'phu:waiputv' },
+  magentatv: { phu: 'phu:magentatv' },
+  'rtl+': { phu: 'phu:rtl' },
+  wow: { phu: 'phu:wow' },
+  zattoo: { phu: 'phu:zattoo' },
+  max: { phu: 'phu:max' },
 };
 
 /**
  * An app's icon by its package or its name; undefined for one not known.
- * With `brands`, the brand's own logo where the Simple Icons set has it.
+ * Given the brand icon sets installed ("phu", "si"), the brand's own logo
+ * where one of them has it.
  */
-export function appIcon(idOrName: string | undefined, brands = false): string | undefined {
+export function appIcon(idOrName: string | undefined, sets: string[] = []): string | undefined {
   if (!idOrName) return undefined;
   const name = appName(idOrName);
-  const brand = brands ? (BRANDS[name] ?? BRANDS[name.toLowerCase()]) : undefined;
-  return brand ?? ANDROID_APPS[idOrName.toLowerCase()]?.icon ?? BY_NAME.get(name.toLowerCase());
+  const brand = BRANDS[name.toLowerCase()];
+  const logo =
+    brand &&
+    (['phu', 'si'] as const)
+      .filter(set => sets.includes(set))
+      .map(set => brand[set])
+      .find(Boolean);
+  return logo ?? ANDROID_APPS[idOrName.toLowerCase()]?.icon ?? BY_NAME.get(name.toLowerCase());
 }
 
 /** The apps known, for a picker: package, name and icon, by name. */
@@ -495,10 +521,10 @@ export function knownApps(): { id: string; name: string; icon: string }[] {
 }
 
 /** The icon for what a player is on, where the app is known. */
-export function playerAppIcon(player: PlayerLike | undefined, brands = false): string | undefined {
+export function playerAppIcon(player: PlayerLike | undefined, sets: string[] = []): string | undefined {
   const attributes = player?.attributes ?? {};
   const app = attributes.app_id ?? attributes.app_name ?? attributes.source;
-  return typeof app === 'string' ? appIcon(app, brands) : undefined;
+  return typeof app === 'string' ? appIcon(app, sets) : undefined;
 }
 
 /** What a player is on: the app, or else the input -- "Plex", "HDMI 3"; undefined for neither. */

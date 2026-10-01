@@ -3,7 +3,7 @@ import styled, { useTheme } from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import Bubble from '../../base/bubble/Bubble';
 import { domainIcon, useCallService, useEntity, useT } from '../../../hooks/useHa';
-import { hasIconSet } from '../../../lib/iconSets';
+import { brandIconSets } from '../../../lib/iconSets';
 import { appIcon, playerApp, playerAppIcon, presetActive, presetCalls, type MediaPreset } from '../../../lib/media';
 
 /** One row along the top; more presets than fit run on sideways. */
@@ -35,7 +35,7 @@ const Preset: React.FC<{ preset: MediaPreset }> = ({ preset }) => {
       state={(player?.attributes.friendly_name as string | undefined) ?? undefined}
       icon={
         preset.icon ||
-        (preset.kind !== 'run' ? appIcon(preset.value, hasIconSet('si')) : undefined) ||
+        (preset.kind !== 'run' ? appIcon(preset.value, brandIconSets()) : undefined) ||
         (player?.attributes.icon as string | undefined) ||
         domainIcon(preset.entity || 'media_player.x')
       }
@@ -66,7 +66,7 @@ const MediaSources: React.FC<{ activeId: string | undefined; presets: MediaPrese
         name={current?.name || name}
         state={t('media_current_source')}
         icon={
-          current?.icon || playerAppIcon(player, hasIconSet('si')) || (player?.attributes.icon as string | undefined) || 'mdi:play-network'
+          current?.icon || playerAppIcon(player, brandIconSets()) || (player?.attributes.icon as string | undefined) || 'mdi:play-network'
         }
         iconColor={theme.colors.accent}
         lit

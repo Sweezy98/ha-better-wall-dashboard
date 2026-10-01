@@ -165,10 +165,12 @@ describe('app icons', () => {
     expect(appIcon('com.netflix.ninja')).toBe('mdi:netflix');
     expect(appIcon('Netflix')).toBe('mdi:netflix');
     expect(appIcon('HDMI 2')).toBeUndefined();
-    expect(appIcon('com.aspiro.tidal', true)).toBe('si:tidal');
+    expect(appIcon('com.aspiro.tidal', ['si'])).toBe('si:tidal');
+    expect(appIcon('com.aspiro.tidal', ['si', 'phu'])).toBe('phu:tidal-logo');
     expect(appIcon('com.aspiro.tidal')).toBe('mdi:music-circle');
-    expect(appIcon('ORF ON')).toBe('mdi:television-classic');
-    expect(appIcon('Disney+', true)).toBe('mdi:movie-open');
+    expect(appIcon('ORF ON', ['phu'])).toBe('mdi:television-classic');
+    expect(appIcon('Disney+', ['si'])).toBe('mdi:movie-open');
+    expect(appIcon('Disney+', ['phu'])).toBe('phu:disney-plus');
     expect(knownApps().find(app => app.name === 'Plex')?.id).toBe('com.plexapp.android');
     expect(new Set(knownApps().map(app => app.name)).size).toBe(knownApps().length);
   });
