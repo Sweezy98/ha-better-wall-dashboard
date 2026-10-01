@@ -19,7 +19,7 @@ import { useTick } from '../../../hooks/useNow';
 import { ACP_BADGES, handlerBadge, shownSteps, type AcpEntities, type AcpRole } from '../../../lib/adaptiveCover';
 import { spans, type TimePoint } from '../../../lib/timeline';
 import { COVER_STATES } from '../../../lib/cover';
-import { formatNumber } from '../../../lib/format';
+import { formatNumber, missingState } from '../../../lib/format';
 import type { TranslationKey } from '../../../lib/i18n';
 
 /** The details, fewer to a row than the facts above: their values run longer. */
@@ -177,10 +177,11 @@ const Switch: React.FC<{ entityId: string; label: string; icon: string }> = ({ e
   const callService = useCallService();
   if (!entity) return null;
   const on = entity.state === 'on';
+  const missing = missingState(entity.state);
   return (
     <Bubble
       name={label}
-      state={on ? t('on') : t('off')}
+      state={missing ? t(missing) : on ? t('on') : t('off')}
       icon={icon}
       active={on}
       lit={on}

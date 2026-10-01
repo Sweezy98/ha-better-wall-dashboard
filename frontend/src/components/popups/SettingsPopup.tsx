@@ -12,7 +12,7 @@ import { kioskActive, toggleKioskPreview } from '../../panel/kiosk';
 import { useVersion } from '../../hooks/useVersion';
 import { useModeState } from '../../panel/mode';
 import { useDashboardContext } from '../../config/DashboardProvider';
-import { formatMeasurement } from '../../lib/format';
+import { formatMeasurement, missingState } from '../../lib/format';
 import { loadedFingerprint, reloadDashboard } from '../../lib/reload';
 import { getEntryUrl } from '../../panel/entry';
 
@@ -146,7 +146,19 @@ const SystemButtonBubble: React.FC<{ button: SystemButton }> = ({ button }) => {
   return (
     <Bubble
       name={name}
-      state={asking ? t('system_button_confirm') : !entity ? t('not_found') : switched ? (on ? t('on') : t('off')) : undefined}
+      state={
+        asking
+          ? t('system_button_confirm')
+          : !entity
+            ? t('not_found')
+            : missingState(entity.state)
+              ? t(missingState(entity.state)!)
+              : switched
+                ? on
+                  ? t('on')
+                  : t('off')
+                : undefined
+      }
       icon={button.icon || (entity?.attributes.icon as string | undefined) || domainIcon(button.entity)}
       iconColor={asking ? theme.colors.warm : on ? theme.colors.accent : undefined}
       active={!switched || on}

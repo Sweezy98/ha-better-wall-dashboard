@@ -1,4 +1,5 @@
 import { memo, useState } from 'react';
+import { missingState } from '../../../lib/format';
 import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import type { TileProps } from '../registry';
@@ -63,7 +64,15 @@ const EntityTile: React.FC<TileProps> = ({ tile }) => {
   const isLight = tile.entity.startsWith('light.');
   const active = entity ? ACTIVE.has(entity.state) : false;
   const glow = active ? lightColor(entity?.attributes as Parameters<typeof lightColor>[0]) : undefined;
-  const state = !entity ? t('not_found') : entity.state === 'on' ? t('on') : entity.state === 'off' ? t('off') : entity.state;
+  const state = !entity
+    ? t('not_found')
+    : entity.state === 'on'
+      ? t('on')
+      : entity.state === 'off'
+        ? t('off')
+        : missingState(entity.state)
+          ? t(missingState(entity.state)!)
+          : entity.state;
   const name = tile.name || (entity?.attributes.friendly_name as string) || tile.entity;
   const icon = tile.icon || (entity?.attributes.icon as string | undefined) || domainIcon(tile.entity);
   const tap = useTaps(

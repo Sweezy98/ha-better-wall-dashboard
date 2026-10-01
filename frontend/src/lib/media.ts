@@ -6,6 +6,7 @@
  */
 import { parseLayout, type SpeakerLayout } from './speakers';
 import { runService } from './actions';
+import { formatNumber } from './format';
 import { MOUNTS, SOFAS, type HeightMounts, type Mount, type Sofa } from './room';
 
 /** Home Assistant's MediaPlayerEntityFeature bits. */
@@ -340,11 +341,105 @@ export function mediaConfig(entity: string, options: Record<string, unknown>): M
   };
 }
 
+/**
+ * The Android TV apps people use most, by package: Android TV Remote reports
+ * the package itself ("com.google.android.backdrop") unless the app was named
+ * in its options. Names are the apps' own; nothing about anyone's house.
+ */
+const ANDROID_APPS: Record<string, string> = {
+  'com.google.android.backdrop': 'Ambient mode',
+  'com.google.android.tvlauncher': 'Home',
+  'com.google.android.leanbacklauncher': 'Home',
+  'com.google.android.apps.tv.launcherx': 'Home',
+  'com.google.android.youtube.tv': 'YouTube',
+  'com.google.android.youtube.tvmusic': 'YouTube Music',
+  'com.google.android.youtube.tvkids': 'YouTube Kids',
+  'com.google.android.videos': 'Google TV',
+  'com.google.android.apps.mediashell': 'Chromecast',
+  'com.netflix.ninja': 'Netflix',
+  'com.plexapp.android': 'Plex',
+  'com.disney.disneyplus': 'Disney+',
+  'com.amazon.amazonvideo.livingroom': 'Prime Video',
+  'com.apple.atve.androidtv.appletv': 'Apple TV',
+  'com.wbd.stream': 'Max',
+  'com.spotify.tv.android': 'Spotify',
+  'com.aspiro.tidal': 'TIDAL',
+  'com.aspiro.tidal.tv': 'TIDAL',
+  'deezer.android.tv': 'Deezer',
+  'org.xbmc.kodi': 'Kodi',
+  'com.nvidia.tegrazone3': 'NVIDIA Games',
+  'com.nvidia.geforcenow': 'GeForce NOW',
+  'com.valvesoftware.steamlink': 'Steam Link',
+  'com.android.tv.settings': 'Settings',
+  'com.android.vending': 'Play Store',
+  'com.google.android.tv': 'Live TV',
+  'com.zattoo.player': 'Zattoo',
+  'tv.twitch.android.app': 'Twitch',
+  'com.jellyfin.androidtv': 'Jellyfin',
+  'org.jellyfin.androidtv': 'Jellyfin',
+  'com.emby.embyatv': 'Emby',
+  'com.amazon.music.tv': 'Amazon Music',
+  'com.dazn': 'DAZN',
+  'de.zdf.android.zdfmediathek': 'ZDF',
+  'de.swr.ard.avp.mobile.android.amazon': 'ARD',
+  'com.sky.skyticket': 'WOW',
+  'de.sky.online': 'WOW',
+  'com.waipu.app.waipu': 'waipu.tv',
+  'com.rtl.rtlnow': 'RTL+',
+  'de.prosiebensat1digital.seventv': 'Joyn',
+  'com.joyn.app': 'Joyn',
+  'de.magentatv.android.tv': 'MagentaTV',
+  'com.google.android.apps.youtube.unplugged': 'YouTube TV',
+};
+
+/** Package parts that say nothing of the app: its maker's domain, the platform. */
+const GENERIC = new Set([
+  'com',
+  'org',
+  'net',
+  'de',
+  'tv',
+  'android',
+  'app',
+  'apps',
+  'google',
+  'mobile',
+  'androidtv',
+  'atv',
+  'player',
+  'leanback',
+]);
+
+/**
+ * An app's name as a person says it: from the list above, else a package
+ * read as best it can be -- "com.example.cinemabox" as "Cinemabox". A name
+ * that is no package ("Plex") is kept as it is.
+ */
+export function appName(id: string): string {
+  const known = ANDROID_APPS[id.toLowerCase()];
+  if (known) return known;
+  if (!/^[a-z][\w]*(\.[\w]+)+$/i.test(id)) return id;
+  const word = id
+    .split('.')
+    .reverse()
+    .find(part => !GENERIC.has(part.toLowerCase()) && part.length > 1);
+  return word ? word.charAt(0).toUpperCase() + word.slice(1) : id;
+}
+
 /** What a player is on: the app, or else the input -- "Plex", "HDMI 3"; undefined for neither. */
 export function playerApp(player: PlayerLike | undefined): string | undefined {
   const attributes = player?.attributes ?? {};
   const app = attributes.app_name ?? attributes.source;
-  return typeof app === 'string' && app ? app : undefined;
+  return typeof app === 'string' && app ? appName(app) : undefined;
+}
+
+/** A sample rate as the receiver writes it -- "48K", "44.1K", "48000" -- in kHz: "48 kHz". Anything else as it is. */
+export function formatSampleRate(text: string | undefined, language: string): string | undefined {
+  if (!text) return text;
+  const k = /^\s*(\d+(?:[.,]\d+)?)\s*k(?:hz)?\s*$/i.exec(text);
+  const hz = /^\s*(\d{4,6})\s*(?:hz)?\s*$/i.exec(text);
+  const value = k ? Number(k[1].replace(',', '.')) : hz ? Number(hz[1]) / 1000 : NaN;
+  return Number.isFinite(value) ? `${formatNumber(value, language, 1)} kHz` : text;
 }
 
 /** A speaker as loud as it is, or struck through while muted. */

@@ -14,6 +14,7 @@ import { domainIcon, toggleService, useCallService, useEntity, useT } from '../.
 import { useRoomSelect } from '../../../hooks/useBetterLighting';
 import { useTick } from '../../../hooks/useNow';
 import { useTaps } from '../../../hooks/useTaps';
+import { missingState } from '../../../lib/format';
 import LightPopup from '../../popups/light/LightPopup';
 import type { TranslationKey } from '../../../lib/i18n';
 import {
@@ -416,7 +417,7 @@ const BetterLightingTile: React.FC<TileProps> = ({ tile }) => {
             <span className='text'>
               <div className='name'>{name}</div>
               <div className='state'>
-                <span>{on ? `${percent} %` : t('off')}</span>
+                <span>{on ? `${percent} %` : missingState(entity?.state) ? t(missingState(entity?.state)!) : t('off')}</span>
                 {badges.map(badge => (
                   <span key={badge} className='badge' data-tip={t(BADGES[badge].label)} aria-label={t(BADGES[badge].label)}>
                     <Icon icon={BADGES[badge].icon} />

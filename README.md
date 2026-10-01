@@ -82,6 +82,7 @@ Picked from a library in the editor; each offers only the entities it can work w
   their values, and the activity log.
 - **Media player** — see [below](#the-media-player-tile).
 
+A device that cannot be reached says so — *unavailable* or *unknown* — rather than passing for off.
 A tap gives the button pressed a little bounce, and a tile that is on wears a shine in its own
 colour. Hover anything with more to say for a tooltip.
 
@@ -109,7 +110,7 @@ A **double tap** opens the whole system on one screen, with its own power button
   The screen lights up with the TV: what is playing, or a picture of your own, at the size and
   fill you choose (whole, cropped to fill, or stretched).
 - **Devices and outlets**: the TV and the box with their power and what they show (*4K HDR*,
-  *HDMI 3*), and the outlets to switch, such as the subwoofers'.
+  *HDMI 3*, the app by its name — *Netflix*, not `com.netflix.ninja`), and the outlets to switch, such as the subwoofers'.
 - **The player** along the foot: the track to drag, shuffle, repeat, previous, play, next, stop.
 
 ### The rest

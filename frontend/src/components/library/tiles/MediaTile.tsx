@@ -11,6 +11,7 @@ import MediaPopup from '../../popups/media/MediaPopup';
 import { toggleService, useCallService, useEntity, useT } from '../../../hooks/useHa';
 import { useActivePlayer, useAudio, usePlayerArt } from '../../../hooks/useMedia';
 import { useTaps } from '../../../hooks/useTaps';
+import { missingState } from '../../../lib/format';
 import { pressedInside } from '../../../lib/dom';
 import { mediaConfig, playerApp, playerOn, volumeIcon } from '../../../lib/media';
 
@@ -259,7 +260,8 @@ const MediaTile: React.FC<TileProps> = ({ tile }) => {
   const playerName = (attributes.friendly_name as string | undefined) ?? name;
   const mediaTitle = attributes.media_title as string | undefined;
   // The app above the title; with no title, the app is the title and the player above it.
-  const title = on ? (mediaTitle ?? app ?? t('media_nothing')) : main ? t('off') : t('not_found');
+  const missing = missingState(player?.state);
+  const title = on ? (mediaTitle ?? app ?? t('media_nothing')) : !main ? t('not_found') : missing ? t(missing) : t('off');
   const above = on ? (mediaTitle ? (app ?? playerName) : playerName) : name;
   const artist = (attributes.media_artist as string | undefined) ?? (attributes.media_series_title as string | undefined);
   const powerOn = playerOn(power) || power?.state === 'on';

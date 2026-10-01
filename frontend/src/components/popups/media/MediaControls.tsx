@@ -11,13 +11,12 @@ import { mediaFeatures, playerOn } from '../../../lib/media';
  * the middle, ringed in the accent while it plays. In full, as a player's
  * own "now playing" has them: shuffle and repeat, then previous, play,
  * next and stop -- the extras round, skipping a wide pill either side of
- * play, which stays in the middle whatever the player offers.
+ * play -- those the player offers, centred together; empty places kept for
+ * the rest pushed the ones shown off centre.
  */
 const StyledControls = styled.div<{ $large: boolean; $full: boolean }>`
-  display: ${({ $full }) => ($full ? 'grid' : 'flex')};
-  grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(0, 1.6fr) auto minmax(0, 1.6fr) repeat(2, minmax(0, 1fr));
+  display: flex;
   align-items: center;
-  justify-items: center;
   justify-content: center;
   gap: ${({ $large }) => u($large ? 0.8 : 0.5)};
 
@@ -38,8 +37,10 @@ const StyledControls = styled.div<{ $large: boolean; $full: boolean }>`
     opacity: 0.35;
   }
 
-  .skip {
-    width: 100%;
+  /* In full, the wide pills either side of play, as wide as there is room
+     for up to a measure: the buttons shown, whichever they are, centred together. */
+  &[data-full='true'] .skip {
+    flex: 0 1 ${u(12)};
   }
 
   .round {
@@ -94,8 +95,7 @@ const MediaControls: React.FC<MediaControlsProps> = ({ entityId, full = false, l
   const repeat = typeof attributes.repeat === 'string' ? attributes.repeat : 'off';
 
   return (
-    <StyledControls $large={large} $full={full} className={className}>
-      {full && !can.shuffle && <span />}
+    <StyledControls $large={large} $full={full} data-full={full} className={className}>
       {full && can.shuffle && (
         <button
           className='round'
@@ -109,7 +109,6 @@ const MediaControls: React.FC<MediaControlsProps> = ({ entityId, full = false, l
           <Icon icon={attributes.shuffle === true ? 'mdi:shuffle-variant' : 'mdi:shuffle-disabled'} />
         </button>
       )}
-      {full && !can.repeat && <span />}
       {full && can.repeat && (
         <button
           className='round'
@@ -151,7 +150,6 @@ const MediaControls: React.FC<MediaControlsProps> = ({ entityId, full = false, l
       >
         <Icon icon='mdi:skip-next' />
       </button>
-      {full && !can.stop && <span />}
       {full && can.stop && (
         <button
           type='button'
@@ -164,8 +162,6 @@ const MediaControls: React.FC<MediaControlsProps> = ({ entityId, full = false, l
           <Icon icon='mdi:stop' />
         </button>
       )}
-      {/* The seventh place, so play stays in the middle. */}
-      {full && <span />}
     </StyledControls>
   );
 };

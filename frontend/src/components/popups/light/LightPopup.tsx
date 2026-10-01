@@ -1,4 +1,5 @@
 import { memo, useState } from 'react';
+import { missingState } from '../../../lib/format';
 import styled, { useTheme } from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import { pressable } from '../../../themes/interaction';
@@ -149,7 +150,9 @@ const MemberLight: React.FC<{ entityId: string }> = memo(({ entityId }) => {
     <div className='member' data-on={on}>
       <Bubble
         name={(attributes.friendly_name as string | undefined) ?? entityId}
-        state={on ? (features.brightness ? `${percent} %` : t('on')) : t('off')}
+        state={
+          on ? (features.brightness ? `${percent} %` : t('on')) : missingState(entity.state) ? t(missingState(entity.state)!) : t('off')
+        }
         icon={(attributes.icon as string | undefined) ?? 'mdi:lightbulb'}
         active={on}
         lit={on}
@@ -344,7 +347,16 @@ const LightPopup: React.FC<LightPopupProps> = ({ open, onClose, entityId, name, 
   const features = lightFeatures(attributes.supported_color_modes as string[] | undefined);
   const percent = brightnessPercent(on, attributes.brightness as number | undefined);
   const glow = on ? (lightColor(attributes as Parameters<typeof lightColor>[0]) ?? theme.colors.warm) : undefined;
-  const subtitle = !entity ? t('not_found') : on ? (features.brightness ? `${t('on')} · ${percent} %` : t('on')) : t('off');
+  const missing = missingState(entity?.state);
+  const subtitle = !entity
+    ? t('not_found')
+    : on
+      ? features.brightness
+        ? `${t('on')} · ${percent} %`
+        : t('on')
+      : missing
+        ? t(missing)
+        : t('off');
   // Beside the controls, a group's or a room's lamps; a single light keeps to one column.
   const wide = ((attributes.entity_id as string[] | undefined) ?? []).some(id => id.startsWith('light.') && id !== entityId);
   return (

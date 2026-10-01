@@ -12,10 +12,11 @@ import MediaControls from './MediaControls';
 import MediaTimeline from './MediaTimeline';
 import VolumeCard from './VolumeCard';
 import SpeakerRoom from './SpeakerRoom';
-import { domainIcon, toggleService, useCallService, useEntity, useT } from '../../../hooks/useHa';
+import { domainIcon, toggleService, useCallService, useEntity, useLanguage, useT } from '../../../hooks/useHa';
 import { useAudio, usePlayerArt, type Audio } from '../../../hooks/useMedia';
 import { useImageUrl } from '../../../hooks/useBackgroundImage';
-import { playerApp, playerOn, type MediaConfig, type MediaDevice, type MediaSwitch } from '../../../lib/media';
+import { missingState } from '../../../lib/format';
+import { formatSampleRate, playerApp, playerOn, type MediaConfig, type MediaDevice, type MediaSwitch } from '../../../lib/media';
 import { SUBS, formatLayout, speakerStates } from '../../../lib/speakers';
 
 /**
@@ -172,10 +173,11 @@ const PowerBubble: React.FC<{ item: MediaSwitch | MediaDevice; info?: string }> 
   if (!entity) return null;
   // A switch's on, or a player's any state but off.
   const on = playerOn(entity);
+  const missing = missingState(entity.state);
   return (
     <Bubble
       name={item.name || (entity.attributes.friendly_name as string | undefined) || item.entity}
-      state={[on ? t('on') : t('off'), on ? info : undefined].filter(Boolean).join(' · ')}
+      state={missing ? t(missing) : [on ? t('on') : t('off'), on ? info : undefined].filter(Boolean).join(' · ')}
       icon={item.icon || (entity.attributes.icon as string | undefined) || domainIcon(item.entity)}
       iconColor={on ? theme.colors.success : undefined}
       active={on}
@@ -200,10 +202,11 @@ const NightMode: React.FC<{ entityId: string; text: string }> = ({ entityId, tex
   const callService = useCallService();
   if (!entity) return null;
   const on = entity.state === 'on';
+  const missing = missingState(entity.state);
   return (
     <Bubble
       name={t('media_night')}
-      state={text || (on ? t('on') : t('off'))}
+      state={missing ? t(missing) : text || (on ? t('on') : t('off'))}
       icon={(entity.attributes.icon as string | undefined) || 'mdi:weather-night'}
       iconColor={on ? theme.colors.accent : undefined}
       active={on}
@@ -219,12 +222,13 @@ const soundIcon = (mode: string | undefined) =>
 
 const SoundFacts: React.FC<{ audio: Audio }> = ({ audio }) => {
   const t = useT();
+  const language = useLanguage();
   const facts: { icon: string; label: string; value: string | undefined }[] = [
     { icon: soundIcon(audio.mode), label: t('media_sound_mode'), value: audio.mode },
     { icon: 'mdi:speaker-multiple', label: t('media_source_channels'), value: formatLayout(audio.format) },
     { icon: 'mdi:chip', label: t('media_decoder'), value: audio.decoder },
     { icon: 'mdi:video-input-hdmi', label: t('media_input_signal'), value: audio.signal },
-    { icon: 'mdi:waveform', label: t('media_sample_rate'), value: audio.sampleRate },
+    { icon: 'mdi:waveform', label: t('media_sample_rate'), value: formatSampleRate(audio.sampleRate, language) },
   ];
   return (
     <StyledFacts>
@@ -250,7 +254,12 @@ const NowPlaying: React.FC<{ activeId: string | undefined }> = ({ activeId }) =>
   // A picture that does not load gives way to the placeholder, not a broken image.
   const [failed, setFailed] = useState<string | null>(null);
   const attributes = (player?.attributes ?? {}) as Record<string, unknown>;
-  const title = on ? ((attributes.media_title as string | undefined) ?? playerApp(player) ?? t('media_nothing')) : t('off');
+  const missing = missingState(player?.state);
+  const title = on
+    ? ((attributes.media_title as string | undefined) ?? playerApp(player) ?? t('media_nothing'))
+    : missing
+      ? t(missing)
+      : t('off');
   const artist = [attributes.media_artist ?? attributes.media_series_title, attributes.media_album_name].filter(Boolean).join(' · ');
   return (
     <section className='playing' aria-label={t('media_now_playing')}>

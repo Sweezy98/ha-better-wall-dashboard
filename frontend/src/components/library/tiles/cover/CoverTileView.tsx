@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { missingState } from '../../../../lib/format';
 import { pressedInside } from '../../../../lib/dom';
 import styled, { keyframes, useTheme } from 'styled-components';
 import { u } from '../../../../themes/default.theme';
@@ -284,7 +285,9 @@ const CoverTileView: React.FC<CoverTileViewProps> = ({ tile, signs, action, onDe
   const stateKey = entity ? COVER_STATES[entity.state] : undefined;
   const stateText = !entity
     ? t('not_found')
-    : [stateKey ? t(stateKey) : entity.state, view.position !== undefined ? `${view.position} %` : ''].filter(Boolean).join(' · ');
+    : missingState(entity.state)
+      ? t(missingState(entity.state)!)
+      : [stateKey ? t(stateKey) : entity.state, view.position !== undefined ? `${view.position} %` : ''].filter(Boolean).join(' · ');
   const call = (service: string) => void callService('cover', service, undefined, { entity_id: tile.entity });
   const tap = useTaps(() => call('toggle'), onDetails);
   const active = coverActive(view, tile.options.active_when, Boolean(entity));

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { durationToMinutes, formatMeasurement, formatMinutes, formatWeekday, unitSeparator } from './format';
+import { durationToMinutes, formatMeasurement, formatMinutes, formatWeekday, missingState, unitSeparator } from './format';
 
 describe('formatMeasurement', () => {
   it('writes German decimals with a comma and a space before the unit', () => {
@@ -52,5 +52,14 @@ describe('durationToMinutes', () => {
 describe('formatWeekday', () => {
   it('drops the full stop German short weekdays carry', () => {
     expect(formatWeekday(new Date(2026, 8, 24), 'de')).toBe('Do');
+  });
+});
+
+describe('missing states', () => {
+  it('tells a device that cannot be read from one that is off', () => {
+    expect(missingState('unavailable')).toBe('unavailable');
+    expect(missingState('unknown')).toBe('unknown');
+    expect(missingState('off')).toBeNull();
+    expect(missingState(undefined)).toBeNull();
   });
 });

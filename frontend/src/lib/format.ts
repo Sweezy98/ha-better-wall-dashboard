@@ -130,3 +130,12 @@ export function addDays(date: Date, days: number): Date {
   copy.setDate(copy.getDate() + days);
   return copy;
 }
+
+/**
+ * A state that says the device cannot be read -- "unavailable", "unknown" --
+ * as the key of its words; null for any other. Such a device is not off: it
+ * is shown as what it is, never assumed to be off.
+ */
+export function missingState(state: string | undefined | null): 'unavailable' | 'unknown' | null {
+  return state === 'unavailable' ? 'unavailable' : state === 'unknown' ? 'unknown' : null;
+}

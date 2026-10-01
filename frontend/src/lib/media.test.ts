@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   activePlayer,
+  appName,
+  formatSampleRate,
+  playerApp,
   mediaConfig,
   audioSensors,
   denonDb,
@@ -132,5 +135,25 @@ describe('media config', () => {
       sofa: 'none',
       layout: null,
     });
+  });
+});
+
+describe('app names', () => {
+  it('names the apps people use, reads an unknown package, keeps a name', () => {
+    expect(appName('com.google.android.backdrop')).toBe('Ambient mode');
+    expect(appName('com.plexapp.android')).toBe('Plex');
+    expect(appName('com.example.cinemabox')).toBe('Cinemabox');
+    expect(appName('HDMI 3')).toBe('HDMI 3');
+    expect(appName('Plex')).toBe('Plex');
+    expect(playerApp({ state: 'on', attributes: { app_name: 'com.netflix.ninja' } })).toBe('Netflix');
+  });
+});
+
+describe('sample rate', () => {
+  it("reads a receiver's rate as kilohertz", () => {
+    expect(formatSampleRate('48K', 'en')).toBe('48 kHz');
+    expect(formatSampleRate('44.1K', 'de')).toBe('44,1 kHz');
+    expect(formatSampleRate('96000', 'en')).toBe('96 kHz');
+    expect(formatSampleRate('PCM', 'en')).toBe('PCM');
   });
 });

@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { missingState } from '../../../lib/format';
 import styled from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import type { NamedEntity, QuickAction as QuickActionConfig } from '../../../config/types';
@@ -21,7 +22,15 @@ const QuickAction: React.FC<{ action: NamedEntity }> = ({ action }) => {
   const callService = useCallService();
   const t = useT();
   const active = entity ? ACTIVE_STATES.has(entity.state) : false;
-  const state = !entity ? t('not_found') : entity.state === 'on' ? t('on') : entity.state === 'off' ? t('off') : entity.state;
+  const state = !entity
+    ? t('not_found')
+    : entity.state === 'on'
+      ? t('on')
+      : entity.state === 'off'
+        ? t('off')
+        : missingState(entity.state)
+          ? t(missingState(entity.state)!)
+          : entity.state;
   return (
     <Bubble
       name={action.name || (entity?.attributes.friendly_name as string) || action.entity}
