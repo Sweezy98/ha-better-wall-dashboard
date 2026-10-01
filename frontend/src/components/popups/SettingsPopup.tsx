@@ -6,9 +6,10 @@ import Popup from '../base/popup/Popup';
 import GraphCard from '../base/graphCard/GraphCard';
 import Bubble from '../base/bubble/Bubble';
 import HistoryPopup from './HistoryPopup';
-import { domainIcon, useCallService, useConnection, useEntity, useLanguage, usePrecision, useT } from '../../hooks/useHa';
+import { domainIcon, useCallService, useEntity, useLanguage, usePrecision, useT } from '../../hooks/useHa';
 import { runService } from '../../lib/actions';
 import { kioskActive, toggleKioskPreview } from '../../panel/kiosk';
+import { useVersion } from '../../hooks/useVersion';
 import { useModeState } from '../../panel/mode';
 import { useDashboardContext } from '../../config/DashboardProvider';
 import { formatMeasurement } from '../../lib/format';
@@ -200,29 +201,15 @@ const PreviewToggles: React.FC<{ embedded: boolean }> = ({ embedded }) => {
   );
 };
 
-interface Version {
-  app: string;
-  version: string;
-}
-
 const SettingsContent: React.FC<{ config: SidebarConfig }> = ({ config }) => {
   const t = useT();
   const theme = useTheme();
-  const connection = useConnection();
   const { view, preview, previewing } = useDashboardContext();
   const { embedded } = useModeState();
-  const [version, setVersion] = useState<Version | null>(null);
   const [missing, setMissing] = useState(false);
   const loaded = loadedFingerprint();
 
-  useEffect(() => {
-    connection
-      ?.sendMessagePromise<Version>({ type: 'better_wall_dashboard/version' })
-      .then(setVersion)
-      .catch(() => undefined);
-  }, [connection]);
-
-  const outdated = Boolean(loaded && version && version.app !== loaded);
+  const { version, outdated } = useVersion();
   const stats = config.system.filter(stat => stat.entity);
   const buttons = (config.system_buttons ?? []).filter(button => button.entity);
 

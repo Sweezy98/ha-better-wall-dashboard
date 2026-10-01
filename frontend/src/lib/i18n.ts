@@ -635,6 +635,10 @@ const en = {
   popup_close_hint: 'After this long without a touch. The PIN’s closes after half a minute regardless.',
   popup_close_after: 'After {minutes} min',
   popup_close_never: 'Never',
+  hide_toasts: 'Hide Home Assistant’s messages',
+  hide_toasts_hint:
+    'The bar at the bottom saying an integration is starting and the like. Only while the dashboard shows; Home Assistant’s other pages keep them.',
+  update_available_badge: 'A new version is ready: reload the dashboard',
 };
 
 export type TranslationKey = keyof typeof en;
@@ -1265,6 +1269,10 @@ const de: Record<TranslationKey, string> = {
   popup_close_hint: 'Nach so langer Zeit ohne Berührung. Die PIN-Abfrage schließt sich immer nach einer halben Minute.',
   popup_close_after: 'Nach {minutes} Min.',
   popup_close_never: 'Nie',
+  hide_toasts: 'Meldungen von Home Assistant ausblenden',
+  hide_toasts_hint:
+    'Die Leiste unten, die z. B. sagt, dass eine Integration startet. Nur solange das Dashboard zu sehen ist; die anderen Seiten von Home Assistant zeigen sie weiter.',
+  update_available_badge: 'Eine neue Version ist bereit: Dashboard neu laden',
 };
 
 export const TRANSLATIONS: Record<string, Record<TranslationKey, string>> = { en, de };

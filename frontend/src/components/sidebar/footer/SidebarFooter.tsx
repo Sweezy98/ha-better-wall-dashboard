@@ -4,6 +4,7 @@ import { u } from '../../../themes/default.theme';
 import { pressable } from '../../../themes/interaction';
 import type { SidebarConfig } from '../../../config/types';
 import IconButton from '../../base/iconButton/IconButton';
+import { useVersion } from '../../../hooks/useVersion';
 import Icon from '../../base/icon/Icon';
 import WeatherIcon from '../../base/weatherIcon/WeatherIcon';
 import WeatherPopup from '../../popups/WeatherPopup';
@@ -140,6 +141,7 @@ const SidebarFooter: React.FC<{ config: SidebarConfig }> = ({ config }) => {
   const prefixes = useMemo(() => notificationPrefixes(config.notifications), [config.notifications]);
   const { notifications, dismiss, dismissAll } = useNotifications(config.notifications.enabled, prefixes);
   const [panel, setPanel] = useState<'notifications' | 'settings' | null>(null);
+  const { outdated } = useVersion();
   const close = useCallback(() => setPanel(null), []);
   return (
     <StyledFooter>
@@ -148,7 +150,14 @@ const SidebarFooter: React.FC<{ config: SidebarConfig }> = ({ config }) => {
         {config.notifications.enabled && (
           <IconButton icon='mdi:bell' label={t('notifications')} badge={notifications.length} onClick={() => setPanel('notifications')} />
         )}
-        {config.settings?.enabled !== false && <IconButton icon='mdi:cog' label={t('settings')} onClick={() => setPanel('settings')} />}
+        {config.settings?.enabled !== false && (
+          <IconButton
+            icon='mdi:cog'
+            label={outdated ? t('update_available_badge') : t('settings')}
+            dot={outdated}
+            onClick={() => setPanel('settings')}
+          />
+        )}
       </StyledButtons>
       <NotificationsPopup
         open={panel === 'notifications'}

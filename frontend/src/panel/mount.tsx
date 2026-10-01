@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import App, { type AppProps } from '../App';
 import { setAttached } from './kiosk';
+import { setToastsAttached } from './haToasts';
 import { setModeState, type Mode } from './mode';
 
 /**
@@ -59,6 +60,7 @@ export function attach(element: HTMLElement, props: Omit<AppProps, 'styleTarget'
   restoreModalDialogs(container);
   setModeState({ mode, embedded: props.embedded });
   setAttached(mode === 'dashboard');
+  setToastsAttached(mode === 'dashboard');
 }
 
 /**
@@ -79,5 +81,8 @@ function restoreModalDialogs(root: HTMLElement): void {
 export function detach(element: HTMLElement): void {
   // Only the element that currently holds the dashboard gives it up. Home
   // Assistant can attach the new panel before it removes the old one.
-  if (container && element.shadowRoot?.contains(container)) setAttached(false);
+  if (container && element.shadowRoot?.contains(container)) {
+    setAttached(false);
+    setToastsAttached(false);
+  }
 }

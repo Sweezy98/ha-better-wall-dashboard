@@ -450,3 +450,8 @@ def test_popups_close_after_two_minutes_unless_set_otherwise() -> None:
         model.normalize_dashboard({"popup_close_minutes": 999})["popup_close_minutes"]
         == 60
     )
+
+
+def test_home_assistants_toasts_show_unless_hidden() -> None:
+    assert model.normalize_dashboard({})["hide_toasts"] is False
+    assert model.normalize_dashboard({"hide_toasts": True})["hide_toasts"] is True

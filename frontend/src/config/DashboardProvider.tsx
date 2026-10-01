@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { DashboardView } from './types';
 import { useSubscription } from '../hooks/useSubscription';
 import { setKioskWanted } from '../panel/kiosk';
+import { setToastsHidden } from '../panel/haToasts';
 import { setSidebarNotificationsHidden } from '../panel/haSidebar';
 import { reloadDashboard } from '../lib/reload';
 import { getEntryUrl } from '../panel/entry';
@@ -71,6 +72,10 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   useEffect(() => {
     setKioskWanted(Boolean(view?.kiosk));
   }, [view?.kiosk]);
+
+  useEffect(() => {
+    setToastsHidden(Boolean(view?.dashboard.hide_toasts));
+  }, [view?.dashboard.hide_toasts]);
 
   useEffect(() => {
     setSidebarNotificationsHidden(Boolean(view?.sidebar_only));

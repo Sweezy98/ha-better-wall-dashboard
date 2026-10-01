@@ -19,6 +19,14 @@ export const StyledIconButtonBadge = styled.span`
   line-height: 1;
   padding: 0 ${u(0.35)};
   pointer-events: none;
+
+  &[data-dot] {
+    min-width: ${u(0.8)};
+    height: ${u(0.8)};
+    padding: 0;
+    top: ${u(0.2)};
+    right: ${u(0.2)};
+  }
 `;
 
 export const StyledIconButton = styled.button<{ $active?: boolean }>`

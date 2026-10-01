@@ -540,6 +540,8 @@ def normalize_dashboard(
         "pin": _pin(raw.get("pin")),
         # Added later: minutes untouched before a popup closes by itself; 0, never.
         "popup_close_minutes": _int(raw.get("popup_close_minutes"), 2, 0, 60),
+        # Added later: Home Assistant's own toasts hidden while it shows.
+        "hide_toasts": _bool(raw.get("hide_toasts"), False),
         "sidebar": _sidebar(raw.get("sidebar"), assign),
         "pages": [_page(item, assign) for item in pages[:MAX_PAGES]]
         # A dashboard with no pages would have nothing to swipe, and the

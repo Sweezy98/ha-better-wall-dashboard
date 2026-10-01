@@ -1,5 +1,5 @@
 import { useT } from '../../../hooks/useHa';
-import { ColorField, MediaField, RangeField, SelectField, TextField } from '../fields';
+import { CheckField, ColorField, MediaField, RangeField, SelectField, TextField } from '../fields';
 import { StyledRow } from '../fields.styled';
 import { StyledFieldset } from '../editor.styled';
 import { ScreenTitle, type ScreenProps } from './common';
@@ -22,6 +22,12 @@ const GeneralScreen: React.FC<ScreenProps> = ({ draft, update }) => {
             label: minutes ? t('popup_close_after', { minutes }) : t('popup_close_never'),
           }))}
           onChange={minutes => update({ ...draft, popup_close_minutes: Number(minutes) })}
+        />
+        <CheckField
+          label={t('hide_toasts')}
+          hint={t('hide_toasts_hint')}
+          value={draft.hide_toasts ?? false}
+          onChange={hide_toasts => update({ ...draft, hide_toasts })}
         />
       </StyledFieldset>
       <StyledFieldset>

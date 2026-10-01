@@ -158,6 +158,8 @@ export interface Dashboard {
   buttons: BarButton[];
   /** Minutes untouched before a popup closes by itself; 0, never. Missing from an older backend. */
   popup_close_minutes?: number;
+  /** Home Assistant's own toasts hidden while the dashboard shows; missing from an older backend. */
+  hide_toasts?: boolean;
 }
 
 /** What `better_wall_dashboard/subscribe` pushes to a tablet. */
