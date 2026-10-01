@@ -34,6 +34,8 @@ const HaSelector: React.FC<HaSelectorProps> = ({ selector, value, onChange, labe
   const holder = useRef<HTMLDivElement>(null);
   const element = useRef<HaSelectorElement | null>(null);
   const changed = useRef(onChange);
+  // What it reported and React has not yet handed back, oldest first.
+  const reported = useRef<string[]>([]);
 
   useEffect(() => {
     changed.current = onChange;
@@ -48,6 +50,7 @@ const HaSelector: React.FC<HaSelectorProps> = ({ selector, value, onChange, labe
       // Its controls are controlled: they report a change and wait to be
       // given the value back, or a multi-select keeps drawing its old chips.
       el.value = next;
+      reported.current.push(JSON.stringify(next ?? null));
       changed.current(next);
     };
     el.addEventListener('value-changed', listener);
@@ -78,9 +81,22 @@ const HaSelector: React.FC<HaSelectorProps> = ({ selector, value, onChange, labe
     el.required = required;
   }, [selectorKey, label, helper, required]);
 
+  // A value handed back is either one it reported itself -- an echo, a
+  // render or more behind what is typed -- or one from outside. Typing fast,
+  // an echo of "Ho" arrived after "Hom" was typed and put "Ho" back, and
+  // "Home Cinema" came out "Hme Cnema". So an echo is let go by; only a
+  // value from outside is written into the control.
   useEffect(() => {
     const el = element.current;
-    if (el && el.value !== value) el.value = value;
+    if (!el) return;
+    const text = JSON.stringify(value ?? null);
+    const echo = reported.current.indexOf(text);
+    if (echo >= 0) {
+      reported.current.splice(0, echo + 1);
+      return;
+    }
+    reported.current = [];
+    if (el.value !== value) el.value = value;
   }, [value]);
 
   return <div ref={holder} className='ha-field' />;
