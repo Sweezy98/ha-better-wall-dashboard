@@ -9,6 +9,7 @@ import {
   SCREEN_SHOWS,
   SCREEN_FITS,
   VOLUME_UNITS,
+  knownApps,
   mediaConfig,
   type MediaDevice,
   type MediaPreset,
@@ -19,8 +20,56 @@ import { BEDS, HEIGHTS, SUB_COUNTS, SUBS, layoutText, type SpeakerLayout } from 
 import { MOUNTS, SOFAS } from '../../lib/room';
 import type { TranslationKey } from '../../lib/i18n';
 import NamedEntityList from './screens/NamedEntityList';
+import HaSelector from './ha/HaSelector';
+import { useHaControls } from './ha/useHaControls';
 import { CheckField, EntityField, EntityListField, IconField, MediaField, NumberField, SelectField, TextField } from './fields';
 import { StyledField, StyledRow } from './fields.styled';
+
+/**
+ * An app to open: one from the list of apps people use, or a package typed
+ * in. Android TV Remote cannot say which apps are installed, so the list is
+ * the known one; a TV that can (LG's webOS) lists its own as its inputs --
+ * choose "Choose an input" there.
+ */
+const AppField: React.FC<{ value: string; onChange: (value: string) => void }> = ({ value, onChange }) => {
+  const t = useT();
+  const ha = useHaControls();
+  const apps = knownApps();
+  if (ha) {
+    return (
+      <HaSelector
+        selector={{
+          select: {
+            mode: 'dropdown',
+            custom_value: true,
+            options: [
+              ...(value && !apps.some(app => app.id === value) ? [{ value, label: value }] : []),
+              ...apps.map(app => ({ value: app.id, label: app.name })),
+            ],
+          },
+        }}
+        value={value}
+        label={t('media_preset_app_id')}
+        helper={t('media_preset_app_hint')}
+        onChange={next => onChange(typeof next === 'string' ? next : '')}
+      />
+    );
+  }
+  return (
+    <StyledField>
+      <span className='label'>{t('media_preset_app_id')}</span>
+      <input type='text' list='bwd-apps' value={value} onChange={event => onChange(event.target.value)} />
+      <datalist id='bwd-apps'>
+        {apps.map(app => (
+          <option key={app.id} value={app.id}>
+            {app.name}
+          </option>
+        ))}
+      </datalist>
+      <small>{t('media_preset_app_hint')}</small>
+    </StyledField>
+  );
+};
 
 /** What a preset does with its value: the player's inputs to choose from, or an app's id to type. */
 const PresetValue: React.FC<{ preset: MediaPreset; onChange: (value: string) => void }> = ({ preset, onChange }) => {
@@ -38,14 +87,8 @@ const PresetValue: React.FC<{ preset: MediaPreset; onChange: (value: string) => 
       />
     );
   }
-  return (
-    <TextField
-      label={preset.kind === 'app' ? t('media_preset_app_id') : t('media_preset_value')}
-      hint={preset.kind === 'app' ? t('media_preset_app_hint') : undefined}
-      value={preset.value}
-      onChange={onChange}
-    />
-  );
+  if (preset.kind === 'app') return <AppField value={preset.value} onChange={onChange} />;
+  return <TextField label={t('media_preset_value')} value={preset.value} onChange={onChange} />;
 };
 
 const NO_LAYOUT: SpeakerLayout = { bed: 7, subs: 2, heights: 4 };
@@ -186,6 +229,14 @@ const MediaOptions: React.FC<{ tile: Tile; onChange: (options: Record<string, un
           <TextField label={t('name')} hint={t('name_hint')} value={config.extra.name} onChange={extra_name => set({ extra_name })} />
           <IconField label={t('icon')} value={config.extra.icon} onChange={extra_icon => set({ extra_icon })} />
         </StyledRow>
+      )}
+      {config.extra.entity && (
+        <TextField
+          label={t('media_extra_title')}
+          hint={t('media_extra_title_hint')}
+          value={config.extra.title}
+          onChange={extra_title => set({ extra_title })}
+        />
       )}
 
       <EntityField

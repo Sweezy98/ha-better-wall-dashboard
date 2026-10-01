@@ -538,7 +538,8 @@ const en = {
   media_preset_run: 'Run a script or scene',
   media_preset_value: 'Input',
   media_preset_app_id: 'App',
-  media_preset_app_hint: 'The app’s package or id, e.g. com.google.android.youtube.tv.',
+  media_preset_app_hint:
+    'Pick one, or type its package (e.g. com.plexapp.android). An LG TV lists its installed apps itself: choose “Choose an input” for it.',
   media_switches_title: 'Heading of the outlets',
   media_switches_hint: 'Outlets to switch in the details, e.g. the subwoofers’.',
   add_media_switch: 'Add outlet',
@@ -643,6 +644,17 @@ const en = {
   media_extra: 'Extra button',
   media_extra_hint:
     'One more button of your own at the top right of the tile, beside the volume, and in the details under the outlets -- the room’s automatic lighting, say.',
+  media_extra_heading: 'More',
+  media_extra_title: 'Heading in the details',
+  media_extra_title_hint: 'Above the extra button, under the outlets. Empty: “More”.',
+  remote: 'Remote',
+  remote_up: 'Up',
+  remote_down: 'Down',
+  remote_left: 'Left',
+  remote_right: 'Right',
+  remote_back: 'Back',
+  remote_home: 'Home',
+  remote_menu: 'Menu',
 };
 
 export type TranslationKey = keyof typeof en;
@@ -1176,7 +1188,8 @@ const de: Record<TranslationKey, string> = {
   media_preset_run: 'Skript oder Szene ausführen',
   media_preset_value: 'Eingang',
   media_preset_app_id: 'App',
-  media_preset_app_hint: 'Paket oder ID der App, z. B. com.google.android.youtube.tv.',
+  media_preset_app_hint:
+    'Auswählen oder das Paket eintippen (z. B. com.plexapp.android). Ein LG-Fernseher listet seine installierten Apps selbst: dafür „Eingang wählen“ nehmen.',
   media_switches_title: 'Überschrift der Steckdosen',
   media_switches_hint: 'Steckdosen, die in den Details geschaltet werden, z. B. die der Subwoofer.',
   add_media_switch: 'Steckdose hinzufügen',
@@ -1281,6 +1294,17 @@ const de: Record<TranslationKey, string> = {
   media_extra: 'Zusätzlicher Button',
   media_extra_hint:
     'Ein weiterer Button oben rechts auf der Kachel, neben der Lautstärke, und in den Details unter den Steckdosen -- z. B. die automatische Lichtsteuerung des Raums.',
+  media_extra_heading: 'Weiteres',
+  media_extra_title: 'Überschrift in den Details',
+  media_extra_title_hint: 'Über dem zusätzlichen Button, unter den Steckdosen. Leer: „Weiteres“.',
+  remote: 'Fernbedienung',
+  remote_up: 'Hoch',
+  remote_down: 'Runter',
+  remote_left: 'Links',
+  remote_right: 'Rechts',
+  remote_back: 'Zurück',
+  remote_home: 'Startseite',
+  remote_menu: 'Menü',
 };
 
 export const TRANSLATIONS: Record<string, Record<TranslationKey, string>> = { en, de };

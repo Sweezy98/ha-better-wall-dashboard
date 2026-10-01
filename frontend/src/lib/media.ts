@@ -291,7 +291,7 @@ export interface MediaConfig {
   /** The receiver's subwoofer output; found by itself for Denon's HACS integration. */
   subOutput: string;
   /** One more button of one's own -- the room's automatic lighting, say -- on the tile and in the details. */
-  extra: { entity: string; icon: string; name: string };
+  extra: { entity: string; icon: string; name: string; title: string };
 }
 
 export const SCREEN_FITS = ['contain', 'cover', 'stretch'] as const;
@@ -306,7 +306,7 @@ export type ScreenShows = (typeof SCREEN_SHOWS)[number];
  * `switches_title`, `devices`, `night`, `night_text`, `mode_entity`,
  * `format_entity`, `speakers` ("7.4.4"), `sofa`, `listener`, `listener_sleeps`, `room_movable`,
  * `hide_walls`, `screen`, `screen_image`, `screen_scale`, `screen_fit`, `tv_entity`,
- * `heights_front`, `heights_rear`, `sub_output`, `extra_entity`, `extra_icon` and `extra_name`.
+ * `heights_front`, `heights_rear`, `sub_output`, `extra_entity`, `extra_icon`, `extra_name` and `extra_title`.
  */
 export function mediaConfig(entity: string, options: Record<string, unknown>): MediaConfig {
   const extra = Array.isArray(options.players) ? options.players.filter((id): id is string => typeof id === 'string' && id !== '') : [];
@@ -340,7 +340,12 @@ export function mediaConfig(entity: string, options: Record<string, unknown>): M
       rear: MOUNTS.includes(options.heights_rear as Mount) ? (options.heights_rear as Mount) : 'wall',
     },
     subOutput: text(options.sub_output),
-    extra: { entity: text(options.extra_entity), icon: text(options.extra_icon), name: text(options.extra_name) },
+    extra: {
+      entity: text(options.extra_entity),
+      icon: text(options.extra_icon),
+      name: text(options.extra_name),
+      title: text(options.extra_title),
+    },
   };
 }
 
@@ -349,50 +354,50 @@ export function mediaConfig(entity: string, options: Record<string, unknown>): M
  * the package itself ("com.google.android.backdrop") unless the app was named
  * in its options. Names are the apps' own; nothing about anyone's house.
  */
-const ANDROID_APPS: Record<string, string> = {
-  'com.google.android.backdrop': 'Screensaver',
-  'com.google.android.tvlauncher': 'Home',
-  'com.google.android.leanbacklauncher': 'Home',
-  'com.google.android.apps.tv.launcherx': 'Home',
-  'com.google.android.youtube.tv': 'YouTube',
-  'com.google.android.youtube.tvmusic': 'YouTube Music',
-  'com.google.android.youtube.tvkids': 'YouTube Kids',
-  'com.google.android.videos': 'Google TV',
-  'com.google.android.apps.mediashell': 'Chromecast',
-  'com.netflix.ninja': 'Netflix',
-  'com.plexapp.android': 'Plex',
-  'com.disney.disneyplus': 'Disney+',
-  'com.amazon.amazonvideo.livingroom': 'Prime Video',
-  'com.apple.atve.androidtv.appletv': 'Apple TV',
-  'com.wbd.stream': 'Max',
-  'com.spotify.tv.android': 'Spotify',
-  'com.aspiro.tidal': 'Tidal',
-  'com.aspiro.tidal.tv': 'Tidal',
-  'deezer.android.tv': 'Deezer',
-  'org.xbmc.kodi': 'Kodi',
-  'com.nvidia.tegrazone3': 'NVIDIA Games',
-  'com.nvidia.geforcenow': 'GeForce NOW',
-  'com.valvesoftware.steamlink': 'Steam Link',
-  'com.android.tv.settings': 'Settings',
-  'com.android.vending': 'Play Store',
-  'com.google.android.tv': 'Live TV',
-  'com.zattoo.player': 'Zattoo',
-  'tv.twitch.android.app': 'Twitch',
-  'com.jellyfin.androidtv': 'Jellyfin',
-  'org.jellyfin.androidtv': 'Jellyfin',
-  'com.emby.embyatv': 'Emby',
-  'com.amazon.music.tv': 'Amazon Music',
-  'com.dazn': 'DAZN',
-  'de.zdf.android.zdfmediathek': 'ZDF',
-  'de.swr.ard.avp.mobile.android.amazon': 'ARD',
-  'com.sky.skyticket': 'WOW',
-  'de.sky.online': 'WOW',
-  'com.waipu.app.waipu': 'waipu.tv',
-  'com.rtl.rtlnow': 'RTL+',
-  'de.prosiebensat1digital.seventv': 'Joyn',
-  'com.joyn.app': 'Joyn',
-  'de.magentatv.android.tv': 'MagentaTV',
-  'com.google.android.apps.youtube.unplugged': 'YouTube TV',
+const ANDROID_APPS: Record<string, { name: string; icon: string }> = {
+  'com.google.android.backdrop': { name: 'Screensaver', icon: 'mdi:image-multiple' },
+  'com.google.android.tvlauncher': { name: 'Home', icon: 'mdi:home' },
+  'com.google.android.leanbacklauncher': { name: 'Home', icon: 'mdi:home' },
+  'com.google.android.apps.tv.launcherx': { name: 'Home', icon: 'mdi:home' },
+  'com.google.android.youtube.tv': { name: 'YouTube', icon: 'mdi:youtube' },
+  'com.google.android.youtube.tvmusic': { name: 'YouTube Music', icon: 'mdi:youtube' },
+  'com.google.android.youtube.tvkids': { name: 'YouTube Kids', icon: 'mdi:youtube' },
+  'com.google.android.videos': { name: 'Google TV', icon: 'mdi:google' },
+  'com.google.android.apps.mediashell': { name: 'Chromecast', icon: 'mdi:cast' },
+  'com.netflix.ninja': { name: 'Netflix', icon: 'mdi:netflix' },
+  'com.plexapp.android': { name: 'Plex', icon: 'mdi:plex' },
+  'com.disney.disneyplus': { name: 'Disney+', icon: 'mdi:movie-open' },
+  'com.amazon.amazonvideo.livingroom': { name: 'Prime Video', icon: 'mdi:movie-open' },
+  'com.apple.atve.androidtv.appletv': { name: 'Apple TV', icon: 'mdi:apple' },
+  'com.wbd.stream': { name: 'Max', icon: 'mdi:movie-open' },
+  'com.spotify.tv.android': { name: 'Spotify', icon: 'mdi:spotify' },
+  'com.aspiro.tidal': { name: 'Tidal', icon: 'mdi:music-circle' },
+  'com.aspiro.tidal.tv': { name: 'Tidal', icon: 'mdi:music-circle' },
+  'deezer.android.tv': { name: 'Deezer', icon: 'mdi:music-circle' },
+  'org.xbmc.kodi': { name: 'Kodi', icon: 'mdi:kodi' },
+  'com.nvidia.tegrazone3': { name: 'NVIDIA Games', icon: 'mdi:controller' },
+  'com.nvidia.geforcenow': { name: 'GeForce NOW', icon: 'mdi:controller' },
+  'com.valvesoftware.steamlink': { name: 'Steam Link', icon: 'mdi:steam' },
+  'com.android.tv.settings': { name: 'Settings', icon: 'mdi:cog' },
+  'com.android.vending': { name: 'Play Store', icon: 'mdi:google-play' },
+  'com.google.android.tv': { name: 'Live TV', icon: 'mdi:television-guide' },
+  'com.zattoo.player': { name: 'Zattoo', icon: 'mdi:television-guide' },
+  'tv.twitch.android.app': { name: 'Twitch', icon: 'mdi:twitch' },
+  'com.jellyfin.androidtv': { name: 'Jellyfin', icon: 'mdi:movie-open' },
+  'org.jellyfin.androidtv': { name: 'Jellyfin', icon: 'mdi:movie-open' },
+  'com.emby.embyatv': { name: 'Emby', icon: 'mdi:emby' },
+  'com.amazon.music.tv': { name: 'Amazon Music', icon: 'mdi:music-circle' },
+  'com.dazn': { name: 'DAZN', icon: 'mdi:soccer' },
+  'de.zdf.android.zdfmediathek': { name: 'ZDF', icon: 'mdi:television-classic' },
+  'de.swr.ard.avp.mobile.android.amazon': { name: 'ARD', icon: 'mdi:television-classic' },
+  'com.sky.skyticket': { name: 'WOW', icon: 'mdi:movie-open' },
+  'de.sky.online': { name: 'WOW', icon: 'mdi:movie-open' },
+  'com.waipu.app.waipu': { name: 'waipu.tv', icon: 'mdi:television-guide' },
+  'com.rtl.rtlnow': { name: 'RTL+', icon: 'mdi:television-classic' },
+  'de.prosiebensat1digital.seventv': { name: 'Joyn', icon: 'mdi:television-classic' },
+  'com.joyn.app': { name: 'Joyn', icon: 'mdi:television-classic' },
+  'de.magentatv.android.tv': { name: 'MagentaTV', icon: 'mdi:television-guide' },
+  'com.google.android.apps.youtube.unplugged': { name: 'YouTube TV', icon: 'mdi:youtube-tv' },
 };
 
 /** Package parts that say nothing of the app: its maker's domain, the platform. */
@@ -420,13 +425,38 @@ const GENERIC = new Set([
  */
 export function appName(id: string): string {
   const known = ANDROID_APPS[id.toLowerCase()];
-  if (known) return known;
+  if (known) return known.name;
   if (!/^[a-z][\w]*(\.[\w]+)+$/i.test(id)) return id;
   const word = id
     .split('.')
     .reverse()
     .find(part => !GENERIC.has(part.toLowerCase()) && part.length > 1);
   return word ? word.charAt(0).toUpperCase() + word.slice(1) : id;
+}
+
+/** The known apps, by name as well -- LG's TV reports its apps by title ("Netflix") -- for their icons. */
+const BY_NAME = new Map(Object.values(ANDROID_APPS).map(app => [app.name.toLowerCase(), app.icon]));
+
+/** An app's icon by its package or its name; undefined for one not known. */
+export function appIcon(idOrName: string | undefined): string | undefined {
+  if (!idOrName) return undefined;
+  return ANDROID_APPS[idOrName.toLowerCase()]?.icon ?? BY_NAME.get(appName(idOrName).toLowerCase());
+}
+
+/** The apps known, for a picker: package, name and icon, by name. */
+export function knownApps(): { id: string; name: string; icon: string }[] {
+  const seen = new Set<string>();
+  return Object.entries(ANDROID_APPS)
+    .filter(([, app]) => !seen.has(app.name) && seen.add(app.name))
+    .map(([id, app]) => ({ id, ...app }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** The icon for what a player is on, where the app is known. */
+export function playerAppIcon(player: PlayerLike | undefined): string | undefined {
+  const attributes = player?.attributes ?? {};
+  const app = attributes.app_id ?? attributes.app_name ?? attributes.source;
+  return typeof app === 'string' ? appIcon(app) : undefined;
 }
 
 /** What a player is on: the app, or else the input -- "Plex", "HDMI 3"; undefined for neither. */

@@ -94,10 +94,13 @@ your own if you like (the room's automatic lighting, say), and the **volume** of
 choice — in dB for a Denon receiver. It shows whichever of its players has the most
 going on, so the streaming box that plays wins over the receiver it plays through.
 
-A **double tap** opens the whole system on one screen, with its own power button at the top:
+A **double tap** opens the whole system on one screen, with its own power button at the top and a
+**remote** for the streaming box or the TV (Android TV Remote, LG webOS): arrows round OK, back,
+home, menu, play and pause, and the volume:
 
 - **Sources** along the top: what plays now, and presets that switch to another — a receiver's
-  input, an app on an Android TV box, or a script or scene.
+  input, an app on an Android TV box (picked from a list of the usual apps, each with its icon),
+  an app or input of an LG TV (it lists its installed ones itself), or a script or scene.
 - **Audio**: the sound mode, the source's channels (*7.1*), decoder, input signal and sample rate
   where the receiver reports them; the **volume** with quieter, mute and louder; **night mode**.
 - **The room in 3D**: your speakers — any layout from 2.0 to 9.4.6, with front wides on stands

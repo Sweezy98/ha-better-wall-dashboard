@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   activePlayer,
   appName,
+  appIcon,
+  knownApps,
   formatSampleRate,
   playerApp,
   mediaConfig,
@@ -155,5 +157,15 @@ describe('sample rate', () => {
     expect(formatSampleRate('44.1K', 'de')).toBe('44,1 kHz');
     expect(formatSampleRate('96000', 'en')).toBe('96 kHz');
     expect(formatSampleRate('PCM', 'en')).toBe('PCM');
+  });
+});
+
+describe('app icons', () => {
+  it("finds an app's icon by package or by the title a TV gives it", () => {
+    expect(appIcon('com.netflix.ninja')).toBe('mdi:netflix');
+    expect(appIcon('Netflix')).toBe('mdi:netflix');
+    expect(appIcon('HDMI 2')).toBeUndefined();
+    expect(knownApps().find(app => app.name === 'Plex')?.id).toBe('com.plexapp.android');
+    expect(new Set(knownApps().map(app => app.name)).size).toBe(knownApps().length);
   });
 });

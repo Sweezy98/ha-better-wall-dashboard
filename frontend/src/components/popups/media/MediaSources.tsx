@@ -3,7 +3,7 @@ import styled, { useTheme } from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import Bubble from '../../base/bubble/Bubble';
 import { domainIcon, useCallService, useEntity, useT } from '../../../hooks/useHa';
-import { playerApp, presetActive, presetCalls, type MediaPreset } from '../../../lib/media';
+import { appIcon, playerApp, playerAppIcon, presetActive, presetCalls, type MediaPreset } from '../../../lib/media';
 
 /** One row along the top; more presets than fit run on sideways. */
 const StyledSources = styled.div`
@@ -32,7 +32,12 @@ const Preset: React.FC<{ preset: MediaPreset }> = ({ preset }) => {
     <Bubble
       name={name}
       state={(player?.attributes.friendly_name as string | undefined) ?? undefined}
-      icon={preset.icon || (player?.attributes.icon as string | undefined) || domainIcon(preset.entity || 'media_player.x')}
+      icon={
+        preset.icon ||
+        (preset.kind !== 'run' ? appIcon(preset.value) : undefined) ||
+        (player?.attributes.icon as string | undefined) ||
+        domainIcon(preset.entity || 'media_player.x')
+      }
       iconColor={active ? theme.colors.accent : undefined}
       active={active}
       lit={active}
@@ -59,7 +64,7 @@ const MediaSources: React.FC<{ activeId: string | undefined; presets: MediaPrese
       <Bubble
         name={current?.name || name}
         state={t('media_current_source')}
-        icon={current?.icon || (player?.attributes.icon as string | undefined) || 'mdi:play-network'}
+        icon={current?.icon || playerAppIcon(player) || (player?.attributes.icon as string | undefined) || 'mdi:play-network'}
         iconColor={theme.colors.accent}
         lit
       />

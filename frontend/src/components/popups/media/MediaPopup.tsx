@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { useHass } from '@hakit/core';
 import { u } from '../../../themes/default.theme';
@@ -12,6 +12,8 @@ import MediaControls from './MediaControls';
 import MediaTimeline from './MediaTimeline';
 import VolumeCard from './VolumeCard';
 import SpeakerRoom from './SpeakerRoom';
+import RemotePopup from './RemotePopup';
+import { useRemoteTargets } from '../../../hooks/useRemoteTargets';
 import { domainIcon, toggleService, useCallService, useEntity, useLanguage, useT } from '../../../hooks/useHa';
 import { useAudio, usePlayerArt, type Audio } from '../../../hooks/useMedia';
 import { useImageUrl } from '../../../hooks/useBackgroundImage';
@@ -355,13 +357,16 @@ const Body: React.FC<{ config: MediaConfig; activeId: string | undefined }> = ({
               </div>
             </section>
           )}
-          {/* The tile's own extra button, here as a row of its own under the outlets. */}
+          {/* The tile's own extra button, here under a heading of its own below the outlets. */}
           {config.extra.entity && (
-            <div className='bubbles'>
-              <PowerBubble
-                item={{ id: 'extra', entity: config.extra.entity, name: config.extra.name, icon: config.extra.icon, subs: [] }}
-              />
-            </div>
+            <section>
+              <h3>{config.extra.title || t('media_extra_heading')}</h3>
+              <div className='bubbles'>
+                <PowerBubble
+                  item={{ id: 'extra', entity: config.extra.entity, name: config.extra.name, icon: config.extra.icon, subs: [] }}
+                />
+              </div>
+            </section>
           )}
         </div>
       </div>
@@ -420,6 +425,10 @@ const PowerButton: React.FC<{ entityId: string }> = ({ entityId }) => {
 
 const MediaPopup: React.FC<MediaPopupProps> = ({ open, onClose, config, activeId, name }) => {
   const theme = useTheme();
+  const t = useT();
+  const remotes = useRemoteTargets(config);
+  const [remote, setRemote] = useState(false);
+  const closeRemote = useCallback(() => setRemote(false), []);
   const player = useEntity(activeId);
   const subtitle = playerOn(player)
     ? [playerApp(player), player?.attributes.media_title as string | undefined].filter(Boolean).join(' · ')
@@ -435,9 +444,19 @@ const MediaPopup: React.FC<MediaPopupProps> = ({ open, onClose, config, activeId
       iconColor={theme.colors.accent}
       full
       fixedBody
-      actions={<PowerButton entityId={config.power} />}
+      actions={
+        <>
+          {remotes.length > 0 && (
+            <StyledPower type='button' aria-label={t('remote')} data-tip={t('remote')} onClick={() => setRemote(true)}>
+              <Icon icon='mdi:remote-tv' />
+            </StyledPower>
+          )}
+          <PowerButton entityId={config.power} />
+        </>
+      }
     >
       <Body config={config} activeId={activeId} />
+      <RemotePopup open={remote} onClose={closeRemote} config={config} activeId={activeId} />
     </Popup>
   );
 };
