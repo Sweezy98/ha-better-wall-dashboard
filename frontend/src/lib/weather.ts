@@ -131,3 +131,19 @@ export const BAROMETER_MAX = 1060;
 export function barometerFraction(hpa: number): number {
   return Math.min(1, Math.max(0, (hpa - BAROMETER_MIN) / (BAROMETER_MAX - BAROMETER_MIN)));
 }
+
+const DAY_MS = 86_400_000;
+
+/**
+ * Whether a moment is in the dark, from the sun's next rising and setting
+ * (`sun.sun`): night runs from a setting to the rising after it, and the
+ * days after today are taken to keep the same hours -- near enough for a
+ * forecast's icons.
+ */
+export function isDarkAt(time: number, nextRising: string | undefined, nextSetting: string | undefined): boolean | null {
+  const rising = Date.parse(nextRising ?? '');
+  const setting = Date.parse(nextSetting ?? '');
+  if (!Number.isFinite(time) || !Number.isFinite(rising) || !Number.isFinite(setting)) return null;
+  const mod = (value: number) => ((value % DAY_MS) + DAY_MS) % DAY_MS;
+  return mod(time - setting) < mod(rising - setting);
+}

@@ -8,6 +8,7 @@ import {
   conditionLabel,
   weatherIconName,
   weatherIconUrl,
+  isDarkAt,
 } from './weather';
 
 describe('weatherIconName', () => {
@@ -62,5 +63,18 @@ describe('barometer', () => {
     expect(barometerFraction(1010)).toBeCloseTo(0.5, 5);
     expect(barometerFraction(900)).toBe(0);
     expect(barometerFraction(1100)).toBe(1);
+  });
+});
+
+describe('dark hours', () => {
+  it('tells the dark hours from the sun, today and on the days after', () => {
+    const setting = '2026-10-01T17:00:00Z';
+    const rising = '2026-10-02T05:30:00Z';
+    expect(isDarkAt(Date.parse('2026-10-01T16:00:00Z'), rising, setting)).toBe(false);
+    expect(isDarkAt(Date.parse('2026-10-01T20:00:00Z'), rising, setting)).toBe(true);
+    expect(isDarkAt(Date.parse('2026-10-02T03:00:00Z'), rising, setting)).toBe(true);
+    expect(isDarkAt(Date.parse('2026-10-02T12:00:00Z'), rising, setting)).toBe(false);
+    expect(isDarkAt(Date.parse('2026-10-02T22:00:00Z'), rising, setting)).toBe(true);
+    expect(isDarkAt(Date.now(), undefined, setting)).toBeNull();
   });
 });

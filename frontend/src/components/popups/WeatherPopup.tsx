@@ -16,7 +16,7 @@ import { useForecast, type ForecastEntry } from '../../hooks/useForecast';
 import { useTick } from '../../hooks/useNow';
 import { formatNumber, formatTime, formatWeekday, startOfDay } from '../../lib/format';
 import { useDragScroll } from '../../hooks/useDragScroll';
-import { compassPoint, conditionLabel } from '../../lib/weather';
+import { compassPoint, conditionLabel, isDarkAt } from '../../lib/weather';
 
 /** Now: the sky, the reading with today's range beside it, and today's hours to the right. */
 const StyledNow = styled.div`
@@ -205,6 +205,17 @@ const degrees = (value: number | undefined, language: string) => (value === unde
 /** Today's hours, beside now. */
 const Hours: React.FC<{ hours: ForecastEntry[] }> = ({ hours }) => {
   const language = useLanguage();
+  const sun = useEntity('sun.sun');
+  // The provider's own day and night where it says so; else the sun's hours,
+  // or a partly cloudy evening is drawn with the sun.
+  const night = (entry: ForecastEntry) =>
+    entry.is_daytime !== undefined
+      ? entry.is_daytime === false
+      : isDarkAt(
+          Date.parse(entry.datetime),
+          sun?.attributes.next_rising as string | undefined,
+          sun?.attributes.next_setting as string | undefined
+        ) === true;
   const strip = useRef<HTMLDivElement>(null);
   useDragScroll(strip, true, 'x');
   return (
@@ -213,7 +224,7 @@ const Hours: React.FC<{ hours: ForecastEntry[] }> = ({ hours }) => {
         {hours.map(entry => (
           <div className='hour' key={entry.datetime}>
             <span className='time'>{formatTime(new Date(entry.datetime), language)}</span>
-            <WeatherIcon timeline='popup' condition={entry.condition} night={entry.is_daytime === false} size={u(2.6)} />
+            <WeatherIcon timeline='popup' condition={entry.condition} night={night(entry)} size={u(2.6)} />
             <span className='temp'>{degrees(entry.temperature, language)}</span>
             <span className='rain'>{entry.precipitation_probability ? `${entry.precipitation_probability} %` : ''}</span>
           </div>
