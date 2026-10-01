@@ -1,4 +1,6 @@
-import { memo } from 'react';
+import { memo, useCallback, useState } from 'react';
+import Icon from '../../base/icon/Icon';
+import ChoicePopup from './ChoicePopup';
 import styled, { useTheme } from 'styled-components';
 import { u } from '../../../themes/default.theme';
 import Bubble from '../../base/bubble/Bubble';
@@ -54,12 +56,23 @@ const Preset: React.FC<{ preset: MediaPreset }> = ({ preset }) => {
 };
 
 /** What plays now, then the presets that switch to something else. */
-const MediaSources: React.FC<{ activeId: string | undefined; presets: MediaPreset[] }> = ({ activeId, presets }) => {
+const MediaSources: React.FC<{ activeId: string | undefined; presets: MediaPreset[]; inputsOf: string }> = ({
+  activeId,
+  presets,
+  inputsOf,
+}) => {
   const t = useT();
   const theme = useTheme();
   const player = useEntity(activeId);
   const current = presets.find(preset => preset.entity === activeId && presetActive(preset, player));
   const name = playerApp(player) ?? (player?.attributes.friendly_name as string | undefined) ?? activeId ?? '';
+  // Tapped, the main player's inputs -- the receiver's -- to switch to.
+  const main = useEntity(inputsOf || undefined);
+  const callService = useCallService();
+  const [choosing, setChoosing] = useState(false);
+  const close = useCallback(() => setChoosing(false), []);
+  const inputs = Array.isArray(main?.attributes.source_list) ? (main.attributes.source_list as string[]) : [];
+  const mainName = (main?.attributes.friendly_name as string | undefined) ?? inputsOf;
   return (
     <StyledSources>
       <Bubble
@@ -70,7 +83,20 @@ const MediaSources: React.FC<{ activeId: string | undefined; presets: MediaPrese
         }
         iconColor={theme.colors.accent}
         lit
+        trailing={inputs.length > 0 ? <Icon icon='mdi:chevron-down' /> : undefined}
+        onClick={inputs.length > 0 ? () => setChoosing(true) : undefined}
       />
+      {inputs.length > 0 && (
+        <ChoicePopup
+          open={choosing}
+          onClose={close}
+          title={mainName}
+          icon='mdi:import'
+          options={inputs}
+          current={main?.attributes.source as string | undefined}
+          onChoose={source => void callService('media_player', 'select_source', { source }, { entity_id: inputsOf })}
+        />
+      )}
       {presets
         .filter(preset => preset !== current)
         .map(preset => (

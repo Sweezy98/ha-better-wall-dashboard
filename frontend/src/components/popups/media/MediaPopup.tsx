@@ -13,6 +13,7 @@ import MediaTimeline from './MediaTimeline';
 import VolumeCard from './VolumeCard';
 import SpeakerRoom from './SpeakerRoom';
 import RemotePad from './RemotePad';
+import ChoicePopup from './ChoicePopup';
 import { domainIcon, toggleService, useCallService, useEntity, useLanguage, useT } from '../../../hooks/useHa';
 import { useAudio, usePlayerArt, type Audio } from '../../../hooks/useMedia';
 import { useImageUrl } from '../../../hooks/useBackgroundImage';
@@ -93,21 +94,68 @@ const StyledBody = styled.div`
     gap: ${u(0.6)};
   }
 
+  /* Asked how wide it came out, in units (see the query below). */
   .playing {
-    display: grid;
-    grid-template-columns: minmax(${u(18)}, 1fr) minmax(0, 3fr);
-    gap: ${u(1.4)};
-    align-items: center;
+    container-type: inline-size;
+    font-size: ${u(1)};
     padding: ${u(0.9)} ${u(1.1)};
     border-radius: ${u(1)};
     background: ${({ theme }) => theme.bubble.background};
   }
 
+  /* The track's art and words at the left, its time to their right, and
+     the controls under that. */
+  .bar {
+    display: grid;
+    grid-template-columns: minmax(${u(18)}, 1fr) minmax(0, 3fr);
+    grid-template-rows: auto auto;
+    column-gap: ${u(1.4)};
+    row-gap: ${u(0.7)};
+    align-items: center;
+  }
+
   .transport {
-    display: flex;
-    flex-direction: column;
-    gap: ${u(0.7)};
-    min-width: 0;
+    display: contents;
+  }
+
+  .now {
+    grid-column: 1;
+    grid-row: 1 / 3;
+  }
+
+  .transport > :first-child:not(:last-child) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .transport > :last-child {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  /* Wide enough that the buttons left of play clear the track's words: the
+     controls across the whole bar, play in the very middle of the details.
+     Over the art's column there, so only its buttons take a touch. */
+  @container (width >= 86em) {
+    /* The words' column ending clear of the buttons left of play (about
+       25 units of them, from the middle), which then centre on the details. */
+    .bar {
+      grid-template-columns: minmax(18em, calc(50% - 26em)) minmax(0, 1fr);
+    }
+
+    .transport > :last-child {
+      grid-column: 1 / -1;
+      pointer-events: none;
+    }
+  }
+
+  .transport > :last-child button {
+    pointer-events: auto;
+  }
+
+  /* With no time to show, the controls sit in the middle of the bar's height. */
+  .transport > :only-child {
+    grid-row: 1 / 3;
   }
 
   .now {
@@ -196,13 +244,6 @@ const PowerBubble: React.FC<{ item: MediaSwitch | MediaDevice; info?: string }> 
   );
 };
 
-/** The choices, one under another, as the Better Lighting tile lists its scenes. */
-const StyledChoices = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(${u(14)}, 1fr));
-  gap: ${u(0.6)};
-`;
-
 /**
  * A select -- the receiver's display brightness, its sound mode -- as a
  * bubble saying its choice; tapped, the dashboard's own list of the others,
@@ -210,7 +251,6 @@ const StyledChoices = styled.div`
  */
 const SelectBubble: React.FC<{ item: MediaMore }> = ({ item }) => {
   const t = useT();
-  const theme = useTheme();
   const entity = useEntity(item.entity || undefined);
   const callService = useCallService();
   const [open, setOpen] = useState(false);
@@ -229,26 +269,15 @@ const SelectBubble: React.FC<{ item: MediaMore }> = ({ item }) => {
         trailing={<Icon icon='mdi:chevron-down' />}
         onClick={missing ? undefined : () => setOpen(true)}
       />
-      <Popup open={open} onClose={close} title={name} icon={icon} width={40}>
-        <StyledChoices>
-          {options.map(option => (
-            <Bubble
-              key={option}
-              name={option}
-              icon={icon}
-              active={option === entity.state}
-              iconColor={option === entity.state ? theme.colors.accent : undefined}
-              trailing={option === entity.state ? <Icon icon='mdi:check' color={theme.colors.accent} /> : undefined}
-              onClick={() => {
-                if (option !== entity.state) {
-                  void callService(item.entity.split('.')[0], 'select_option', { option }, { entity_id: item.entity });
-                }
-                close();
-              }}
-            />
-          ))}
-        </StyledChoices>
-      </Popup>
+      <ChoicePopup
+        open={open}
+        onClose={close}
+        title={name}
+        icon={icon}
+        options={options}
+        current={entity.state}
+        onChoose={option => void callService(item.entity.split('.')[0], 'select_option', { option }, { entity_id: item.entity })}
+      />
     </>
   );
 };
@@ -300,9 +329,9 @@ const SoundFacts: React.FC<{ audio: Audio }> = ({ audio }) => {
     <StyledFacts>
       {facts
         .filter(fact => fact.value)
-        .map((fact, index) => (
-          // The sound mode, first, the width of the column: it runs longest and matters most.
-          <div key={fact.label} style={index === 0 ? { gridColumn: '1 / -1' } : undefined}>
+        .map(fact => (
+          // Each the width of the column, one under another: the sound mode runs longest, the rest line up with it.
+          <div key={fact.label} style={{ gridColumn: '1 / -1' }}>
             <Icon className='icon' icon={fact.icon} />
             <span className='label'>{fact.label}</span>
             <span className='value'>{fact.value}</span>
@@ -329,23 +358,25 @@ const NowPlaying: React.FC<{ activeId: string | undefined }> = ({ activeId }) =>
   const artist = [attributes.media_artist ?? attributes.media_series_title, attributes.media_album_name].filter(Boolean).join(' · ');
   return (
     <section className='playing' aria-label={t('media_now_playing')}>
-      <div className='now'>
-        {art && art !== failed ? (
-          <img src={art} alt='' onError={() => setFailed(art)} />
-        ) : (
-          <span className='placeholder'>
-            <Icon icon='mdi:music' />
-          </span>
-        )}
-        <div className='text'>
-          <span className='app'>{playerApp(player) ?? (attributes.friendly_name as string | undefined)}</span>
-          <span className='title'>{title}</span>
-          {on && artist && <span className='artist'>{artist}</span>}
+      <div className='bar'>
+        <div className='now'>
+          {art && art !== failed ? (
+            <img src={art} alt='' onError={() => setFailed(art)} />
+          ) : (
+            <span className='placeholder'>
+              <Icon icon='mdi:music' />
+            </span>
+          )}
+          <div className='text'>
+            <span className='app'>{playerApp(player) ?? (attributes.friendly_name as string | undefined)}</span>
+            <span className='title'>{title}</span>
+            {on && artist && <span className='artist'>{artist}</span>}
+          </div>
         </div>
-      </div>
-      <div className='transport'>
-        <MediaTimeline entityId={on ? activeId : undefined} seekable inline />
-        <MediaControls entityId={activeId} full large />
+        <div className='transport'>
+          <MediaTimeline entityId={on ? activeId : undefined} seekable inline />
+          <MediaControls entityId={activeId} full large />
+        </div>
       </div>
     </section>
   );
@@ -380,7 +411,7 @@ const Body: React.FC<{ config: MediaConfig; activeId: string | undefined }> = ({
 
   return (
     <StyledBody data-room={config.layout !== null}>
-      <MediaSources activeId={activeId} presets={config.presets} />
+      <MediaSources activeId={activeId} presets={config.presets} inputsOf={config.main} />
       <div className='middle'>
         <div className='column'>
           {/* Off, the receiver's last sound mode and rate are no news. */}

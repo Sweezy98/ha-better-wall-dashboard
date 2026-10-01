@@ -133,6 +133,12 @@ const MediaOptions: React.FC<{ tile: Tile; onChange: (options: Record<string, un
           onChange={volume => set({ volume })}
         />
       </StyledRow>
+      <CheckField
+        label={t('media_hide_controls_off')}
+        hint={t('media_hide_controls_off_hint')}
+        value={config.hideControlsOff}
+        onChange={hide_controls_off => set({ hide_controls_off })}
+      />
       <SelectField
         label={t('media_volume_unit')}
         value={config.volumeUnit}

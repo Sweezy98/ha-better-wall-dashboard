@@ -279,10 +279,13 @@ const MediaTile: React.FC<TileProps> = ({ tile }) => {
   const [open, setOpen] = useState(false);
   // A picture that does not load is left out, not drawn broken.
   const [failed, setFailed] = useState<string | null>(null);
-  const tap = useTaps(
-    () => undefined,
-    () => setOpen(true)
-  );
+  // A tap switches it on or off, as its power button does; a double tap opens the details.
+  const togglePower = () => {
+    if (!config.power) return;
+    const [domain, service] = toggleService(config.power);
+    void callService(domain, service, undefined, { entity_id: config.power });
+  };
+  const tap = useTaps(togglePower, () => setOpen(true));
 
   const attributes = (player?.attributes ?? {}) as Record<string, unknown>;
   const name = tile.name || (main?.attributes.friendly_name as string | undefined) || tile.entity;
@@ -327,10 +330,7 @@ const MediaTile: React.FC<TileProps> = ({ tile }) => {
               data-tip={t('media_power')}
               aria-pressed={powerOn}
               disabled={!power}
-              onClick={() => {
-                const [domain, service] = toggleService(config.power);
-                void callService(domain, service, undefined, { entity_id: config.power });
-              }}
+              onClick={togglePower}
             >
               <Icon icon='mdi:power' />
             </button>
@@ -351,7 +351,7 @@ const MediaTile: React.FC<TileProps> = ({ tile }) => {
             {on && typeof attributes.media_album_name === 'string' && <span className='album'>{attributes.media_album_name}</span>}
           </div>
           <MediaTimeline className='timeline' entityId={on ? activeId : undefined} />
-          <MediaControls className='controls' entityId={activeId} />
+          {(on || !config.hideControlsOff) && <MediaControls className='controls' entityId={activeId} />}
         </div>
       </StyledMedia>
       {/* Beside the tile, not in it: its class rules would reach into the popup. */}

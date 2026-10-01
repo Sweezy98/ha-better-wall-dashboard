@@ -37,8 +37,27 @@ const StyledControls = styled.div<{ $large: boolean; $full: boolean }>`
     opacity: 0.35;
   }
 
-  /* In full, the wide pills either side of play, as wide as there is room
-     for up to a measure: the buttons shown, whichever they are, centred together. */
+  /* Either side of play, the buttons of that side: play itself stays in
+     the middle -- of the details, where the bar is laid out so -- whichever
+     buttons the player offers. */
+  .side {
+    display: flex;
+    align-items: center;
+    gap: inherit;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .side.start {
+    justify-content: flex-end;
+  }
+
+  &[data-full='true'] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  }
+
+  /* In full, the wide pills either side of play, as wide as there is room for up to a measure. */
   &[data-full='true'] .skip {
     flex: 0 1 ${u(12)};
   }
@@ -96,41 +115,43 @@ const MediaControls: React.FC<MediaControlsProps> = ({ entityId, full = false, l
 
   return (
     <StyledControls $large={large} $full={full} data-full={full} className={className}>
-      {full && can.shuffle && (
+      <span className='side start'>
+        {full && can.shuffle && (
+          <button
+            className='round'
+            type='button'
+            aria-label={t('media_shuffle')}
+            data-tip={t('media_shuffle')}
+            aria-pressed={attributes.shuffle === true}
+            disabled={!on}
+            onClick={() => call('shuffle_set', { shuffle: attributes.shuffle !== true })}
+          >
+            <Icon icon={attributes.shuffle === true ? 'mdi:shuffle-variant' : 'mdi:shuffle-disabled'} />
+          </button>
+        )}
+        {full && can.repeat && (
+          <button
+            className='round'
+            type='button'
+            aria-label={t('media_repeat')}
+            data-tip={t('media_repeat')}
+            aria-pressed={repeat !== 'off'}
+            disabled={!on}
+            onClick={() => call('repeat_set', { repeat: REPEAT_NEXT[repeat] ?? 'off' })}
+          >
+            <Icon icon={REPEAT_ICON[repeat] ?? 'mdi:repeat'} />
+          </button>
+        )}
         <button
-          className='round'
           type='button'
-          aria-label={t('media_shuffle')}
-          data-tip={t('media_shuffle')}
-          aria-pressed={attributes.shuffle === true}
-          disabled={!on}
-          onClick={() => call('shuffle_set', { shuffle: attributes.shuffle !== true })}
+          className='skip'
+          aria-label={t('media_previous')}
+          disabled={!on || !can.previous}
+          onClick={() => call('media_previous_track')}
         >
-          <Icon icon={attributes.shuffle === true ? 'mdi:shuffle-variant' : 'mdi:shuffle-disabled'} />
+          <Icon icon='mdi:skip-previous' />
         </button>
-      )}
-      {full && can.repeat && (
-        <button
-          className='round'
-          type='button'
-          aria-label={t('media_repeat')}
-          data-tip={t('media_repeat')}
-          aria-pressed={repeat !== 'off'}
-          disabled={!on}
-          onClick={() => call('repeat_set', { repeat: REPEAT_NEXT[repeat] ?? 'off' })}
-        >
-          <Icon icon={REPEAT_ICON[repeat] ?? 'mdi:repeat'} />
-        </button>
-      )}
-      <button
-        type='button'
-        className='skip'
-        aria-label={t('media_previous')}
-        disabled={!on || !can.previous}
-        onClick={() => call('media_previous_track')}
-      >
-        <Icon icon='mdi:skip-previous' />
-      </button>
+      </span>
       <button
         type='button'
         className='main'
@@ -141,27 +162,29 @@ const MediaControls: React.FC<MediaControlsProps> = ({ entityId, full = false, l
       >
         <Icon icon={playing ? 'mdi:pause' : 'mdi:play'} />
       </button>
-      <button
-        type='button'
-        className='skip'
-        aria-label={t('media_next')}
-        disabled={!on || !can.next}
-        onClick={() => call('media_next_track')}
-      >
-        <Icon icon='mdi:skip-next' />
-      </button>
-      {full && can.stop && (
+      <span className='side end'>
         <button
           type='button'
-          className='round'
-          aria-label={t('media_stop')}
-          data-tip={t('media_stop')}
-          disabled={!on}
-          onClick={() => call('media_stop')}
+          className='skip'
+          aria-label={t('media_next')}
+          disabled={!on || !can.next}
+          onClick={() => call('media_next_track')}
         >
-          <Icon icon='mdi:stop' />
+          <Icon icon='mdi:skip-next' />
         </button>
-      )}
+        {full && can.stop && (
+          <button
+            type='button'
+            className='round'
+            aria-label={t('media_stop')}
+            data-tip={t('media_stop')}
+            disabled={!on}
+            onClick={() => call('media_stop')}
+          >
+            <Icon icon='mdi:stop' />
+          </button>
+        )}
+      </span>
     </StyledControls>
   );
 };

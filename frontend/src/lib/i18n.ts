@@ -659,6 +659,8 @@ const en = {
   media_more_hint:
     'Buttons of your own, and dropdowns for a select (the receiver’s display brightness, its sound mode), under the heading of the extra button. Not on the tile.',
   add_media_more: 'Add',
+  media_hide_controls_off: 'No controls on the tile while off',
+  media_hide_controls_off_hint: 'Previous, play and next are left out while nothing plays; the details keep them.',
   media_more_while: 'Only while this is on',
   media_more_while_hint: 'E.g. the receiver its display brightness belongs to. Empty: always shown.',
 };
@@ -1315,6 +1317,8 @@ const de: Record<TranslationKey, string> = {
   media_more_hint:
     'Eigene Buttons und Auswahllisten für ein Select (Display-Helligkeit des Receivers, sein Klangmodus), unter der Überschrift des zusätzlichen Buttons. Nicht auf der Kachel.',
   add_media_more: 'Hinzufügen',
+  media_hide_controls_off: 'Keine Steuerung auf der Kachel, wenn aus',
+  media_hide_controls_off_hint: 'Zurück, Abspielen und Weiter fehlen, solange nichts läuft; die Details behalten sie.',
   media_more_while: 'Nur wenn das eingeschaltet ist',
   media_more_while_hint: 'Z. B. der Receiver, zu dem die Display-Helligkeit gehört. Leer: immer sichtbar.',
 };

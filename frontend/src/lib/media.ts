@@ -292,6 +292,8 @@ export interface MediaConfig {
   subOutput: string;
   /** One more button of one's own -- the room's automatic lighting, say -- on the tile and in the details. */
   extra: { entity: string; icon: string; name: string; title: string };
+  /** The tile's player controls left out while what plays is off. */
+  hideControlsOff: boolean;
   /** In the details only, under the extra button: buttons, and dropdowns for a select. */
   more: MediaMore[];
 }
@@ -359,6 +361,7 @@ export function mediaConfig(entity: string, options: Record<string, unknown>): M
       name: text(options.extra_name),
       title: text(options.extra_title),
     },
+    hideControlsOff: options.hide_controls_off === true,
     more: list(options.more, MAX_MORE, (item, index) => ({ ...base(item, index), shownWhile: text(item.shownWhile) })),
   };
 }

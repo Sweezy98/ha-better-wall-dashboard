@@ -92,11 +92,12 @@ What plays, with its album art behind it: the source, title and artist, where it
 previous / play / next, a **power button** for the device of your choice, an **extra button** of
 your own if you like (the room's automatic lighting, say), and the **volume** of the device of your
 choice — in dB for a Denon receiver. It shows whichever of its players has the most
-going on, so the streaming box that plays wins over the receiver it plays through.
+going on, so the streaming box that plays wins over the receiver it plays through. A tap switches it
+on or off; its controls can be left out while it is off.
 
 A **double tap** opens the whole system on one screen, with its own power button at the top:
 
-- **Sources** along the top: what plays now, and presets that switch to another — a receiver's
+- **Sources** along the top: what plays now — tapped, the receiver's inputs to switch to — and presets that switch to another — a receiver's
   input, an app on an Android TV box (picked from a list of the usual apps, each with its icon —
   the brand's own logo where [custom-brand-icons] or [Simple Icons] is installed),
   an app or input of an LG TV (it lists its installed ones itself), or a script or scene.
@@ -119,7 +120,8 @@ A **double tap** opens the whole system on one screen, with its own power button
   it belongs to is on, if you like.
 - **Devices and outlets**: the TV and the box with their power and what they show (*4K HDR*,
   *HDMI 3*, the app by its name — *Netflix*, not `com.netflix.ninja`), and the outlets to switch, such as the subwoofers'.
-- **The player** along the foot: the track to drag, shuffle, repeat, previous, play, next, stop.
+- **The player** along the foot: the track to drag, shuffle, repeat, previous, play, next, stop —
+  play in the very middle of the details where there is room.
 
 ### The rest
 
@@ -174,7 +176,8 @@ landscape or portrait — updating as you type. Nothing reaches the tablets unti
   (e.g. `/local/wall.jpg`), how much to darken and blur it.
 - **Sidebar** — the entities for each block. Anything left empty simply is not drawn.
 - **Pages** — sections, their size in cells, their header readings, and their tiles. **Add tile**
-  opens a picker of every tile type there is, each with what it is for.
+  opens a picker of every tile type there is, each with what it is for. Popups opened in the
+  preview open inside it, at the tablet's size.
 - **Buttons** — the bottom bar and what each popup contains.
 - **Users** — which dashboard each person sees, kiosk mode, start page.
 - **JSON** — the whole dashboard as stored, for copying between dashboards or bulk edits.
