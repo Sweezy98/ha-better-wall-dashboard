@@ -99,7 +99,8 @@ A **double tap** opens the whole system on one screen, with its own power button
 home, menu, play and pause, and the volume:
 
 - **Sources** along the top: what plays now, and presets that switch to another — a receiver's
-  input, an app on an Android TV box (picked from a list of the usual apps, each with its icon),
+  input, an app on an Android TV box (picked from a list of the usual apps, each with its icon —
+  the brand's own logo where the [Simple Icons] set is installed),
   an app or input of an LG TV (it lists its installed ones itself), or a script or scene.
 - **Audio**: the sound mode, the source's channels (*7.1*), decoder, input signal and sample rate
   where the receiver reports them; the **volume** with quieter, mute and louder; **night mode**.
@@ -285,5 +286,6 @@ MIT
 [Better Lighting]: https://github.com/Sweezy98/ha-better-lighting
 [Adaptive Cover Pro]: https://github.com/jrhubott/adaptive-cover-pro
 [Blitzortung]: https://github.com/mrk-its/homeassistant-blitzortung
+[Simple Icons]: https://github.com/vigonotion/hass-simpleicons
 [Denon AVR]: https://www.home-assistant.io/integrations/denonavr/
 [Denon AVR (HACS)]: https://github.com/LaserGuruGuy/denon_avr

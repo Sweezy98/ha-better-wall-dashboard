@@ -367,6 +367,7 @@ const ANDROID_APPS: Record<string, { name: string; icon: string }> = {
   'com.netflix.ninja': { name: 'Netflix', icon: 'mdi:netflix' },
   'com.plexapp.android': { name: 'Plex', icon: 'mdi:plex' },
   'com.disney.disneyplus': { name: 'Disney+', icon: 'mdi:movie-open' },
+  'com.nousguide.android.orftvthek': { name: 'ORF ON', icon: 'mdi:television-classic' },
   'com.amazon.amazonvideo.livingroom': { name: 'Prime Video', icon: 'mdi:movie-open' },
   'com.apple.atve.androidtv.appletv': { name: 'Apple TV', icon: 'mdi:apple' },
   'com.wbd.stream': { name: 'Max', icon: 'mdi:movie-open' },
@@ -389,7 +390,7 @@ const ANDROID_APPS: Record<string, { name: string; icon: string }> = {
   'com.amazon.music.tv': { name: 'Amazon Music', icon: 'mdi:music-circle' },
   'com.dazn': { name: 'DAZN', icon: 'mdi:soccer' },
   'de.zdf.android.zdfmediathek': { name: 'ZDF', icon: 'mdi:television-classic' },
-  'de.swr.ard.avp.mobile.android.amazon': { name: 'ARD', icon: 'mdi:television-classic' },
+  'de.swr.avp.ard.tv': { name: 'ARD Mediathek', icon: 'mdi:television-classic' },
   'com.sky.skyticket': { name: 'WOW', icon: 'mdi:movie-open' },
   'de.sky.online': { name: 'WOW', icon: 'mdi:movie-open' },
   'com.waipu.app.waipu': { name: 'waipu.tv', icon: 'mdi:television-guide' },
@@ -434,13 +435,54 @@ export function appName(id: string): string {
   return word ? word.charAt(0).toUpperCase() + word.slice(1) : id;
 }
 
-/** The known apps, by name as well -- LG's TV reports its apps by title ("Netflix") -- for their icons. */
-const BY_NAME = new Map(Object.values(ANDROID_APPS).map(app => [app.name.toLowerCase(), app.icon]));
+/** Apps known only by the title a TV gives them, for their icons: LG lists its apps by title. */
+const BY_TITLE: Record<string, string> = {
+  orf: 'mdi:television-classic',
+  'orf on': 'mdi:television-classic',
+  'orf tvthek': 'mdi:television-classic',
+  ard: 'mdi:television-classic',
+  'ard mediathek': 'mdi:television-classic',
+  'zdf mediathek': 'mdi:television-classic',
+  'disney+': 'mdi:movie-open',
+  'amazon prime video': 'mdi:movie-open',
+};
 
-/** An app's icon by its package or its name; undefined for one not known. */
-export function appIcon(idOrName: string | undefined): string | undefined {
+/** The known apps, by name as well -- LG's TV reports its apps by title ("Netflix") -- for their icons. */
+const BY_NAME = new Map([
+  ...Object.values(ANDROID_APPS).map(app => [app.name.toLowerCase(), app.icon] as const),
+  ...Object.entries(BY_TITLE),
+]);
+
+/**
+ * Brands' own logos, in the Simple Icons set ("si:"), for where it is
+ * installed -- Material Design Icons dropped most brands. Only those the set
+ * has: Disney+, ARD and ORF are in neither.
+ */
+const BRANDS: Record<string, string> = {
+  Tidal: 'si:tidal',
+  'Prime Video': 'si:primevideo',
+  'amazon prime video': 'si:primevideo',
+  Netflix: 'si:netflix',
+  YouTube: 'si:youtube',
+  'YouTube Music': 'si:youtubemusic',
+  Plex: 'si:plex',
+  Spotify: 'si:spotify',
+  Twitch: 'si:twitch',
+  Kodi: 'si:kodi',
+  Jellyfin: 'si:jellyfin',
+  Deezer: 'si:deezer',
+  'Apple TV': 'si:appletv',
+};
+
+/**
+ * An app's icon by its package or its name; undefined for one not known.
+ * With `brands`, the brand's own logo where the Simple Icons set has it.
+ */
+export function appIcon(idOrName: string | undefined, brands = false): string | undefined {
   if (!idOrName) return undefined;
-  return ANDROID_APPS[idOrName.toLowerCase()]?.icon ?? BY_NAME.get(appName(idOrName).toLowerCase());
+  const name = appName(idOrName);
+  const brand = brands ? (BRANDS[name] ?? BRANDS[name.toLowerCase()]) : undefined;
+  return brand ?? ANDROID_APPS[idOrName.toLowerCase()]?.icon ?? BY_NAME.get(name.toLowerCase());
 }
 
 /** The apps known, for a picker: package, name and icon, by name. */
@@ -453,10 +495,10 @@ export function knownApps(): { id: string; name: string; icon: string }[] {
 }
 
 /** The icon for what a player is on, where the app is known. */
-export function playerAppIcon(player: PlayerLike | undefined): string | undefined {
+export function playerAppIcon(player: PlayerLike | undefined, brands = false): string | undefined {
   const attributes = player?.attributes ?? {};
   const app = attributes.app_id ?? attributes.app_name ?? attributes.source;
-  return typeof app === 'string' ? appIcon(app) : undefined;
+  return typeof app === 'string' ? appIcon(app, brands) : undefined;
 }
 
 /** What a player is on: the app, or else the input -- "Plex", "HDMI 3"; undefined for neither. */
