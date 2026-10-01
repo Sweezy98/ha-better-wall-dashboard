@@ -115,7 +115,8 @@ A **double tap** opens the whole system on one screen, with its own power button
   The screen lights up with the TV: what is playing, or a picture of your own, at the size and
   fill you choose (whole, cropped to fill, or stretched).
 - **More**: your extra button, and further buttons and dropdowns of your own — the receiver's
-  display brightness, its sound mode — that the tile itself leaves out.
+  display brightness, its sound mode — that the tile itself leaves out, each shown only while what
+  it belongs to is on, if you like.
 - **Devices and outlets**: the TV and the box with their power and what they show (*4K HDR*,
   *HDMI 3*, the app by its name — *Netflix*, not `com.netflix.ninja`), and the outlets to switch, such as the subwoofers'.
 - **The player** along the foot: the track to drag, shuffle, repeat, previous, play, next, stop.

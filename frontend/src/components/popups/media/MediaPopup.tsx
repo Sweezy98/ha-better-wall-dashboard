@@ -364,6 +364,14 @@ const Body: React.FC<{ config: MediaConfig; activeId: string | undefined }> = ({
   // The receiver's own sub output switched off silences every sub, whatever powers them.
   const off = [...unpowered.split(' ').filter(Boolean), ...(audio.subOutput === false ? SUBS : [])];
   const states = config.layout ? speakerStates(config.layout, audio, off) : {};
+  // Items shown only while what they belong to is on -- the receiver's display, say -- as one text.
+  const hiddenMore = useHass(state =>
+    config.more
+      .filter(item => item.shownWhile && !playerOn(state.entities[item.shownWhile]))
+      .map(item => item.id)
+      .join(' ')
+  );
+  const shownMore = config.more.filter(item => !hiddenMore.split(' ').includes(item.id));
   const tv = useEntity(config.tvEntity || undefined);
   const tvOn = config.tvEntity ? playerOn(tv) : audio.on;
   const art = usePlayerArt(config.screen === 'art' && tvOn ? activeId : undefined);
@@ -426,7 +434,7 @@ const Body: React.FC<{ config: MediaConfig; activeId: string | undefined }> = ({
             </section>
           )}
           {/* The tile's own extra button, here under a heading of its own below the outlets. */}
-          {(config.extra.entity || config.more.length > 0) && (
+          {(config.extra.entity || shownMore.length > 0) && (
             <section>
               <h3>{config.extra.title || t('media_extra_heading')}</h3>
               <div className='bubbles'>
@@ -435,7 +443,7 @@ const Body: React.FC<{ config: MediaConfig; activeId: string | undefined }> = ({
                     item={{ id: 'extra', entity: config.extra.entity, name: config.extra.name, icon: config.extra.icon, subs: [] }}
                   />
                 )}
-                {config.more.map(item =>
+                {shownMore.map(item =>
                   /^(input_)?select\./.test(item.entity) ? (
                     <SelectBubble key={item.id} item={item} />
                   ) : (

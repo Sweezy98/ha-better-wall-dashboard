@@ -301,6 +301,8 @@ export interface MediaMore {
   entity: string;
   name: string;
   icon: string;
+  /** Shown only while this is on -- the receiver its display brightness belongs to; empty, always. */
+  shownWhile: string;
 }
 
 export const MAX_MORE = 8;
@@ -357,7 +359,7 @@ export function mediaConfig(entity: string, options: Record<string, unknown>): M
       name: text(options.extra_name),
       title: text(options.extra_title),
     },
-    more: list(options.more, MAX_MORE, (item, index) => base(item, index)),
+    more: list(options.more, MAX_MORE, (item, index) => ({ ...base(item, index), shownWhile: text(item.shownWhile) })),
   };
 }
 

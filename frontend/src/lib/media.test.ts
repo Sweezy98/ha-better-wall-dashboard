@@ -128,6 +128,11 @@ describe('media config', () => {
     expect(config.screenScale).toBe(90);
     expect(config.screenFit).toBe('contain');
     expect(config.mounts).toEqual({ front: 'wall', rear: 'wall' });
+    expect(
+      mediaConfig('m.x', { more: [{ entity: 'select.dimmer', shownWhile: 'media_player.receiver' }, { entity: 'switch.x' }] }).more.map(
+        item => item.shownWhile
+      )
+    ).toEqual(['media_player.receiver', '']);
     expect(mediaConfig('m.x', { screen_scale: 5, heights_rear: 'ceiling' })).toMatchObject({
       screenScale: 30,
       mounts: { rear: 'ceiling' },

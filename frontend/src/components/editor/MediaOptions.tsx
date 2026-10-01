@@ -262,6 +262,15 @@ const MediaOptions: React.FC<{ tile: Tile; onChange: (options: Record<string, un
           'automation',
         ]}
         addLabel={t('add_media_more')}
+        create={() => ({ id: newId(), entity: '', name: '', icon: '', shownWhile: '' })}
+        extra={(item, patch) => (
+          <EntityField
+            label={t('media_more_while')}
+            hint={t('media_more_while_hint')}
+            value={item.shownWhile}
+            onChange={shownWhile => patch({ shownWhile })}
+          />
+        )}
         onChange={more => set({ more })}
       />
 
