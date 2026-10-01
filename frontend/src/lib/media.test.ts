@@ -140,7 +140,7 @@ describe('media config', () => {
 
 describe('app names', () => {
   it('names the apps people use, reads an unknown package, keeps a name', () => {
-    expect(appName('com.google.android.backdrop')).toBe('Ambient mode');
+    expect(appName('com.google.android.backdrop')).toBe('Screensaver');
     expect(appName('com.plexapp.android')).toBe('Plex');
     expect(appName('com.example.cinemabox')).toBe('Cinemabox');
     expect(appName('HDMI 3')).toBe('HDMI 3');

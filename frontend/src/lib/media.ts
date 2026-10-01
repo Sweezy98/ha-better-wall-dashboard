@@ -347,7 +347,7 @@ export function mediaConfig(entity: string, options: Record<string, unknown>): M
  * in its options. Names are the apps' own; nothing about anyone's house.
  */
 const ANDROID_APPS: Record<string, string> = {
-  'com.google.android.backdrop': 'Ambient mode',
+  'com.google.android.backdrop': 'Screensaver',
   'com.google.android.tvlauncher': 'Home',
   'com.google.android.leanbacklauncher': 'Home',
   'com.google.android.apps.tv.launcherx': 'Home',
@@ -363,8 +363,8 @@ const ANDROID_APPS: Record<string, string> = {
   'com.apple.atve.androidtv.appletv': 'Apple TV',
   'com.wbd.stream': 'Max',
   'com.spotify.tv.android': 'Spotify',
-  'com.aspiro.tidal': 'TIDAL',
-  'com.aspiro.tidal.tv': 'TIDAL',
+  'com.aspiro.tidal': 'Tidal',
+  'com.aspiro.tidal.tv': 'Tidal',
   'deezer.android.tv': 'Deezer',
   'org.xbmc.kodi': 'Kodi',
   'com.nvidia.tegrazone3': 'NVIDIA Games',
