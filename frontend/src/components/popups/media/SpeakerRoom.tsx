@@ -13,6 +13,12 @@ import {
   corners,
   driverRing,
   listenerFigure,
+  sleeperFigure,
+  roundFaces,
+  facesEye,
+  ON_STANDS,
+  type Figure,
+  type HeightMounts,
   boxBounds,
   limbBounds,
   paintOrder,
@@ -31,6 +37,7 @@ import {
   type Sofa,
 } from '../../../lib/room';
 import type { Channel, SpeakerLayout, SpeakerState } from '../../../lib/speakers';
+import type { ScreenFit } from '../../../lib/media';
 import { useRoomView } from './useRoomView';
 
 /**
@@ -156,6 +163,17 @@ const StyledRoom = styled.figure`
     fill: #122130;
   }
 
+  .speaker .can {
+    fill: rgba(0, 0, 0, 0.35);
+    stroke: rgba(150, 185, 220, 0.25);
+  }
+
+  .zz {
+    fill: ${({ theme }) => theme.text.secondary};
+    font-family: ${({ theme }) => theme.font};
+    font-weight: 600;
+  }
+
   .speaker .driver {
     fill: #060c12;
     stroke: rgba(150, 185, 220, 0.3);
@@ -240,8 +258,12 @@ const PICTURE_CELLS = [6, 4];
  * parallelogram, and the face a trapezoid -- turned, the picture slid off it.
  * In the face's own metres, so the picture fits at its own proportions.
  */
-function screenPicture(href: string, camera: Camera, id: string): React.ReactNode {
+const FIT_ASPECT: Record<ScreenFit, string> = { contain: 'xMidYMid meet', cover: 'xMidYMid slice', stretch: 'none' };
+
+function screenPicture(href: string, camera: Camera, id: string, scale: number, fit: ScreenFit): React.ReactNode {
   const { x, y, z, w, d, h } = SCREEN;
+  // The picture's own area: this share of the screen, centred, the rest the screen's blue.
+  const [pw, ph] = [(w * scale) / 100, (h * scale) / 100];
   // Seen from the seat: across from its left edge, down from its top.
   const at = (u: number, v: number) => onScreen([x - w / 2 + u, y + d / 2, z + h - v], camera);
   const [across, down] = PICTURE_CELLS;
@@ -262,11 +284,11 @@ function screenPicture(href: string, camera: Camera, id: string): React.ReactNod
           </clipPath>
           <image
             href={href}
-            x={w * 0.03}
-            y={h * 0.05}
-            width={w * 0.94}
-            height={h * 0.9}
-            preserveAspectRatio='xMidYMid meet'
+            x={(w - pw) / 2}
+            y={(h - ph) / 2}
+            width={pw}
+            height={ph}
+            preserveAspectRatio={FIT_ASPECT[fit]}
             clipPath={`url(#${id}-cell-${i}-${j})`}
           />
         </g>
@@ -274,6 +296,31 @@ function screenPicture(href: string, camera: Camera, id: string): React.ReactNod
     }
   }
   return cells;
+}
+
+/**
+ * An in-ceiling speaker: a flat round can, its grille the bottom cap facing
+ * down into the room -- seen from below, the grille and its driver; from
+ * above, the can's back.
+ */
+function roundSpeaker(b: Box, camera: Camera): { faces: React.ReactNode[]; shown: Set<string> } {
+  const shown = new Set<string>();
+  const faces: React.ReactNode[] = [];
+  roundFaces(b).forEach((face, index) => {
+    if (!facesEye(face.normal, face.points[0], camera.eye)) return;
+    shown.add(face.name);
+    const points = face.points.map(point => onScreen(point, camera));
+    faces.push(<polygon key={index} data-face={face.name === 'bottom' ? 'back' : face.name} points={pointsText(points)} />);
+    if (face.name === 'bottom' || face.name === 'top') {
+      // The driver behind the grille below; the can's narrower back above.
+      const centre: Point3 = [b.x, b.y, face.points[0][2]];
+      const inner = face.points.map(point =>
+        onScreen([centre[0] + (point[0] - centre[0]) * 0.72, centre[1] + (point[1] - centre[1]) * 0.72, centre[2]], camera)
+      );
+      faces.push(<polygon key={`${index}-inner`} className={face.name === 'bottom' ? 'driver' : 'can'} points={pointsText(inner)} />);
+    }
+  });
+  return { faces, shown };
 }
 
 /** How big a length in metres comes out on screen at a point, as the camera sees it across. */
@@ -293,8 +340,8 @@ function screenLength(point: Point3, metres: number, camera: Camera): number {
  * the limb before it whenever the view turned. Each limb is still painted in
  * turn with the room, so the sofa hides what it should.
  */
-function figure(camera: Camera, id: string): Drawn[] {
-  const { limbs, head, headRadius } = listenerFigure();
+function figure(camera: Camera, id: string, pose: Figure, asleep: boolean): Drawn[] {
+  const { limbs, head, headRadius } = pose;
   const parts: Drawn[] = limbs.map((limb, index) => {
     const middle: Point3 = [0, 1, 2].map(axis => (limb.from[axis] + limb.to[axis]) / 2) as Point3;
     const width = screenLength(middle, limb.radius * 2, camera);
@@ -318,6 +365,19 @@ function figure(camera: Camera, id: string): Drawn[] {
     element: (
       <g className='person'>
         <circle cx={cx} cy={cy} r={screenLength(head, headRadius, camera)} fill={`url(#${id}-head)`} />
+        {asleep && (
+          <text
+            className='zz'
+            x={cx + screenLength(head, headRadius, camera) * 1.2}
+            y={cy - screenLength(head, headRadius, camera) * 1.2}
+            fontSize={screenLength(head, headRadius * 1.6, camera)}
+          >
+            z
+            <tspan dx='0.15em' dy='-0.5em' fontSize='1.3em'>
+              Z
+            </tspan>
+          </text>
+        )}
       </g>
     ),
   });
@@ -388,10 +448,15 @@ interface SpeakerRoomProps {
   layout: SpeakerLayout;
   sofa: Sofa;
   states: Record<string, SpeakerState>;
-  /** The receiver is on: the screen glows. */
+  /** The TV is on: the screen glows, and shows its picture. */
   on: boolean;
-  /** Someone drawn in the listening position. */
-  listener: boolean;
+  /** Someone in the listening position -- or lying down asleep -- or no one. */
+  listener: 'awake' | 'asleep' | null;
+  /** The height speakers on the wall or in the ceiling. */
+  mounts: HeightMounts;
+  /** The picture's share of the screen, and how it fills it. */
+  screenScale: number;
+  screenFit: ScreenFit;
   /** Turned, tilted, panned and zoomed by hand. */
   movable: boolean;
   /** The walls drawn, or the floor alone. */
@@ -405,12 +470,24 @@ interface SpeakerRoomProps {
  * each speaker where it stands, lit while the receiver plays through it --
  * the model alone, with nothing written over it.
  */
-const SpeakerRoom: React.FC<SpeakerRoomProps> = ({ layout, sofa, states, on, listener, movable, walls: withWalls, screen }) => {
+const SpeakerRoom: React.FC<SpeakerRoomProps> = ({
+  layout,
+  mounts,
+  sofa,
+  states,
+  on,
+  listener,
+  movable,
+  walls: withWalls,
+  screen,
+  screenScale,
+  screenFit,
+}) => {
   const t = useT();
   const id = useId().replace(/:/g, '');
   const { ref, view, moved, reset } = useRoomView<SVGSVGElement>(movable);
   const camera = useMemo(() => roomCamera(view), [view]);
-  const places = useMemo(() => speakerBoxes(layout), [layout]);
+  const places = useMemo(() => speakerBoxes(layout, mounts), [layout, mounts]);
 
   // Framed for the view it starts at, and kept so: a moved view zooms and turns within it.
   const viewBox = useMemo(() => {
@@ -462,24 +539,31 @@ const SpeakerRoom: React.FC<SpeakerRoomProps> = ({ layout, sofa, states, on, lis
     });
   };
   // The picture as part of the screen it lies on, so nothing can come between them.
-  solid('screen', 'screen', SCREEN, { 'data-on': on }, screen ? screenPicture(screen, camera, id) : null);
+  solid('screen', 'screen', SCREEN, { 'data-on': on }, screen ? screenPicture(screen, camera, id, screenScale, screenFit) : null);
   sofaBoxes(sofa).forEach((part, index) => solid(`sofa-${index}`, 'sofa', part));
-  if (listener) drawn.push(...figure(camera, id));
+  // Asleep on a sofa there is; with none, sitting up as ever.
+  const asleep = listener === 'asleep' && sofa !== 'none';
+  if (listener) drawn.push(...figure(camera, id, asleep ? sleeperFigure(sofa) : listenerFigure(), asleep));
 
   const pools: React.ReactNode[] = [];
   for (const [channel, place] of Object.entries(places) as [Channel, Box][]) {
     const state = states[channel] ?? 'unknown';
-    const kind = speakerKind(channel);
-    const { faces, shown } = boxFaces(place, camera);
-    const face = kind === 'ceiling' ? 'top' : 'back';
-    const drivers = shown.has(face)
-      ? DRIVERS[kind].map(([across, up, radius], index) => (
-          <polygon key={`driver-${index}`} className='driver' points={pointsText(driverRing(place, face, across, up, radius).map(at))} />
-        ))
-      : null;
-    const standing = channel === 'SL' || channel === 'SR';
-    // Light on the floor under what plays and stands low.
-    if (state === 'active' && place.z < 1.2) {
+    const kind = speakerKind(channel, mounts);
+    const round = kind === 'ceiling';
+    const { faces, shown } = round ? roundSpeaker(place, camera) : boxFaces(place, camera);
+    const drivers =
+      !round && shown.has('back')
+        ? DRIVERS[kind].map(([across, up, radius], index) => (
+            <polygon
+              key={`driver-${index}`}
+              className='driver'
+              points={pointsText(driverRing(place, 'back', across, up, radius).map(at))}
+            />
+          ))
+        : null;
+    const standing = ON_STANDS.includes(channel);
+    // Light on the floor under what plays and stands low -- or is in the ceiling, shining down.
+    if (state === 'active' && (place.z < 1.2 || round)) {
       const ring = driverRing({ ...place, z: 0, h: 0, d: 0, yaw: 0, pitch: 0 }, 'top', 0.5, 0, 0.6 / place.w, 28).map(at);
       pools.push(<polygon key={channel} points={pointsText(ring)} fill={`url(#${id}-pool)`} />);
     }

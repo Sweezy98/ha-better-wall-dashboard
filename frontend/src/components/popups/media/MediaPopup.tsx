@@ -2,6 +2,7 @@ import { memo, useState } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { useHass } from '@hakit/core';
 import { u } from '../../../themes/default.theme';
+import { pressable } from '../../../themes/interaction';
 import Popup from '../../base/popup/Popup';
 import Bubble from '../../base/bubble/Bubble';
 import Icon from '../../base/icon/Icon';
@@ -15,7 +16,7 @@ import { domainIcon, toggleService, useCallService, useEntity, useT } from '../.
 import { useAudio, usePlayerArt, type Audio } from '../../../hooks/useMedia';
 import { useImageUrl } from '../../../hooks/useBackgroundImage';
 import { playerApp, playerOn, type MediaConfig, type MediaDevice, type MediaSwitch } from '../../../lib/media';
-import { formatLayout, speakerStates } from '../../../lib/speakers';
+import { SUBS, formatLayout, speakerStates } from '../../../lib/speakers';
 
 /**
  * One screen, nothing to scroll: the inputs along the top, the audio, the
@@ -66,7 +67,10 @@ const StyledBody = styled.div`
     flex-shrink: 0;
   }
 
+  /* The heading sits on its picture as the others' do on their first item:
+     the column's gap is between sections, not under a heading. */
   .room {
+    gap: 0;
     overflow: hidden;
   }
 
@@ -274,7 +278,7 @@ const NowPlaying: React.FC<{ activeId: string | undefined }> = ({ activeId }) =>
 
 const Body: React.FC<{ config: MediaConfig; activeId: string | undefined }> = ({ config, activeId }) => {
   const t = useT();
-  const audio = useAudio(config.volume, config.volumeUnit, config.modeEntity, config.formatEntity);
+  const audio = useAudio(config.volume, config.volumeUnit, config.modeEntity, config.formatEntity, config.subOutput);
   // The subwoofers whose outlets are off, as one text so the popup re-renders when that changes.
   const unpowered = useHass(state =>
     config.switches
@@ -282,10 +286,14 @@ const Body: React.FC<{ config: MediaConfig; activeId: string | undefined }> = ({
       .flatMap(item => item.subs)
       .join(' ')
   );
-  const states = config.layout ? speakerStates(config.layout, audio, unpowered.split(' ').filter(Boolean)) : {};
-  const art = usePlayerArt(config.screen === 'art' ? activeId : undefined);
+  // The receiver's own sub output switched off silences every sub, whatever powers them.
+  const off = [...unpowered.split(' ').filter(Boolean), ...(audio.subOutput === false ? SUBS : [])];
+  const states = config.layout ? speakerStates(config.layout, audio, off) : {};
+  const tv = useEntity(config.tvEntity || undefined);
+  const tvOn = config.tvEntity ? playerOn(tv) : audio.on;
+  const art = usePlayerArt(config.screen === 'art' && tvOn ? activeId : undefined);
   const picture = useImageUrl(config.screen === 'image' ? config.screenImage : '', '');
-  const screen = config.screen === 'art' ? art : config.screen === 'image' ? picture : undefined;
+  const screen = !tvOn ? undefined : config.screen === 'art' ? art : config.screen === 'image' ? picture : undefined;
 
   return (
     <StyledBody data-room={config.layout !== null}>
@@ -304,10 +312,13 @@ const Body: React.FC<{ config: MediaConfig; activeId: string | undefined }> = ({
             <h3>{t('media_speakers')}</h3>
             <SpeakerRoom
               layout={config.layout}
+              mounts={config.mounts}
               sofa={config.sofa}
               states={states}
-              on={audio.on}
-              listener={config.listener}
+              on={tvOn}
+              listener={config.listener ? (config.sleeps && !audio.on && !tvOn ? 'asleep' : 'awake') : null}
+              screenScale={config.screenScale}
+              screenFit={config.screenFit}
               movable={config.roomMovable}
               walls={config.walls}
               screen={screen || undefined}
@@ -356,6 +367,40 @@ interface MediaPopupProps {
  * devices of the system, what the receiver decodes -- and the room, each
  * speaker lit as it plays.
  */
+/** The popup's own power button, beside its close: the tile's, lit while on. */
+const StyledPower = styled.button`
+  width: ${u(3.4)};
+  height: ${u(3.4)};
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: ${u(1.6)};
+  ${({ theme }) => pressable(theme.bubble.background, theme.bubble.pressed)}
+
+  &[aria-pressed='true'] {
+    color: ${({ theme }) => theme.colors.accent};
+  }
+`;
+
+const PowerButton: React.FC<{ entityId: string }> = ({ entityId }) => {
+  const t = useT();
+  const entity = useEntity(entityId || undefined);
+  const callService = useCallService();
+  if (!entity) return null;
+  return (
+    <StyledPower
+      type='button'
+      aria-label={t('media_power')}
+      data-tip={t('media_power')}
+      aria-pressed={playerOn(entity)}
+      onClick={() => toggle(callService, entityId)}
+    >
+      <Icon icon='mdi:power' />
+    </StyledPower>
+  );
+};
+
 const MediaPopup: React.FC<MediaPopupProps> = ({ open, onClose, config, activeId, name }) => {
   const theme = useTheme();
   const player = useEntity(activeId);
@@ -373,6 +418,7 @@ const MediaPopup: React.FC<MediaPopupProps> = ({ open, onClose, config, activeId
       iconColor={theme.colors.accent}
       full
       fixedBody
+      actions={<PowerButton entityId={config.power} />}
     >
       <Body config={config} activeId={activeId} />
     </Popup>

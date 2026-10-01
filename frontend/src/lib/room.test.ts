@@ -3,6 +3,10 @@ import {
   FACES,
   LISTENER,
   listenerFigure,
+  sleeperFigure,
+  roundFaces,
+  facesEye,
+  speakerKind,
   limbBounds,
   sphereBounds,
   ROOM,
@@ -120,6 +124,41 @@ describe('listener', () => {
   it('sits clear of every part of the sofa, so a plane parts each limb from each part', () => {
     const figure = listenerFigure();
     for (const sofa of ['straight', 'l_left', 'l_right'] as const) {
+      for (const part of sofaBoxes(sofa)) {
+        for (const limb of figure.limbs) expect(paintsBefore(limbBounds(limb), boxBounds(part), [0, 9, 6])).not.toBeNull();
+        expect(paintsBefore(sphereBounds(figure.head, figure.headRadius), boxBounds(part), [0, 9, 6])).not.toBeNull();
+      }
+    }
+  });
+});
+
+describe('more speakers', () => {
+  it('puts front wides on stands either side, turned to the seat', () => {
+    const places = speakerBoxes(parseLayout('9.4.4')!);
+    expect(places.FWL!.x).toBeLessThan(0);
+    expect(places.FWR!.x).toBeGreaterThan(0);
+    expect(places.FWL!.yaw).toBeLessThan(0);
+  });
+
+  it('mounts heights in the ceiling, round and facing down, front and rear on their own', () => {
+    const mounted = speakerBoxes(parseLayout('7.4.4')!, { front: 'ceiling', rear: 'wall' });
+    expect(mounted.FHL!.z + mounted.FHL!.h).toBeCloseTo(ROOM.height);
+    expect(mounted.FHL!.pitch).toBeUndefined();
+    expect(mounted.RHL!.z).toBeLessThan(2.2);
+    expect(speakerKind('FHL', { front: 'ceiling', rear: 'wall' })).toBe('ceiling');
+    expect(speakerKind('RHL', { front: 'ceiling', rear: 'wall' })).toBe('bookshelf');
+    expect(speakerKind('TML')).toBe('ceiling');
+    const grille = roundFaces(mounted.FHL!).find(face => face.name === 'bottom')!;
+    // Seen from the seat below, the grille faces it; from above, it does not.
+    expect(facesEye(grille.normal, grille.points[0], LISTENER)).toBe(true);
+    expect(facesEye(grille.normal, grille.points[0], [0, 8, 6])).toBe(false);
+  });
+});
+
+describe('sleeper', () => {
+  it('lies clear of every part of every sofa, so a plane parts each limb from each part', () => {
+    for (const sofa of ['straight', 'l_left', 'l_right'] as const) {
+      const figure = sleeperFigure(sofa);
       for (const part of sofaBoxes(sofa)) {
         for (const limb of figure.limbs) expect(paintsBefore(limbBounds(limb), boxBounds(part), [0, 9, 6])).not.toBeNull();
         expect(paintsBefore(sphereBounds(figure.head, figure.headRadius), boxBounds(part), [0, 9, 6])).not.toBeNull();

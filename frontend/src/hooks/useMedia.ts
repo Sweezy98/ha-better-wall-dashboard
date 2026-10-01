@@ -24,7 +24,11 @@ function useAudioSensors(entityId: string): Partial<Record<AudioSensor, string>>
   return useMemo(() => JSON.parse(found) as Partial<Record<AudioSensor, string>>, [found]);
 }
 
-const reading = (state: string | undefined) => (state && state !== 'unknown' && state !== 'unavailable' ? state.trim() : undefined);
+/** A reading worth showing: not "unknown" in any case, nor a blank. */
+const reading = (state: string | undefined) => {
+  const text = state?.trim();
+  return text && !['unknown', 'unavailable', 'none'].includes(text.toLowerCase()) ? text : undefined;
+};
 
 export interface Volume {
   /** 0..1, or null for a player that does not say. */
@@ -43,6 +47,8 @@ export interface Audio {
   decoder?: string;
   signal?: string;
   sampleRate?: string;
+  /** The receiver's subwoofer output: false while switched off, undefined where unknown. */
+  subOutput?: boolean;
 }
 
 /**
@@ -50,7 +56,7 @@ export interface Audio {
  * Denon receiver -- the sound mode it renders in, and, where Denon's HACS
  * integration or a chosen sensor has it, what the source carries.
  */
-export function useAudio(entityId: string, unit: VolumeUnit, modeEntity: string, formatEntity: string): Audio {
+export function useAudio(entityId: string, unit: VolumeUnit, modeEntity: string, formatEntity: string, subOutputEntity = ''): Audio {
   const language = useLanguage();
   const player = useEntity(entityId || undefined);
   const platform = useHass(state => state.entitiesRegistryDisplay[entityId]?.platform);
@@ -63,6 +69,7 @@ export function useAudio(entityId: string, unit: VolumeUnit, modeEntity: string,
   const decoder = useEntity(sensors.decoder);
   const signal = useEntity(sensors.signal);
   const sampleRate = useEntity(sensors.sampleRate);
+  const subOutput = useEntity(subOutputEntity || sensors.subOutput);
 
   const attributes = (player?.attributes ?? {}) as Record<string, unknown>;
   const rawLevel = Number(attributes.volume_level);
@@ -86,7 +93,9 @@ export function useAudio(entityId: string, unit: VolumeUnit, modeEntity: string,
     mode,
     format: reading(format?.state),
     decoder: reading(decoder?.state),
-    signal: reading(signal?.state),
+    // Denon's raw signal code ("12") means nothing to anyone: words only.
+    signal: /[a-z]/i.test(signal?.state ?? '') ? reading(signal?.state) : undefined,
     sampleRate: reading(sampleRate?.state),
+    subOutput: subOutput?.state === 'on' ? true : subOutput?.state === 'off' ? false : undefined,
   };
 }

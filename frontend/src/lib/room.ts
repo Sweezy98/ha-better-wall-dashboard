@@ -28,26 +28,54 @@ export type Point2 = [number, number];
 
 const box = (x: number, y: number, z: number, w: number, d: number, h: number): Box => ({ x, y, z, w, d, h });
 
-/** Where each speaker stands, in the places a 7.x.4 room has them. */
-export function speakerBoxes(layout: SpeakerLayout): Partial<Record<Channel, Box>> {
+/** How the height speakers are mounted: high on the wall as bookshelves, or round in the ceiling. */
+export const MOUNTS = ['wall', 'ceiling'] as const;
+export type Mount = (typeof MOUNTS)[number];
+
+export interface HeightMounts {
+  front: Mount;
+  rear: Mount;
+}
+
+export const WALL_MOUNTS: HeightMounts = { front: 'wall', rear: 'wall' };
+
+/** Round, flat in the ceiling, facing down: the top middle pair always, the others where so mounted. */
+export function inCeiling(channel: Channel, mounts: HeightMounts): boolean {
+  if (channel === 'TML' || channel === 'TMR') return true;
+  if (channel === 'FHL' || channel === 'FHR') return mounts.front === 'ceiling';
+  if (channel === 'RHL' || channel === 'RHR') return mounts.rear === 'ceiling';
+  return false;
+}
+
+/** An in-ceiling speaker: a flat round can, its grille flush with the ceiling. */
+const CEILING_SIZE = 0.26;
+const CEILING_DEPTH = 0.06;
+const ceiling = (x: number, y: number): Box => box(x, y, ROOM.height - CEILING_DEPTH, CEILING_SIZE, CEILING_SIZE, CEILING_DEPTH);
+
+/** Where each speaker stands, in the places a 9.x.6 room has them. */
+export function speakerBoxes(layout: SpeakerLayout, mounts: HeightMounts = WALL_MOUNTS): Partial<Record<Channel, Box>> {
   const back = ROOM.depth;
   const places: Record<Channel, Box> = {
     FL: box(-1.35, 0.4, 0, 0.3, 0.32, 1.1),
     FR: box(1.35, 0.4, 0, 0.3, 0.32, 1.1),
     C: box(0, 0.32, 0.6, 0.62, 0.26, 0.2),
+    // Front wides on stands, about 60° off the seat's centre line.
+    FWL: box(-1.85, 2.9, 0.95, 0.22, 0.26, 0.36),
+    FWR: box(1.85, 2.9, 0.95, 0.22, 0.26, 0.36),
     SL: box(-1.8, 4.05, 0.95, 0.22, 0.26, 0.36),
     SR: box(1.8, 4.05, 0.95, 0.22, 0.26, 0.36),
     // Behind the sofa's corners.
     // Three-way bookshelves, a little taller than the other small ones.
     SBL: box(-1.2, back - 0.3, 0.9, 0.28, 0.28, 0.52),
     SBR: box(1.2, back - 0.3, 0.9, 0.28, 0.28, 0.52),
-    FHL: box(-1.3, 0.13, 2.05, 0.24, 0.22, 0.32),
-    FHR: box(1.3, 0.13, 2.05, 0.24, 0.22, 0.32),
-    TML: box(-0.8, 2.9, ROOM.height - 0.08, 0.3, 0.3, 0.08),
-    TMR: box(0.8, 2.9, ROOM.height - 0.08, 0.3, 0.3, 0.08),
-    // High on the back wall, above the surround backs.
-    RHL: box(-1.3, back - 0.13, 2.05, 0.24, 0.22, 0.32),
-    RHR: box(1.3, back - 0.13, 2.05, 0.24, 0.22, 0.32),
+    // High on the front wall, or in the ceiling in front of the seat.
+    FHL: mounts.front === 'ceiling' ? ceiling(-1.1, 1.6) : box(-1.3, 0.13, 2.05, 0.24, 0.22, 0.32),
+    FHR: mounts.front === 'ceiling' ? ceiling(1.1, 1.6) : box(1.3, 0.13, 2.05, 0.24, 0.22, 0.32),
+    TML: ceiling(-0.8, 2.9),
+    TMR: ceiling(0.8, 2.9),
+    // High on the back wall above the surround backs, or in the ceiling behind the seat.
+    RHL: mounts.rear === 'ceiling' ? ceiling(-1.1, back - 0.55) : box(-1.3, back - 0.13, 2.05, 0.24, 0.22, 0.32),
+    RHR: mounts.rear === 'ceiling' ? ceiling(1.1, back - 0.55) : box(1.3, back - 0.13, 2.05, 0.24, 0.22, 0.32),
     // One sub stands in the middle; a pair either side of it.
     SW1: box(layout.subs === 1 ? 0 : -0.4, 0.34, 0, 0.4, 0.4, 0.42),
     SW2: box(0.4, 0.34, 0, 0.4, 0.4, 0.42),
@@ -59,7 +87,7 @@ export function speakerBoxes(layout: SpeakerLayout): Partial<Record<Channel, Box
   return Object.fromEntries(
     layoutChannels(layout).map(channel => [
       channel,
-      AIMED.includes(channel) ? aimAt(places[channel], LISTENER, TILTED.includes(channel)) : places[channel],
+      AIMED.includes(channel) && !inCeiling(channel, mounts) ? aimAt(places[channel], LISTENER, TILTED.includes(channel)) : places[channel],
     ])
   );
 }
@@ -68,7 +96,7 @@ export function speakerBoxes(layout: SpeakerLayout): Partial<Record<Channel, Box
 export const LISTENER: Point3 = [0, 4.05, 1.0];
 
 /** The speakers turned to the listener: all but the centre and the subwoofers, which face down the room, and those in the ceiling. */
-const AIMED: Channel[] = ['FL', 'FR', 'SL', 'SR', 'SBL', 'SBR', 'FHL', 'FHR', 'RHL', 'RHR'];
+const AIMED: Channel[] = ['FL', 'FR', 'FWL', 'FWR', 'SL', 'SR', 'SBL', 'SBR', 'FHL', 'FHR', 'RHL', 'RHR'];
 
 /** Of those, the ones up on the wall, tilted down as well; the rest stand upright, only turned in. */
 const TILTED: Channel[] = ['FHL', 'FHR', 'RHL', 'RHR'];
@@ -144,12 +172,49 @@ export const SCREEN = box(0, 0.05, 0.95, 1.5, 0.06, 0.86);
 
 export type SpeakerKind = 'tower' | 'center' | 'sub' | 'ceiling' | 'bookshelf' | 'threeWay';
 
-export function speakerKind(channel: Channel): SpeakerKind {
+export function speakerKind(channel: Channel, mounts: HeightMounts = WALL_MOUNTS): SpeakerKind {
+  if (inCeiling(channel, mounts)) return 'ceiling';
   if (channel === 'FL' || channel === 'FR') return 'tower';
   if (channel === 'C') return 'center';
   if (channel.startsWith('SW')) return 'sub';
   if (channel === 'SBL' || channel === 'SBR') return 'threeWay';
-  return channel === 'TML' || channel === 'TMR' ? 'ceiling' : 'bookshelf';
+  return 'bookshelf';
+}
+
+/** The speakers on stands: a pole down to the floor is drawn under them. */
+export const ON_STANDS: Channel[] = ['SL', 'SR', 'FWL', 'FWR'];
+
+/** A flat round shape's faces: its two caps and its side, each with the way it faces. */
+export interface RoundFace {
+  name: 'top' | 'bottom' | 'side';
+  points: Point3[];
+  normal: Point3;
+}
+
+/**
+ * A box drawn as the round can in it -- an in-ceiling speaker: the circle
+ * across its width, its height the can's depth. The bottom cap is the
+ * grille, facing down into the room.
+ */
+export function roundFaces(b: Box, steps = 28): RoundFace[] {
+  const r = b.w / 2;
+  const ring = (z: number) =>
+    Array.from({ length: steps }, (_, i) => {
+      const angle = (i / steps) * Math.PI * 2;
+      return [b.x + r * Math.cos(angle), b.y + r * Math.sin(angle), z] as Point3;
+    });
+  const [low, high] = [ring(b.z), ring(b.z + b.h)];
+  const sides: RoundFace[] = low.map((point, i) => {
+    const next = (i + 1) % steps;
+    const angle = ((i + 0.5) / steps) * Math.PI * 2;
+    return { name: 'side', points: [point, low[next], high[next], high[i]], normal: [Math.cos(angle), Math.sin(angle), 0] };
+  });
+  return [{ name: 'bottom', points: low, normal: [0, 0, -1] }, ...sides, { name: 'top', points: high, normal: [0, 0, 1] }];
+}
+
+/** Whether a face turned this way, through this point, faces the eye. */
+export function facesEye(normal: Point3, point: Point3, eye: Point3): boolean {
+  return normal[0] * (eye[0] - point[0]) + normal[1] * (eye[1] - point[1]) + normal[2] * (eye[2] - point[2]) > 0;
 }
 
 /** Each kind's drivers on its face: across and up it (0..1), and their radius as a share of its width. */
@@ -305,11 +370,17 @@ export interface Limb {
   radius: number;
 }
 
+export interface Figure {
+  limbs: Limb[];
+  head: Point3;
+  headRadius: number;
+}
+
 /**
  * Someone seated in the listening position, facing the screen: body, arms
  * resting on the lap, legs down to the floor, as rounded limbs -- and a head.
  */
-export function listenerFigure(): { limbs: Limb[]; head: Point3; headRadius: number } {
+export function listenerFigure(): Figure {
   // Seated clear of the sofa -- thighs just above the cushion, back just
   // before the back rest, shins before the seat's edge -- so a plane parts
   // each limb from each part of it, and turning the view cannot paint the
@@ -332,6 +403,37 @@ export function listenerFigure(): { limbs: Limb[]; head: Point3; headRadius: num
       ...both(side => limb([x + side * 0.25, y + 0.06, 0.64], [x + side * 0.16, y - 0.2, 0.63], 0.048)),
     ],
     head: [x, y + 0.13, 1.17],
+    headRadius: 0.1,
+  };
+}
+
+/**
+ * Someone asleep on the back seat, the system off: on their back along it,
+ * head toward the arm at the far end from an L's extension, clear of every
+ * cushion and back rest, so the sofa never paints over them.
+ */
+export function sleeperFigure(sofa: Sofa): Figure {
+  const flip = sofa === 'l_right' ? -1 : 1;
+  const y = 4.04;
+  // On the cushions, whose top is 0.44 up.
+  const lie = (radius: number) => 0.445 + radius;
+  const at = (x: number, dy: number, z: number): Point3 => [x * flip, y + dy, z];
+  const limb = (from: Point3, to: Point3, radius: number): Limb => ({ from, to, radius });
+  const both = (make: (side: number) => Limb) => [make(-1), make(1)];
+  return {
+    limbs: [
+      // Legs along the seat, the feet up at the end.
+      ...both(side => limb(at(0.32, side * 0.1, lie(0.08)), at(-0.06, side * 0.1, lie(0.08)), 0.08)),
+      ...both(side => limb(at(-0.1, side * 0.1, lie(0.06)), at(-0.44, side * 0.1, lie(0.06)), 0.06)),
+      ...both(side => limb(at(-0.48, side * 0.1, lie(0.045)), at(-0.5, side * 0.1, lie(0.045) + 0.1), 0.045)),
+      // The body, and the shoulders across it.
+      limb(at(0.38, 0, lie(0.14)), at(0.78, 0, lie(0.14)), 0.14),
+      limb(at(0.84, -0.19, lie(0.075)), at(0.84, 0.19, lie(0.075)), 0.075),
+      // Arms along the body.
+      ...both(side => limb(at(0.82, side * 0.24, lie(0.055)), at(0.56, side * 0.25, lie(0.055)), 0.055)),
+      ...both(side => limb(at(0.54, side * 0.25, lie(0.048)), at(0.3, side * 0.22, lie(0.048)), 0.048)),
+    ],
+    head: at(1.04, 0, lie(0.1)),
     headRadius: 0.1,
   };
 }

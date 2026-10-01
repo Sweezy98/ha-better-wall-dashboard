@@ -6,7 +6,7 @@
  */
 import { parseLayout, type SpeakerLayout } from './speakers';
 import { runService } from './actions';
-import { SOFAS, type Sofa } from './room';
+import { MOUNTS, SOFAS, type HeightMounts, type Mount, type Sofa } from './room';
 
 /** Home Assistant's MediaPlayerEntityFeature bits. */
 const FEATURES = {
@@ -221,6 +221,8 @@ export const DENON_SENSORS = {
   sampleRate: 'sample_rate',
   modeInfo: 'mode_info',
   soundMode: 'sound_mode',
+  /** A switch, not a sensor: the receiver's subwoofer output on or off. */
+  subOutput: 'subwoofer_switch',
 } as const;
 
 export type AudioSensor = keyof typeof DENON_SENSORS;
@@ -237,8 +239,10 @@ export function audioSensors(entityId: string, registry: Record<string, DisplayE
   if (!device) return {};
   const found: Partial<Record<AudioSensor, string>> = {};
   for (const entry of Object.values(registry)) {
-    if (entry.device_id !== device || entry.platform !== 'denon_avr' || !entry.entity_id.startsWith('sensor.')) continue;
+    if (entry.device_id !== device || entry.platform !== 'denon_avr') continue;
     const role = (Object.keys(DENON_SENSORS) as AudioSensor[]).find(key => DENON_SENSORS[key] === entry.translation_key);
+    // The sub's output is the one switch among them.
+    if (role && !entry.entity_id.startsWith(role === 'subOutput' ? 'switch.' : 'sensor.')) continue;
     if (role) found[role] = entry.entity_id;
   }
   return found;
@@ -274,7 +278,21 @@ export interface MediaConfig {
   /** What the room's screen shows: nothing, what plays, or a picture of one's own. */
   screen: ScreenShows;
   screenImage: string;
+  /** How much of the screen the picture may take, in percent, and how it fills that. */
+  screenScale: number;
+  screenFit: ScreenFit;
+  /** Whether the TV is on: dark without; the receiver's power when left empty. */
+  tvEntity: string;
+  /** The listener lies down asleep while the system is off. */
+  sleeps: boolean;
+  /** The height speakers on the wall or in the ceiling, front and rear each. */
+  mounts: HeightMounts;
+  /** The receiver's subwoofer output; found by itself for Denon's HACS integration. */
+  subOutput: string;
 }
+
+export const SCREEN_FITS = ['contain', 'cover', 'stretch'] as const;
+export type ScreenFit = (typeof SCREEN_FITS)[number];
 
 export const SCREEN_SHOWS = ['off', 'art', 'image'] as const;
 export type ScreenShows = (typeof SCREEN_SHOWS)[number];
@@ -283,7 +301,9 @@ export type ScreenShows = (typeof SCREEN_SHOWS)[number];
  * A media tile's options, each checked, from `tile.options`:
  * `players`, `power`, `volume`, `volume_unit`, `presets`, `switches`,
  * `switches_title`, `devices`, `night`, `night_text`, `mode_entity`,
- * `format_entity`, `speakers` ("7.4.4"), `sofa`, `listener`, `room_movable`, `hide_walls`, `screen` and `screen_image`.
+ * `format_entity`, `speakers` ("7.4.4"), `sofa`, `listener`, `listener_sleeps`, `room_movable`,
+ * `hide_walls`, `screen`, `screen_image`, `screen_scale`, `screen_fit`, `tv_entity`,
+ * `heights_front`, `heights_rear` and `sub_output`.
  */
 export function mediaConfig(entity: string, options: Record<string, unknown>): MediaConfig {
   const extra = Array.isArray(options.players) ? options.players.filter((id): id is string => typeof id === 'string' && id !== '') : [];
@@ -308,6 +328,15 @@ export function mediaConfig(entity: string, options: Record<string, unknown>): M
     walls: options.hide_walls !== true,
     screen: SCREEN_SHOWS.includes(options.screen as ScreenShows) ? (options.screen as ScreenShows) : 'off',
     screenImage: text(options.screen_image),
+    screenScale: typeof options.screen_scale === 'number' ? Math.min(100, Math.max(30, Math.round(options.screen_scale))) : 90,
+    screenFit: SCREEN_FITS.includes(options.screen_fit as ScreenFit) ? (options.screen_fit as ScreenFit) : 'contain',
+    tvEntity: text(options.tv_entity),
+    sleeps: options.listener_sleeps === true,
+    mounts: {
+      front: MOUNTS.includes(options.heights_front as Mount) ? (options.heights_front as Mount) : 'wall',
+      rear: MOUNTS.includes(options.heights_rear as Mount) ? (options.heights_rear as Mount) : 'wall',
+    },
+    subOutput: text(options.sub_output),
   };
 }
 

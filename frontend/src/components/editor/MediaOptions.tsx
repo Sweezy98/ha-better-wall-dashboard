@@ -7,6 +7,7 @@ import {
   MAX_SWITCHES,
   PRESET_KINDS,
   SCREEN_SHOWS,
+  SCREEN_FITS,
   VOLUME_UNITS,
   mediaConfig,
   type MediaDevice,
@@ -15,10 +16,10 @@ import {
   type PresetKind,
 } from '../../lib/media';
 import { BEDS, HEIGHTS, SUB_COUNTS, SUBS, layoutText, type SpeakerLayout } from '../../lib/speakers';
-import { SOFAS } from '../../lib/room';
+import { MOUNTS, SOFAS } from '../../lib/room';
 import type { TranslationKey } from '../../lib/i18n';
 import NamedEntityList from './screens/NamedEntityList';
-import { CheckField, EntityField, EntityListField, MediaField, SelectField, TextField } from './fields';
+import { CheckField, EntityField, EntityListField, MediaField, NumberField, SelectField, TextField } from './fields';
 import { StyledField, StyledRow } from './fields.styled';
 
 /** What a preset does with its value: the player's inputs to choose from, or an app's id to type. */
@@ -229,6 +230,33 @@ const MediaOptions: React.FC<{ tile: Tile; onChange: (options: Record<string, un
               onChange={heights => setLayout({ heights: Number(heights) })}
             />
           </StyledRow>
+          {layout.heights > 0 && (
+            <StyledRow>
+              <SelectField
+                label={t('media_heights_front')}
+                value={config.mounts.front}
+                options={MOUNTS.map(mount => ({ value: mount, label: t(`media_mount_${mount}`) }))}
+                onChange={heights_front => set({ heights_front })}
+              />
+              {layout.heights >= 4 && (
+                <SelectField
+                  label={t('media_heights_rear')}
+                  value={config.mounts.rear}
+                  options={MOUNTS.map(mount => ({ value: mount, label: t(`media_mount_${mount}`) }))}
+                  onChange={heights_rear => set({ heights_rear })}
+                />
+              )}
+            </StyledRow>
+          )}
+          {layout.subs > 0 && (
+            <EntityField
+              label={t('media_sub_output')}
+              hint={t('media_sub_output_hint')}
+              domains={['switch', 'binary_sensor', 'input_boolean']}
+              value={config.subOutput}
+              onChange={sub_output => set({ sub_output })}
+            />
+          )}
           <SelectField
             label={t('media_sofa')}
             value={config.sofa}
@@ -240,6 +268,21 @@ const MediaOptions: React.FC<{ tile: Tile; onChange: (options: Record<string, un
             hint={t('media_listener_hint')}
             value={config.listener}
             onChange={listener => set({ listener })}
+          />
+          {config.listener && config.sofa !== 'none' && (
+            <CheckField
+              label={t('media_listener_sleeps')}
+              hint={t('media_listener_sleeps_hint')}
+              value={config.sleeps}
+              onChange={listener_sleeps => set({ listener_sleeps })}
+            />
+          )}
+          <EntityField
+            label={t('media_tv_entity')}
+            hint={t('media_tv_entity_hint')}
+            domains={['media_player', 'switch', 'binary_sensor', 'remote']}
+            value={config.tvEntity}
+            onChange={tv_entity => set({ tv_entity })}
           />
           <SelectField
             label={t('media_screen')}
@@ -255,6 +298,25 @@ const MediaOptions: React.FC<{ tile: Tile; onChange: (options: Record<string, un
               value={config.screenImage}
               onChange={screen_image => set({ screen_image })}
             />
+          )}
+          {config.screen !== 'off' && (
+            <StyledRow>
+              <NumberField
+                label={t('media_screen_scale')}
+                hint={t('media_screen_scale_hint')}
+                value={config.screenScale}
+                min={30}
+                max={100}
+                unit='%'
+                onChange={screen_scale => set({ screen_scale: Math.max(30, Math.min(100, screen_scale)) })}
+              />
+              <SelectField
+                label={t('media_screen_fit')}
+                value={config.screenFit}
+                options={SCREEN_FITS.map(fit => ({ value: fit, label: t(`media_screen_fit_${fit}`) }))}
+                onChange={screen_fit => set({ screen_fit })}
+              />
+            </StyledRow>
           )}
           <CheckField label={t('media_walls')} value={config.walls} onChange={walls => set({ hide_walls: !walls })} />
           <CheckField

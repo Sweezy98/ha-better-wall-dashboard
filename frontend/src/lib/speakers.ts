@@ -12,10 +12,28 @@
  */
 
 export type Channel =
-  'FL' | 'FR' | 'C' | 'SL' | 'SR' | 'SBL' | 'SBR' | 'FHL' | 'FHR' | 'TML' | 'TMR' | 'RHL' | 'RHR' | 'SW1' | 'SW2' | 'SW3' | 'SW4';
+  | 'FL'
+  | 'FR'
+  | 'C'
+  | 'FWL'
+  | 'FWR'
+  | 'SL'
+  | 'SR'
+  | 'SBL'
+  | 'SBR'
+  | 'FHL'
+  | 'FHR'
+  | 'TML'
+  | 'TMR'
+  | 'RHL'
+  | 'RHR'
+  | 'SW1'
+  | 'SW2'
+  | 'SW3'
+  | 'SW4';
 
 export interface SpeakerLayout {
-  /** Speakers at ear height: 2, 3, 5 or 7. */
+  /** Speakers at ear height: 2, 3, 5, 7, or 9 with front wides. */
   bed: number;
   /** Subwoofers: the first pair at the front, the second at the back. */
   subs: number;
@@ -23,7 +41,7 @@ export interface SpeakerLayout {
   heights: number;
 }
 
-export const BEDS = [2, 3, 5, 7];
+export const BEDS = [2, 3, 5, 7, 9];
 export const SUB_COUNTS = [0, 1, 2, 3, 4];
 export const HEIGHTS = [0, 2, 4, 6];
 
@@ -47,6 +65,7 @@ const BED: Record<number, Channel[]> = {
   3: ['FL', 'FR', 'C'],
   5: ['FL', 'FR', 'C', 'SL', 'SR'],
   7: ['FL', 'FR', 'C', 'SL', 'SR', 'SBL', 'SBR'],
+  9: ['FL', 'FR', 'C', 'FWL', 'FWR', 'SL', 'SR', 'SBL', 'SBR'],
 };
 
 const HEIGHT: Record<number, Channel[]> = {
@@ -118,7 +137,9 @@ export function sourceChannels(...texts: (string | undefined)[]): SourceChannels
 /** A source's channels the way people write a layout: "3/4/.1" is 7.1, a height channel or two makes it 7.1.4. */
 export function formatLayout(format: string | undefined): string | undefined {
   const source = sourceChannels(format);
-  if (!source) return format;
+  // Nothing to read -- a receiver with no signal says "/ /.0" -- is nothing
+  // to show; a word, like "PCM", is shown as it is.
+  if (!source) return format && /[a-z]/i.test(format) ? format.trim() : undefined;
   const bed = source.front + source.surround;
   return `${bed}.${source.lfe}${source.heights ? `.${source.heights}` : ''}`;
 }
@@ -162,6 +183,8 @@ export function speakerStates(layout: SpeakerLayout, sound: SoundInfo, unpowered
           ? sourceSpeakers(source)
           : null;
   const states: Record<string, SpeakerState> = {};
+  // The receiver off, every speaker is: drawn as a sub without power is.
+  if (!sound.on) return Object.fromEntries(channels.map(channel => [channel, 'unpowered']));
   for (const channel of channels) {
     if (isSubChannel(channel) && unpowered.includes(channel)) states[channel] = 'unpowered';
     else if (sounding === null) states[channel] = 'unknown';

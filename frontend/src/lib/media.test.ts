@@ -120,6 +120,13 @@ describe('media config', () => {
     expect(config.volumeUnit).toBe('auto');
     expect(config.layout).toEqual({ bed: 7, subs: 4, heights: 4 });
     expect(config.sofa).toBe('l_left');
+    expect(config.screenScale).toBe(90);
+    expect(config.screenFit).toBe('contain');
+    expect(config.mounts).toEqual({ front: 'wall', rear: 'wall' });
+    expect(mediaConfig('m.x', { screen_scale: 5, heights_rear: 'ceiling' })).toMatchObject({
+      screenScale: 30,
+      mounts: { rear: 'ceiling' },
+    });
     expect(mediaConfig('media_player.receiver', { power: 'remote.box', sofa: 'round' })).toMatchObject({
       power: 'remote.box',
       sofa: 'none',

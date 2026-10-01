@@ -8,6 +8,11 @@ const active = (states: Record<string, string>) =>
     .sort();
 
 describe('speakers', () => {
+  it('adds front wides for nine at ear height', () => {
+    expect(layoutChannels(parseLayout('9.4.6')!)).toContain('FWL');
+    expect(layoutChannels(parseLayout('9.4.6')!)).toHaveLength(19);
+  });
+
   it('reads a layout, rounding to one it can draw', () => {
     expect(cinema).toEqual({ bed: 7, subs: 4, heights: 4 });
     expect(parseLayout('5.1')).toEqual({ bed: 5, subs: 1, heights: 0 });
@@ -45,13 +50,14 @@ describe('speakers', () => {
     expect(formatLayout('2/0/.0')).toBe('2.0');
     expect(formatLayout('3/4/.1/4')).toBe('7.1.4');
     expect(formatLayout('PCM')).toBe('PCM');
+    expect(formatLayout('/ /.0')).toBeUndefined();
     expect(formatLayout(undefined)).toBeUndefined();
   });
 
   it('says unknown rather than guess, and silent while off', () => {
     expect(new Set(Object.values(speakerStates(cinema, { on: true, mode: 'Movie' })))).toEqual(new Set(['unknown']));
     expect(new Set(Object.values(speakerStates(cinema, { on: true, mode: 'DTS' })))).toEqual(new Set(['unknown']));
-    expect(new Set(Object.values(speakerStates(cinema, { on: false, mode: 'Dolby Atmos' })))).toEqual(new Set(['silent']));
+    expect(new Set(Object.values(speakerStates(cinema, { on: false, mode: 'Dolby Atmos' })))).toEqual(new Set(['unpowered']));
   });
 
   it('shows a subwoofer whose outlet is off as unpowered, each on its own', () => {
