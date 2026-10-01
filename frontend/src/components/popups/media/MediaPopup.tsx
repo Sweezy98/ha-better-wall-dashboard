@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { useHass } from '@hakit/core';
 import { u } from '../../../themes/default.theme';
@@ -196,52 +196,60 @@ const PowerBubble: React.FC<{ item: MediaSwitch | MediaDevice; info?: string }> 
   );
 };
 
-/** Over its bubble, unseen: the browser's own list of choices opens where it is tapped. */
-const StyledSelectBubble = styled.div`
-  position: relative;
-
-  select {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-    font-size: ${u(1)};
-  }
+/** The choices, one under another, as the Better Lighting tile lists its scenes. */
+const StyledChoices = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(${u(14)}, 1fr));
+  gap: ${u(0.6)};
 `;
 
-/** A select -- the receiver's display brightness, its sound mode -- as a bubble saying its choice, tapped for the others. */
+/**
+ * A select -- the receiver's display brightness, its sound mode -- as a
+ * bubble saying its choice; tapped, the dashboard's own list of the others,
+ * the current one ticked.
+ */
 const SelectBubble: React.FC<{ item: MediaMore }> = ({ item }) => {
   const t = useT();
+  const theme = useTheme();
   const entity = useEntity(item.entity || undefined);
   const callService = useCallService();
+  const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
   if (!entity) return null;
   const options = Array.isArray(entity.attributes.options) ? (entity.attributes.options as string[]) : [];
   const missing = missingState(entity.state);
+  const name = item.name || (entity.attributes.friendly_name as string | undefined) || item.entity;
+  const icon = item.icon || (entity.attributes.icon as string | undefined) || 'mdi:format-list-bulleted';
   return (
-    <StyledSelectBubble>
+    <>
       <Bubble
-        name={item.name || (entity.attributes.friendly_name as string | undefined) || item.entity}
+        name={name}
         state={missing ? t(missing) : entity.state}
-        icon={item.icon || (entity.attributes.icon as string | undefined) || 'mdi:format-list-bulleted'}
-        trailing={<Icon icon='mdi:menu-down' />}
+        icon={icon}
+        trailing={<Icon icon='mdi:chevron-down' />}
+        onClick={missing ? undefined : () => setOpen(true)}
       />
-      <select
-        aria-label={item.name || (entity.attributes.friendly_name as string | undefined) || item.entity}
-        value={entity.state}
-        disabled={Boolean(missing)}
-        onChange={event =>
-          void callService(item.entity.split('.')[0], 'select_option', { option: event.target.value }, { entity_id: item.entity })
-        }
-      >
-        {options.map(option => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    </StyledSelectBubble>
+      <Popup open={open} onClose={close} title={name} icon={icon} width={40}>
+        <StyledChoices>
+          {options.map(option => (
+            <Bubble
+              key={option}
+              name={option}
+              icon={icon}
+              active={option === entity.state}
+              iconColor={option === entity.state ? theme.colors.accent : undefined}
+              trailing={option === entity.state ? <Icon icon='mdi:check' color={theme.colors.accent} /> : undefined}
+              onClick={() => {
+                if (option !== entity.state) {
+                  void callService(item.entity.split('.')[0], 'select_option', { option }, { entity_id: item.entity });
+                }
+                close();
+              }}
+            />
+          ))}
+        </StyledChoices>
+      </Popup>
+    </>
   );
 };
 
