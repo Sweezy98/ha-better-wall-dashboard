@@ -101,7 +101,8 @@ A **double tap** opens the whole system on one screen, with its own power button
   input, an app on an Android TV box (picked from a list of the usual apps, each with its icon —
   the brand's own logo where [custom-brand-icons] or [Simple Icons] is installed),
   an app or input of an LG TV (it lists its installed ones itself), or a script or scene.
-- **Audio**: the sound mode, the source's channels (*7.1*), decoder, input signal and sample rate
+- **Audio**: the sound mode — where the receiver gives only the source's channels (*3/4/.1*), the
+  speakers they land on in your room (*7.4*) — the source's channels (*7.1*), decoder, input signal and sample rate
   where the receiver reports them (hidden while it is off); the **volume** with quieter, mute and
   louder; **night mode**; and a **remote** for what is being watched — the streaming box, or the
   TV on one of its own apps (Android TV Remote, LG webOS) — found by itself, gone while all is off.
@@ -119,9 +120,11 @@ A **double tap** opens the whole system on one screen, with its own power button
   display brightness, its sound mode — that the tile itself leaves out, each shown only while what
   it belongs to is on, if you like.
 - **Devices and outlets**: the TV and the box with their power and what they show (*4K HDR*,
-  *HDMI 3*, the app by its name — *Netflix*, not `com.netflix.ninja`), and the outlets to switch, such as the subwoofers'.
+  *HDMI 3*, the app by its name — *Netflix*, not `com.netflix.ninja`) — a TV's inputs in a dropdown
+  beside its power, if you like — and the outlets to switch, such as the subwoofers'.
 - **The player** along the foot: the track to drag, shuffle, repeat, previous, play, next, stop —
-  play in the very middle of the details where there is room.
+  play centred under the track, or, with no track to show, in the very middle of the details
+  where there is room.
 
 ### The rest
 
@@ -210,7 +213,7 @@ TV, all on HDMI-CEC.
 | **Power button switches** | The box's Android TV Remote player: switching it on wakes the receiver and the TV by CEC. |
 | **Volume of** | The receiver. |
 | **Source presets** | *Choose an input* on the receiver for its own sources; *Open an app* on the box's Android TV Remote player with the app's package (`com.plexapp.android`, `com.google.android.youtube.tv`); *Choose an input* on the TV for its own apps. |
-| **Devices** | The TV and the box, each with a sensor for what it shows if you have one. |
+| **Devices** | The TV and the box, each with a sensor for what it shows if you have one, and — for a player with inputs — a dropdown of them. |
 | **Outlets** | The subwoofers' switches, each ticked for the subwoofers it powers — so they are drawn switched off when they are. |
 | **Night mode** | A script or switch that sets the receiver's night settings and turns the subwoofers off. |
 | **TV switched on** | The TV's media player, so the room's screen lights with it. |

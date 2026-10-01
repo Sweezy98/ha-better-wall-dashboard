@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatLayout, layoutChannels, parseLayout, sourceChannels, speakerStates } from './speakers';
+import { formatLayout, layoutChannels, parseLayout, soundingLayout, sourceChannels, speakerStates } from './speakers';
 
 const cinema = parseLayout('7.4.4')!;
 const active = (states: Record<string, string>) =>
@@ -52,6 +52,14 @@ describe('speakers', () => {
     expect(formatLayout('PCM')).toBe('PCM');
     expect(formatLayout('/ /.0')).toBeUndefined();
     expect(formatLayout(undefined)).toBeUndefined();
+  });
+
+  it('reads a mode that is only channels as the speakers they land on', () => {
+    expect(soundingLayout(speakerStates(cinema, { on: true, mode: '3/4/.1' }))).toBe('7.4');
+    expect(soundingLayout(speakerStates(cinema, { on: true, mode: '3/4/.1/4' }))).toBe('7.4.4');
+    expect(soundingLayout(speakerStates(parseLayout('5.1')!, { on: true, mode: '3/4/.1' }))).toBe('5.1');
+    expect(soundingLayout(speakerStates(cinema, { on: true, mode: '2/0/.0' }))).toBe('2.0');
+    expect(soundingLayout(speakerStates(cinema, { on: true, mode: 'Movie' }))).toBeUndefined();
   });
 
   it('says unknown rather than guess, and silent while off', () => {

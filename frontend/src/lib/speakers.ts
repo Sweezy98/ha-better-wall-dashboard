@@ -144,6 +144,23 @@ export function formatLayout(format: string | undefined): string | undefined {
   return `${bed}.${source.lfe}${source.heights ? `.${source.heights}` : ''}`;
 }
 
+/** Whether a text is only a channel count -- Denon's "3/4/.1" -- and no mode's name. */
+export const isChannelFormat = (text: string | undefined): boolean => Boolean(sourceChannels(text)) && !/[a-z]/i.test(text ?? '');
+
+/**
+ * The speakers that sound, the way people write a layout: a 3/4/.1 source
+ * on a 7.4.4 room is 7.4, every subwoofer carrying the one LFE channel.
+ * Undefined while nothing is known to sound.
+ */
+export function soundingLayout(states: Record<string, SpeakerState>): string | undefined {
+  const sounding = Object.keys(states).filter(channel => states[channel] === 'active');
+  if (sounding.length === 0) return undefined;
+  const heights = sounding.filter(channel => HEIGHT[6].includes(channel as Channel)).length;
+  const subs = sounding.filter(isSubChannel).length;
+  const bed = sounding.length - heights - subs;
+  return `${bed}.${subs}${heights ? `.${heights}` : ''}`;
+}
+
 /** The speakers a source's own channels land on, of those there are. */
 function sourceSpeakers(source: SourceChannels): Channel[] {
   const front: Channel[] = source.front === 1 ? ['C'] : source.front === 2 ? ['FL', 'FR'] : source.front >= 3 ? ['FL', 'FR', 'C'] : [];
@@ -171,7 +188,8 @@ export function speakerStates(layout: SpeakerLayout, sound: SoundInfo, unpowered
   const read = sound.on ? rendering(sound.mode) : null;
   // A mode that says nothing about how it renders -- Denon's "Movie" is a
   // group of them -- still plays the source's channels, where they are known.
-  const how = sound.on && !read && sourceChannels(sound.format) ? 'source' : read;
+  // A mode that is itself a channel count -- "3/4/.1" -- plays those channels.
+  const how = sound.on && !read && (sourceChannels(sound.format) || isChannelFormat(sound.mode)) ? 'source' : read;
   const source = how === 'source' ? sourceChannels(sound.format, sound.mode) : null;
   const sounding: Channel[] | null = !sound.on
     ? []

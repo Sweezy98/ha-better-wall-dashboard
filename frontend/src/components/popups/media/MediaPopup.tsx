@@ -27,7 +27,7 @@ import {
   type MediaDevice,
   type MediaSwitch,
 } from '../../../lib/media';
-import { SUBS, formatLayout, speakerStates } from '../../../lib/speakers';
+import { SUBS, formatLayout, isChannelFormat, soundingLayout, speakerStates, type SpeakerState } from '../../../lib/speakers';
 
 /**
  * One screen, nothing to scroll: the inputs along the top, the audio, the
@@ -133,17 +133,18 @@ const StyledBody = styled.div`
     grid-row: 2;
   }
 
-  /* Wide enough that the buttons left of play clear the track's words: the
+  /* With a time to show, the controls centre under it. Without one, and
+     wide enough that the buttons left of play clear the track's words: the
      controls across the whole bar, play in the very middle of the details.
      Over the art's column there, so only its buttons take a touch. */
   @container (width >= 86em) {
     /* The words' column ending clear of the buttons left of play (about
        25 units of them, from the middle), which then centre on the details. */
-    .bar {
+    .bar:has(.transport > :only-child) {
       grid-template-columns: minmax(18em, calc(50% - 26em)) minmax(0, 1fr);
     }
 
-    .transport > :last-child {
+    .transport > :only-child {
       grid-column: 1 / -1;
       pointer-events: none;
     }
@@ -282,12 +283,79 @@ const SelectBubble: React.FC<{ item: MediaMore }> = ({ item }) => {
   );
 };
 
-/** A device with what it shows: its sensor's reading, or else its own input. */
+/**
+ * A bubble with a second button over its right end. Not a button inside the
+ * bubble's own: a button may not hold another.
+ */
+const StyledSplit = styled.div`
+  position: relative;
+  min-width: 0;
+
+  > button:first-child {
+    padding-right: ${u(3.6)};
+  }
+
+  > .split {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: ${u(3.6)};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0 ${u(1.7)} ${u(1.7)} 0;
+    background: none;
+    color: ${({ theme }) => theme.text.secondary};
+    font-size: ${u(1.2)};
+    cursor: pointer;
+    ${({ theme }) => pressable(theme.bubble.hover, theme.bubble.pressed)}
+  }
+`;
+
+/**
+ * A device with what it shows: its sensor's reading, or else its own input.
+ * Asked to, a dropdown beside its power for the inputs it has.
+ */
 const Device: React.FC<{ device: MediaDevice }> = ({ device }) => {
+  const t = useT();
   const entity = useEntity(device.entity || undefined);
   const info = useEntity(device.info || undefined);
+  const callService = useCallService();
+  const [choosing, setChoosing] = useState(false);
+  const close = useCallback(() => setChoosing(false), []);
   const shown = info && !['unknown', 'unavailable'].includes(info.state) ? info.state : playerApp(entity);
-  return <PowerBubble item={device} info={shown} />;
+  const inputs = Array.isArray(entity?.attributes.source_list) ? (entity.attributes.source_list as string[]) : [];
+  if (!device.sources || !entity || inputs.length === 0 || missingState(entity.state)) {
+    return <PowerBubble item={device} info={shown} />;
+  }
+  const name = device.name || (entity.attributes.friendly_name as string | undefined) || device.entity;
+  return (
+    <StyledSplit>
+      <PowerBubble item={device} info={shown} />
+      <button
+        type='button'
+        className='split'
+        aria-label={t('media_sources')}
+        data-tip={t('media_sources')}
+        onClick={() => setChoosing(true)}
+      >
+        <Icon icon='mdi:chevron-down' />
+      </button>
+      <ChoicePopup
+        open={choosing}
+        onClose={close}
+        title={name}
+        icon='mdi:import'
+        options={inputs}
+        current={entity.attributes.source as string | undefined}
+        onChoose={source => void callService('media_player', 'select_source', { source }, { entity_id: device.entity })}
+      />
+    </StyledSplit>
+  );
 };
 
 const NightMode: React.FC<{ entityId: string; text: string }> = ({ entityId, text }) => {
@@ -315,11 +383,18 @@ const NightMode: React.FC<{ entityId: string; text: string }> = ({ entityId, tex
 const soundIcon = (mode: string | undefined) =>
   /dolby/i.test(mode ?? '') ? 'mdi:dolby' : /stereo|direct/i.test(mode ?? '') ? 'mdi:surround-sound-2-0' : 'mdi:surround-sound';
 
-const SoundFacts: React.FC<{ audio: Audio }> = ({ audio }) => {
+/**
+ * The sound mode, or -- where the receiver names none and says only the
+ * channels, "3/4/.1" -- the speakers those land on in this room.
+ */
+const soundMode = (mode: string | undefined, states: Record<string, SpeakerState>) =>
+  isChannelFormat(mode) ? (soundingLayout(states) ?? formatLayout(mode)) : mode;
+
+const SoundFacts: React.FC<{ audio: Audio; states: Record<string, SpeakerState> }> = ({ audio, states }) => {
   const t = useT();
   const language = useLanguage();
   const facts: { icon: string; label: string; value: string | undefined }[] = [
-    { icon: soundIcon(audio.mode), label: t('media_sound_mode'), value: audio.mode },
+    { icon: soundIcon(audio.mode), label: t('media_sound_mode'), value: soundMode(audio.mode, states) },
     { icon: 'mdi:speaker-multiple', label: t('media_source_channels'), value: formatLayout(audio.format) },
     { icon: 'mdi:chip', label: t('media_decoder'), value: audio.decoder },
     { icon: 'mdi:video-input-hdmi', label: t('media_input_signal'), value: audio.signal },
@@ -418,7 +493,7 @@ const Body: React.FC<{ config: MediaConfig; activeId: string | undefined }> = ({
           {audio.on && (
             <section>
               <h3>{t('media_audio_info')}</h3>
-              <SoundFacts audio={audio} />
+              <SoundFacts audio={audio} states={states} />
             </section>
           )}
           {config.volume && <VolumeCard entityId={config.volume} volume={audio.volume} />}

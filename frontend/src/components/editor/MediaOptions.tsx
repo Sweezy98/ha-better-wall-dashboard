@@ -73,6 +73,32 @@ const AppField: React.FC<{ value: string; onChange: (value: string) => void }> =
   );
 };
 
+/** What a device shows, and -- for a player with inputs -- a dropdown of them. */
+const DeviceOptions: React.FC<{ device: MediaDevice; patch: (patch: Partial<MediaDevice>) => void }> = ({ device, patch }) => {
+  const t = useT();
+  const player = useEntity(device.entity || undefined);
+  const inputs = Array.isArray(player?.attributes.source_list) && player.attributes.source_list.length > 0;
+  return (
+    <>
+      <EntityField
+        label={t('media_device_info')}
+        hint={t('media_device_info_hint')}
+        domains={['sensor', 'input_text', 'select']}
+        value={device.info}
+        onChange={info => patch({ info })}
+      />
+      {(inputs || device.sources) && (
+        <CheckField
+          label={t('media_device_sources')}
+          hint={t('media_device_sources_hint')}
+          value={device.sources}
+          onChange={sources => patch({ sources })}
+        />
+      )}
+    </>
+  );
+};
+
 /** What a preset does with its value: the player's inputs to choose from, or an app's id to type. */
 const PresetValue: React.FC<{ preset: MediaPreset; onChange: (value: string) => void }> = ({ preset, onChange }) => {
   const t = useT();
@@ -209,16 +235,8 @@ const MediaOptions: React.FC<{ tile: Tile; onChange: (options: Record<string, un
         max={MAX_DEVICES}
         domains={['media_player', 'remote', 'switch']}
         addLabel={t('add_media_device')}
-        create={() => ({ id: newId(), entity: '', name: '', icon: '', info: '' })}
-        extra={(device, patch) => (
-          <EntityField
-            label={t('media_device_info')}
-            hint={t('media_device_info_hint')}
-            domains={['sensor', 'input_text', 'select']}
-            value={device.info}
-            onChange={info => patch({ info })}
-          />
-        )}
+        create={() => ({ id: newId(), entity: '', name: '', icon: '', info: '', sources: false })}
+        extra={(device, patch) => <DeviceOptions device={device} patch={patch} />}
         onChange={devices => set({ devices })}
       />
 

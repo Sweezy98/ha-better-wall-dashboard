@@ -6,7 +6,7 @@ import { u } from '../../../themes/default.theme';
 import Bubble from '../../base/bubble/Bubble';
 import { domainIcon, useCallService, useEntity, useT } from '../../../hooks/useHa';
 import { brandIconSets } from '../../../lib/iconSets';
-import { appIcon, playerApp, playerAppIcon, presetActive, presetCalls, type MediaPreset } from '../../../lib/media';
+import { appIcon, playerApp, playerAppIcon, playerOn, presetActive, presetCalls, type MediaPreset } from '../../../lib/media';
 
 /** One row along the top; more presets than fit run on sideways. */
 const StyledSources = styled.div`
@@ -64,6 +64,7 @@ const MediaSources: React.FC<{ activeId: string | undefined; presets: MediaPrese
   const t = useT();
   const theme = useTheme();
   const player = useEntity(activeId);
+  const on = playerOn(player);
   const current = presets.find(preset => preset.entity === activeId && presetActive(preset, player));
   const name = playerApp(player) ?? (player?.attributes.friendly_name as string | undefined) ?? activeId ?? '';
   // Tapped, the main player's inputs -- the receiver's -- to switch to.
@@ -76,13 +77,13 @@ const MediaSources: React.FC<{ activeId: string | undefined; presets: MediaPrese
   return (
     <StyledSources>
       <Bubble
-        name={current?.name || name}
-        state={t('media_current_source')}
+        name={t('media_current_source')}
+        state={current?.name || name}
         icon={
           current?.icon || playerAppIcon(player, brandIconSets()) || (player?.attributes.icon as string | undefined) || 'mdi:play-network'
         }
-        iconColor={theme.colors.accent}
-        lit
+        iconColor={on ? theme.colors.accent : undefined}
+        lit={on}
         trailing={inputs.length > 0 ? <Icon icon='mdi:chevron-down' /> : undefined}
         onClick={inputs.length > 0 ? () => setChoosing(true) : undefined}
       />

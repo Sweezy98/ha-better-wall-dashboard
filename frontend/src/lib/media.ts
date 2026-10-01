@@ -143,6 +143,8 @@ export interface MediaDevice {
   icon: string;
   /** A sensor saying what it shows, e.g. "4K HDR"; empty for its own source. */
   info: string;
+  /** A dropdown beside its power for the player's own inputs. */
+  sources: boolean;
 }
 
 export const MAX_PRESETS = 8;
@@ -180,7 +182,7 @@ export const mediaSwitches = (raw: unknown): MediaSwitch[] =>
   }));
 
 export const mediaDevices = (raw: unknown): MediaDevice[] =>
-  list(raw, MAX_DEVICES, (item, index) => ({ ...base(item, index), info: text(item.info) }));
+  list(raw, MAX_DEVICES, (item, index) => ({ ...base(item, index), info: text(item.info), sources: item.sources === true }));
 
 /** Whether a preset is what its player is on now. A script is never "on". */
 export function presetActive(preset: MediaPreset, player: PlayerLike | undefined): boolean {
