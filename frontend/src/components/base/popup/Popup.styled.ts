@@ -102,6 +102,37 @@ export const StyledDialog = styled.dialog<{ $width: number; $full: boolean }>`
   &[data-covered] {
     filter: brightness(0.45);
   }
+
+  /* In the editor's preview (popupPlacement): within the tablet's frame, at
+     its size -- percentages of the frame, not the editor's window. */
+  &[data-inline] {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    z-index: 20;
+    width: ${({ $width, $full }) => ($full ? 'calc(100% - 32px)' : `min(calc(100% - 32px), ${u($width)})`)};
+    max-width: none;
+    height: ${({ $full }) => ($full ? 'calc(100% - 32px)' : 'fit-content')};
+    max-height: calc(100% - 32px);
+  }
+
+  /* A filter would make a covered one the frame its own popup is placed in; its backdrop dims it instead. */
+  &[data-inline][data-covered] {
+    filter: none;
+  }
+`;
+
+/** A preview popup's backdrop, over the frame, a tap on it closing the popup as on the wall. */
+export const StyledInlineBackdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: ${({ theme }) => theme.popup.backdrop};
+  animation: ${fadeIn} 0.28s ease-out;
+
+  &[data-closing] {
+    animation: ${fadeOut} ${CLOSE_MS}ms ease-in forwards;
+  }
 `;
 
 export const StyledPopupHeader = styled.header`

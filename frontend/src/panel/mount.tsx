@@ -72,7 +72,8 @@ export function attach(element: HTMLElement, props: Omit<AppProps, 'styleTarget'
  */
 function restoreModalDialogs(root: HTMLElement): void {
   for (const dialog of root.querySelectorAll<HTMLDialogElement>('dialog[open]')) {
-    if (dialog.matches(':modal')) continue;
+    // A preview's popup is a plain dialog on purpose (popupPlacement).
+    if (dialog.matches(':modal') || dialog.hasAttribute('data-inline')) continue;
     dialog.removeAttribute('open');
     dialog.showModal();
   }

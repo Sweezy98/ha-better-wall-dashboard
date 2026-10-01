@@ -1,10 +1,13 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import { PopupTimeout } from './popupTimeout';
+import { PopupInline, PopupLayer } from './popupPlacement';
+import { createPortal } from 'react-dom';
 import Icon from '../icon/Icon';
 import { useT } from '../../../hooks/useHa';
 import {
   CLOSE_MS,
   StyledDialog,
+  StyledInlineBackdrop,
   StyledPopupBody,
   StyledPopupClose,
   StyledPopupHeader,
@@ -70,6 +73,8 @@ const Popup: React.FC<PopupProps> = ({
   const t = useT();
   // Its own, where it has one (the PIN's); else the dashboard's.
   const dashboardIdleMs = useContext(PopupTimeout);
+  const inline = useContext(PopupInline);
+  const layer = useContext(PopupLayer);
   const idleMs = ownIdleMs ?? dashboardIdleMs;
   // Its content stays while it animates out, and goes once it is closed.
   const [rendered, setRendered] = useState(open);
@@ -88,7 +93,8 @@ const Popup: React.FC<PopupProps> = ({
       // The dialog takes the first focus itself, so its close button is not
       // drawn with a focus ring the moment it opens.
       dialog.setAttribute('autofocus', '');
-      dialog.showModal();
+      if (inline) dialog.show();
+      else dialog.showModal();
       pushPopup(dialog);
     }
     if (!open && dialog.open && !('closing' in dialog.dataset)) {
@@ -146,54 +152,60 @@ const Popup: React.FC<PopupProps> = ({
     };
   }, [open, idleMs, onClose]);
 
-  return (
-    <StyledDialog
-      ref={ref}
-      tabIndex={-1}
-      $width={width}
-      $full={full}
-      data-on={Boolean(glow)}
-      style={glow ? ({ '--on-color': glow } as React.CSSProperties) : undefined}
-      // Escape closes a dialog by itself; route it through onClose so React
-      // state and the element agree about whether it is open.
-      // However the dialog was closed -- by us, by the browser, by a script --
-      // React hears of it, or the next render would open it again.
-      // Its own events only: React carries a popup's close and cancel up to
-      // the popup it was opened from, which then closed with it.
-      onClose={event => event.target === event.currentTarget && open && onClose()}
-      onCancel={event => {
-        if (event.target !== event.currentTarget) return;
-        event.preventDefault();
-        onClose();
-      }}
-      // A click on the dialog element itself -- not on anything inside it --
-      // is a click on the backdrop.
-      onClick={event => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-    >
-      {rendered && (
-        <>
-          <StyledPopupHeader>
-            {icon && (
-              <StyledPopupIcon $color={iconColor}>
-                <Icon icon={icon} />
-              </StyledPopupIcon>
-            )}
-            <StyledPopupTitle>
-              <h2>{title}</h2>
-              {subtitle && <p>{subtitle}</p>}
-            </StyledPopupTitle>
-            {actions}
-            <StyledPopupClose type='button' onClick={onClose} aria-label={t('close')}>
-              <Icon icon='mdi:close' />
-            </StyledPopupClose>
-          </StyledPopupHeader>
-          <StyledPopupBody $fixed={fixedBody}>{children}</StyledPopupBody>
-        </>
-      )}
-    </StyledDialog>
+  const content = (
+    <>
+      {/* In the preview, a backdrop of its own: a plain dialog has none. */}
+      {inline && rendered && <StyledInlineBackdrop data-closing={open ? undefined : ''} onClick={onClose} />}
+      <StyledDialog
+        ref={ref}
+        data-inline={inline || undefined}
+        tabIndex={-1}
+        $width={width}
+        $full={full}
+        data-on={Boolean(glow)}
+        style={glow ? ({ '--on-color': glow } as React.CSSProperties) : undefined}
+        // Escape closes a dialog by itself; route it through onClose so React
+        // state and the element agree about whether it is open.
+        // However the dialog was closed -- by us, by the browser, by a script --
+        // React hears of it, or the next render would open it again.
+        // Its own events only: React carries a popup's close and cancel up to
+        // the popup it was opened from, which then closed with it.
+        onClose={event => event.target === event.currentTarget && open && onClose()}
+        onCancel={event => {
+          if (event.target !== event.currentTarget) return;
+          event.preventDefault();
+          onClose();
+        }}
+        // A click on the dialog element itself -- not on anything inside it --
+        // is a click on the backdrop.
+        onClick={event => {
+          if (event.target === event.currentTarget) onClose();
+        }}
+      >
+        {rendered && (
+          <>
+            <StyledPopupHeader>
+              {icon && (
+                <StyledPopupIcon $color={iconColor}>
+                  <Icon icon={icon} />
+                </StyledPopupIcon>
+              )}
+              <StyledPopupTitle>
+                <h2>{title}</h2>
+                {subtitle && <p>{subtitle}</p>}
+              </StyledPopupTitle>
+              {actions}
+              <StyledPopupClose type='button' onClick={onClose} aria-label={t('close')}>
+                <Icon icon='mdi:close' />
+              </StyledPopupClose>
+            </StyledPopupHeader>
+            <StyledPopupBody $fixed={fixedBody}>{children}</StyledPopupBody>
+          </>
+        )}
+      </StyledDialog>
+    </>
   );
+  return inline && layer ? createPortal(content, layer) : content;
 };
 
 export default Popup;

@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import type { Dashboard } from '../../config/types';
 import { DashboardViewProvider } from '../../config/DashboardProvider';
 import { DashboardLayout } from '../dashboard/Dashboard';
+import { PopupInline } from '../base/popup/popupPlacement';
 import { useT } from '../../hooks/useHa';
 import type { DEVICES } from '../../lib/devices';
 
@@ -37,8 +38,7 @@ const StyledFrame = styled.div`
  * Rendered at the device's real size in CSS pixels and scaled down to fit, so
  * the unit, the cell size and every breakpoint are computed for the tablet --
  * not for the editor's window. (Those measure layout sizes, which a transform
- * leaves alone.) Popups opened here fill the editor's window: they live in the
- * browser's top layer, which no transform reaches.
+ * leaves alone.) Popups opened here open in the frame too (popupPlacement).
  */
 const EditorPreview: React.FC<{ dashboard: Dashboard; device: (typeof DEVICES)[number]; portrait: boolean; page?: number }> = ({
   dashboard,
@@ -109,7 +109,9 @@ const EditorPreview: React.FC<{ dashboard: Dashboard; device: (typeof DEVICES)[n
     <StyledPreview ref={ref} aria-label={t('preview')}>
       <StyledFrame ref={frame} style={{ width, height, transform: `translate(-50%, -50%) scale(${scale})` }}>
         <DashboardViewProvider view={view} focusPage={page}>
-          <DashboardLayout />
+          <PopupInline.Provider value>
+            <DashboardLayout />
+          </PopupInline.Provider>
         </DashboardViewProvider>
       </StyledFrame>
     </StyledPreview>

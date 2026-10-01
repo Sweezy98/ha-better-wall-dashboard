@@ -22,6 +22,8 @@ export function pressedInside(event: { target: EventTarget | null; currentTarget
   if (!target || !card) return false;
   const control = target.closest(controls);
   if (control && card.contains(control)) return true;
+  // A popup it opened, wherever it is drawn -- the editor's preview puts its
+  // popups in a layer of their own, outside the card -- but not one the card sits in.
   const dialog = target.closest('dialog');
-  return dialog !== null && card.contains(dialog);
+  return dialog !== null && !dialog.contains(card);
 }
