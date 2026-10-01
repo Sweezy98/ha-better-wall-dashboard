@@ -417,8 +417,9 @@ export function sleeperFigure(sofa: Sofa): Figure {
   const y = 4.04;
   // On the cushions, whose top is 0.44 up.
   const lie = (radius: number) => 0.445 + radius;
-  // On an L, turned round: the head in the corner, the feet toward the arm.
-  const along = (x: number) => (sofa === 'straight' ? x : 0.62 - x) * flip;
+  // On an L, turned round: the head in the corner, on the extension's seat
+  // by its back rest, the feet along the back seat.
+  const along = (x: number) => (sofa === 'straight' ? x : 0.02 - x) * flip;
   const at = (x: number, dy: number, z: number): Point3 => [along(x), y + dy, z];
   const limb = (from: Point3, to: Point3, radius: number): Limb => ({ from, to, radius });
   const both = (make: (side: number) => Limb) => [make(-1), make(1)];
