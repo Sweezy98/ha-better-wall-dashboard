@@ -16,9 +16,11 @@
 let wanted = false;
 let attached = false;
 let applied: boolean | null = null;
+/** An admin's choice for this tab, over the configured one: see toggleKioskPreview. */
+let preview: boolean | null = null;
 
 function sync(): void {
-  const enable = wanted && attached;
+  const enable = attached && (preview ?? wanted);
   if (enable === applied) return;
   // Never turn kiosk mode *off* unless we were the ones who turned it on.
   if (!enable && applied !== true) {
@@ -47,4 +49,21 @@ export function setAttached(value: boolean): void {
  */
 export function openHomeAssistantSidebar(from: HTMLElement): void {
   from.dispatchEvent(new CustomEvent('hass-toggle-menu', { bubbles: true, composed: true, detail: { open: true } }));
+}
+
+/** Whether Home Assistant's sidebar is hidden in this tab just now. */
+export function kioskActive(): boolean {
+  return applied === true;
+}
+
+/**
+ * Hide or show Home Assistant's sidebar in this tab only, whatever the
+ * dashboard is set to -- an admin previewing the wall on a PC. Nothing is
+ * stored: other tabs, and this one after a reload, are as configured.
+ * Returns whether it is hidden now.
+ */
+export function toggleKioskPreview(): boolean {
+  preview = !kioskActive();
+  sync();
+  return kioskActive();
 }

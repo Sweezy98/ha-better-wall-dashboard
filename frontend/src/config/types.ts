@@ -123,6 +123,9 @@ export interface SidebarConfig {
 /** A button in the settings popup: a script, a scene, a device's button -- pressed after a second tap when `confirm`. */
 export interface SystemButton extends NamedEntity {
   confirm: boolean;
+  /** For a switch: what it says while on, and while off; empty for its name. Missing from an older backend. */
+  on_name?: string;
+  off_name?: string;
 }
 
 export interface BatteriesConfig {

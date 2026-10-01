@@ -327,14 +327,33 @@ const SidebarScreen: React.FC<ScreenProps & { part: SidebarPart }> = ({ draft, u
               max={LIMITS.systemButtons}
               domains={['button', 'input_button', 'script', 'scene', 'automation', 'switch', 'input_boolean']}
               addLabel={t('add_system_button')}
-              create={() => ({ id: newId(), entity: '', name: '', icon: '', confirm: false })}
+              create={() => ({ id: newId(), entity: '', name: '', icon: '', confirm: false, on_name: '', off_name: '' })}
               extra={(button, patch) => (
-                <CheckField
-                  label={t('system_button_confirm_option')}
-                  hint={t('system_button_confirm_option_hint')}
-                  value={button.confirm}
-                  onChange={confirm => patch({ confirm })}
-                />
+                <>
+                  {/^(switch|input_boolean|light|fan)\./.test(button.entity) && (
+                    <>
+                      <StyledRow>
+                        <TextField
+                          label={t('system_button_on_name')}
+                          value={button.on_name ?? ''}
+                          onChange={on_name => patch({ on_name })}
+                        />
+                        <TextField
+                          label={t('system_button_off_name')}
+                          value={button.off_name ?? ''}
+                          onChange={off_name => patch({ off_name })}
+                        />
+                      </StyledRow>
+                      <p>{t('system_button_names_hint')}</p>
+                    </>
+                  )}
+                  <CheckField
+                    label={t('system_button_confirm_option')}
+                    hint={t('system_button_confirm_option_hint')}
+                    value={button.confirm}
+                    onChange={confirm => patch({ confirm })}
+                  />
+                </>
               )}
               onChange={system_buttons => change({ ...value, system_buttons })}
             />

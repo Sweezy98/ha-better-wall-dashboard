@@ -8,6 +8,8 @@ import Bubble from '../base/bubble/Bubble';
 import HistoryPopup from './HistoryPopup';
 import { domainIcon, useCallService, useConnection, useEntity, useLanguage, usePrecision, useT } from '../../hooks/useHa';
 import { runService } from '../../lib/actions';
+import { kioskActive, toggleKioskPreview } from '../../panel/kiosk';
+import { useModeState } from '../../panel/mode';
 import { useDashboardContext } from '../../config/DashboardProvider';
 import { formatMeasurement } from '../../lib/format';
 import { loadedFingerprint, reloadDashboard } from '../../lib/reload';
@@ -135,14 +137,19 @@ const SystemButtonBubble: React.FC<{ button: SystemButton }> = ({ button }) => {
     const timer = window.setTimeout(() => setAsking(false), CONFIRM_MS);
     return () => window.clearTimeout(timer);
   }, [asking]);
-  const name = button.name || (entity?.attributes.friendly_name as string | undefined) || button.entity;
+  // A switch says whether it is on, and may name itself by it.
+  const switched = Boolean(entity) && ['on', 'off'].includes(entity!.state);
+  const on = entity?.state === 'on';
+  const own = button.name || (entity?.attributes.friendly_name as string | undefined) || button.entity;
+  const name = (switched && (on ? button.on_name : button.off_name)) || own;
   return (
     <Bubble
       name={name}
-      state={asking ? t('system_button_confirm') : entity ? undefined : t('not_found')}
+      state={asking ? t('system_button_confirm') : !entity ? t('not_found') : switched ? (on ? t('on') : t('off')) : undefined}
       icon={button.icon || (entity?.attributes.icon as string | undefined) || domainIcon(button.entity)}
-      iconColor={asking ? theme.colors.warm : undefined}
-      lit={asking}
+      iconColor={asking ? theme.colors.warm : on ? theme.colors.accent : undefined}
+      active={!switched || on}
+      lit={asking || on}
       onClick={() => {
         if (!entity) return;
         if (button.confirm && !asking) {
@@ -157,6 +164,42 @@ const SystemButtonBubble: React.FC<{ button: SystemButton }> = ({ button }) => {
   );
 };
 
+/**
+ * For an admin looking at the dashboard on a PC: Home Assistant's sidebar
+ * hidden or shown in this tab only -- as kiosk mode would, no setting
+ * stored -- and the browser's full screen.
+ */
+const PreviewToggles: React.FC<{ embedded: boolean }> = ({ embedded }) => {
+  const t = useT();
+  const [kiosk, setKiosk] = useState(kioskActive);
+  const [full, setFull] = useState(() => Boolean(document.fullscreenElement));
+  useEffect(() => {
+    const update = () => setFull(Boolean(document.fullscreenElement));
+    document.addEventListener('fullscreenchange', update);
+    return () => document.removeEventListener('fullscreenchange', update);
+  }, []);
+  return (
+    <>
+      {embedded && (
+        <Bubble
+          name={t('kiosk_preview')}
+          state={kiosk ? t('kiosk_preview_hint_hidden') : t('kiosk_preview_hint_shown')}
+          icon={kiosk ? 'mdi:dock-left' : 'mdi:page-layout-sidebar-left'}
+          onClick={() => setKiosk(toggleKioskPreview())}
+        />
+      )}
+      {document.fullscreenEnabled && (
+        <Bubble
+          name={t('fullscreen')}
+          state={full ? t('fullscreen_on') : t('fullscreen_off')}
+          icon={full ? 'mdi:fullscreen-exit' : 'mdi:fullscreen'}
+          onClick={() => void (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen())}
+        />
+      )}
+    </>
+  );
+};
+
 interface Version {
   app: string;
   version: string;
@@ -167,6 +210,7 @@ const SettingsContent: React.FC<{ config: SidebarConfig }> = ({ config }) => {
   const theme = useTheme();
   const connection = useConnection();
   const { view, preview, previewing } = useDashboardContext();
+  const { embedded } = useModeState();
   const [version, setVersion] = useState<Version | null>(null);
   const [missing, setMissing] = useState(false);
   const loaded = loadedFingerprint();
@@ -231,7 +275,11 @@ const SettingsContent: React.FC<{ config: SidebarConfig }> = ({ config }) => {
         />
         {view?.is_admin && (
           <>
-            <Bubble name={t('edit_dashboard')} state={t('edit_elsewhere')} icon='mdi:view-dashboard-edit' onClick={openEditor} />
+            {/* Home Assistant's own: on the dev server there is no editor panel to open, nor a sidebar to hide. */}
+            {embedded && (
+              <Bubble name={t('edit_dashboard')} state={t('edit_elsewhere')} icon='mdi:view-dashboard-edit' onClick={openEditor} />
+            )}
+            <PreviewToggles embedded={embedded} />
             {view.dashboards.length > 1 && (
               <label>
                 <StyledNote>{t('dashboard')}</StyledNote>

@@ -57,7 +57,7 @@ export function attach(element: HTMLElement, props: Omit<AppProps, 'styleTarget'
   }
   shadow.append(container);
   restoreModalDialogs(container);
-  setModeState({ mode });
+  setModeState({ mode, embedded: props.embedded });
   setAttached(mode === 'dashboard');
 }
 

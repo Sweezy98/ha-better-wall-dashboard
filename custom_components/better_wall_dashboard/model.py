@@ -332,6 +332,9 @@ def _system_buttons(raw: Any, assign: Callable[[Any], str]) -> list:
         {
             **_named_entity(item, assign),
             "confirm": _bool(_dict(item).get("confirm"), False),
+            # Added later: for a switch, what it says while on and while off.
+            "on_name": _text(_dict(item).get("on_name")),
+            "off_name": _text(_dict(item).get("off_name")),
         }
         for item in raw[:MAX_SYSTEM_BUTTONS]
     ]

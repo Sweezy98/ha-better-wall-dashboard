@@ -13,14 +13,16 @@ interface ModeState {
   mode: Mode;
   /** Home Assistant's `narrow`: its sidebar is a drawer, so we draw the button that opens it. */
   narrow: boolean;
+  /** Inside Home Assistant's own page -- not the dev server -- where its sidebar and the editor's panel exist. */
+  embedded: boolean;
 }
 
-let state: ModeState = { mode: 'dashboard', narrow: false };
+let state: ModeState = { mode: 'dashboard', narrow: false, embedded: false };
 const listeners = new Set<() => void>();
 
 export function setModeState(patch: Partial<ModeState>): void {
   const next = { ...state, ...patch };
-  if (next.mode === state.mode && next.narrow === state.narrow) return;
+  if (next.mode === state.mode && next.narrow === state.narrow && next.embedded === state.embedded) return;
   state = next;
   listeners.forEach(listener => listener());
 }

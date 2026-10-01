@@ -372,6 +372,21 @@ def test_system_buttons_are_kept_to_twelve_each_with_its_confirmation() -> None:
     assert buttons[0]["entity"] == "script.restart"
     assert buttons[0]["confirm"] is True
     assert buttons[1]["confirm"] is False
+    assert (buttons[0]["on_name"], buttons[0]["off_name"]) == ("", "")
+    named = model.normalize_dashboard(
+        {
+            "sidebar": {
+                "system_buttons": [
+                    {
+                        "entity": "switch.permit_join",
+                        "on_name": "Stop",
+                        "off_name": "Allow",
+                    }
+                ]
+            }
+        }
+    )["sidebar"]["system_buttons"][0]
+    assert (named["on_name"], named["off_name"]) == ("Stop", "Allow")
 
 
 def test_batteries_are_off_until_switched_on_and_their_threshold_bounded() -> None:

@@ -45,7 +45,10 @@ Top to bottom, each block drawn only once it is configured:
 - **Notifications** with an unread count, filtered by id prefix if you like.
 - **Settings**: system statistics with their graphs, up to twelve **actions** — restarting Home
   Assistant, letting devices join the Zigbee network, any button, script or scene, the risky ones
-  asking for a second tap — and a **reload** that fetches a new version past the app's cache.
+  asking for a second tap; a switch shows whether it is on and can say something different in
+  each state — and a **reload** that fetches a new version past the app's cache. For an admin
+  looking at the dashboard in Home Assistant, also: open the editor, hide or show Home Assistant's
+  sidebar in this tab only, and full screen.
 
 ### The pages
 
@@ -88,18 +91,22 @@ previous / play / next, a **power button** for the device of your choice and the
 device of your choice — in dB for a Denon receiver. It shows whichever of its players has the most
 going on, so the streaming box that plays wins over the receiver it plays through.
 
-A **double tap** opens the whole system on one screen:
+A **double tap** opens the whole system on one screen, with its own power button at the top:
 
 - **Sources** along the top: what plays now, and presets that switch to another — a receiver's
   input, an app on an Android TV box, or a script or scene.
 - **Audio**: the sound mode, the source's channels (*7.1*), decoder, input signal and sample rate
   where the receiver reports them; the **volume** with quieter, mute and louder; **night mode**.
-- **The room in 3D**: your speakers — any layout from 2.0 to 7.4.6 — where they stand, each aimed
-  at the seat, lit while the receiver plays through it: Atmos, DTS:X and the upmixers fill them
-  all, stereo the front pair, a plain decoder the source's own channels. A subwoofer whose outlet
-  is switched off is drawn switched off. Optionally with an L-shaped or straight sofa, a listener
-  on it, no walls, what is playing (or a picture of your own) on the screen, and turned, panned
-  and zoomed by hand.
+- **The room in 3D**: your speakers — any layout from 2.0 to 9.4.6, with front wides on stands
+  for nine at ear height — where they stand, each aimed at the seat, lit while the receiver plays
+  through it: Atmos, DTS:X and the upmixers fill them all, stereo the front pair, a plain decoder
+  the source's own channels. The height speakers hang high on the wall or sit round in the
+  ceiling, facing down — front and rear chosen on their own. A subwoofer whose outlet, or the
+  receiver's own subwoofer output, is switched off is drawn switched off; with the receiver off,
+  every speaker is. Optionally with an L-shaped or straight sofa, a listener on it — lying down
+  asleep while everything is off, if you like — no walls, and turned, panned and zoomed by hand.
+  The screen lights up with the TV: what is playing, or a picture of your own, at the size and
+  fill you choose (whole, cropped to fill, or stretched).
 - **Devices and outlets**: the TV and the box with their power and what they show (*4K HDR*,
   *HDMI 3*), and the outlets to switch, such as the subwoofers'.
 - **The player** along the foot: the track to drag, shuffle, repeat, previous, play, next, stop.
@@ -191,7 +198,9 @@ TV, all on HDMI-CEC.
 | **Devices** | The TV and the box, each with a sensor for what it shows if you have one. |
 | **Outlets** | The subwoofers' switches, each ticked for the subwoofers it powers — so they are drawn switched off when they are. |
 | **Night mode** | A script or switch that sets the receiver's night settings and turns the subwoofers off. |
-| **Speakers in the room** | Your layout (e.g. 7 at ear height, 4 subwoofers, 4 height speakers) and your sofa. |
+| **TV switched on** | The TV's media player, so the room's screen lights with it. |
+| **Subwoofer output** | Found by itself with the Denon HACS integration (its *Subwoofer* switch); otherwise any switch. |
+| **Speakers in the room** | Your layout (e.g. 7 at ear height, 4 subwoofers, 4 height speakers), how the heights are mounted, and your sofa. |
 
 For a Denon or Marantz receiver, Home Assistant's own [Denon AVR] integration gives the volume in
 dB and the sound mode, which is enough for Atmos, DTS:X, the upmixers and stereo. Which speakers a
