@@ -358,25 +358,28 @@ function figure(camera: Camera, id: string, pose: Figure, asleep: boolean): Draw
     };
   });
   const [cx, cy] = onScreen(head, camera);
+  const r = screenLength(head, headRadius, camera);
+  const size = screenLength(head, headRadius * 1.6, camera);
+  // Which way on screen leads from the body to the head.
+  const bodyX = limbs.reduce((sum, limb) => sum + onScreen(limb.from, camera)[0] + onScreen(limb.to, camera)[0], 0) / (limbs.length * 2);
+  const away = cx >= bodyX ? 1 : -1;
   parts.push({
     key: 'head',
     depth: project(head, camera).depth,
     bounds: sphereBounds(head, headRadius),
     element: (
       <g className='person'>
-        <circle cx={cx} cy={cy} r={screenLength(head, headRadius, camera)} fill={`url(#${id}-head)`} />
+        <circle cx={cx} cy={cy} r={r} fill={`url(#${id}-head)`} />
         {asleep && (
-          <text
-            className='zz'
-            x={cx + screenLength(head, headRadius, camera) * 1.2}
-            y={cy - screenLength(head, headRadius, camera) * 1.2}
-            fontSize={screenLength(head, headRadius * 1.6, camera)}
-          >
-            z
-            <tspan dx='0.15em' dy='-0.5em' fontSize='1.3em'>
+          // Rising away from the body, on the head's side of it as the view has them.
+          <g className='zz' fontSize={size}>
+            <text x={cx + away * r * 1.3} y={cy - r * 1.1} textAnchor='middle'>
+              z
+            </text>
+            <text x={cx + away * r * 2.2} y={cy - r * 2} textAnchor='middle' fontSize='1.3em'>
               Z
-            </tspan>
-          </text>
+            </text>
+          </g>
         )}
       </g>
     ),
