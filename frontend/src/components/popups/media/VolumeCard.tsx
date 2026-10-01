@@ -104,14 +104,15 @@ const VolumeCard: React.FC<{ entityId: string; volume: Volume }> = ({ entityId, 
     player?.attributes.volume_level
   );
   const level = drag.value ?? volume.level ?? 0;
-  const lit = Math.round(level * STEPS);
+  const lit = on ? Math.round(level * STEPS) : 0;
   return (
     <StyledVolume>
       <div className='head'>
         <Icon className='icon' icon={volumeIcon(volume.level, volume.muted)} />
         <span>{t('media_volume')}</span>
       </div>
-      <div className='value'>{volume.muted ? t('media_muted') : volume.text}</div>
+      {/* Off, a level it would come back at is not the volume: it says so. */}
+      <div className='value'>{!on ? t('off') : volume.muted ? t('media_muted') : volume.text}</div>
       <div className='steps' ref={settable ? drag.ref : undefined} data-disabled={!settable} aria-hidden='true'>
         {Array.from({ length: STEPS }, (_, index) => (
           <span key={index} data-lit={index < lit} />

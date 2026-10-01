@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultTarget, remoteCall, remoteTargets } from './remote';
+import { remoteCall, remoteTargets, sourceTarget } from './remote';
 
 const registry = {
   'media_player.box': { entity_id: 'media_player.box', device_id: 'd1', platform: 'androidtv_remote' },
@@ -33,10 +33,22 @@ describe('remote', () => {
     expect(remoteCall(tv, 'playPause').service).toBe('media_play_pause');
   });
 
-  it('opens on what plays, else on what is on', () => {
+  it('steers what is being watched: the box while the TV shows its HDMI input', () => {
     const targets = remoteTargets(['media_player.box', 'media_player.tv'], registry);
-    expect(defaultTarget(targets, 'media_player.tv', () => false)?.player).toBe('media_player.tv');
-    expect(defaultTarget(targets, 'media_player.box_cast', id => id === 'media_player.tv')?.player).toBe('media_player.tv');
-    expect(defaultTarget([], undefined, () => true)).toBeUndefined();
+    const tvOn = (app: string) => ({ state: 'on', attributes: { app_id: app } });
+    const box = { state: 'playing', attributes: {} };
+    expect(
+      sourceTarget(targets, 'media_player.box_cast', { 'media_player.box': box, 'media_player.tv': tvOn('com.webos.app.hdmi2') })?.player
+    ).toBe('media_player.box');
+    expect(sourceTarget(targets, undefined, { 'media_player.box': box, 'media_player.tv': tvOn('netflix') })?.player).toBe(
+      'media_player.tv'
+    );
+    expect(sourceTarget(targets, 'media_player.tv', { 'media_player.tv': tvOn('youtube.leanback.v4') })?.player).toBe('media_player.tv');
+    expect(
+      sourceTarget(targets, undefined, {
+        'media_player.box': { state: 'off', attributes: {} },
+        'media_player.tv': { state: 'off', attributes: {} },
+      })
+    ).toBeUndefined();
   });
 });

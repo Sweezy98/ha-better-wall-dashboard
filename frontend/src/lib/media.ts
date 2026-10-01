@@ -292,7 +292,18 @@ export interface MediaConfig {
   subOutput: string;
   /** One more button of one's own -- the room's automatic lighting, say -- on the tile and in the details. */
   extra: { entity: string; icon: string; name: string; title: string };
+  /** In the details only, under the extra button: buttons, and dropdowns for a select. */
+  more: MediaMore[];
 }
+
+export interface MediaMore {
+  id: string;
+  entity: string;
+  name: string;
+  icon: string;
+}
+
+export const MAX_MORE = 8;
 
 export const SCREEN_FITS = ['contain', 'cover', 'stretch'] as const;
 export type ScreenFit = (typeof SCREEN_FITS)[number];
@@ -306,7 +317,7 @@ export type ScreenShows = (typeof SCREEN_SHOWS)[number];
  * `switches_title`, `devices`, `night`, `night_text`, `mode_entity`,
  * `format_entity`, `speakers` ("7.4.4"), `sofa`, `listener`, `listener_sleeps`, `room_movable`,
  * `hide_walls`, `screen`, `screen_image`, `screen_scale`, `screen_fit`, `tv_entity`,
- * `heights_front`, `heights_rear`, `sub_output`, `extra_entity`, `extra_icon`, `extra_name` and `extra_title`.
+ * `heights_front`, `heights_rear`, `sub_output`, `extra_entity`, `extra_icon`, `extra_name`, `extra_title` and `more`.
  */
 export function mediaConfig(entity: string, options: Record<string, unknown>): MediaConfig {
   const extra = Array.isArray(options.players) ? options.players.filter((id): id is string => typeof id === 'string' && id !== '') : [];
@@ -346,6 +357,7 @@ export function mediaConfig(entity: string, options: Record<string, unknown>): M
       name: text(options.extra_name),
       title: text(options.extra_title),
     },
+    more: list(options.more, MAX_MORE, (item, index) => base(item, index)),
   };
 }
 

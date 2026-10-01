@@ -1,4 +1,4 @@
-import { memo, useCallback, useState } from 'react';
+import { memo, useState } from 'react';
 import styled, { useTheme } from 'styled-components';
 import { useHass } from '@hakit/core';
 import { u } from '../../../themes/default.theme';
@@ -12,13 +12,20 @@ import MediaControls from './MediaControls';
 import MediaTimeline from './MediaTimeline';
 import VolumeCard from './VolumeCard';
 import SpeakerRoom from './SpeakerRoom';
-import RemotePopup from './RemotePopup';
-import { useRemoteTargets } from '../../../hooks/useRemoteTargets';
+import RemotePad from './RemotePad';
 import { domainIcon, toggleService, useCallService, useEntity, useLanguage, useT } from '../../../hooks/useHa';
 import { useAudio, usePlayerArt, type Audio } from '../../../hooks/useMedia';
 import { useImageUrl } from '../../../hooks/useBackgroundImage';
 import { missingState } from '../../../lib/format';
-import { formatSampleRate, playerApp, playerOn, type MediaConfig, type MediaDevice, type MediaSwitch } from '../../../lib/media';
+import {
+  formatSampleRate,
+  playerApp,
+  playerOn,
+  type MediaConfig,
+  type MediaMore,
+  type MediaDevice,
+  type MediaSwitch,
+} from '../../../lib/media';
 import { SUBS, formatLayout, speakerStates } from '../../../lib/speakers';
 
 /**
@@ -189,6 +196,55 @@ const PowerBubble: React.FC<{ item: MediaSwitch | MediaDevice; info?: string }> 
   );
 };
 
+/** Over its bubble, unseen: the browser's own list of choices opens where it is tapped. */
+const StyledSelectBubble = styled.div`
+  position: relative;
+
+  select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    font-size: ${u(1)};
+  }
+`;
+
+/** A select -- the receiver's display brightness, its sound mode -- as a bubble saying its choice, tapped for the others. */
+const SelectBubble: React.FC<{ item: MediaMore }> = ({ item }) => {
+  const t = useT();
+  const entity = useEntity(item.entity || undefined);
+  const callService = useCallService();
+  if (!entity) return null;
+  const options = Array.isArray(entity.attributes.options) ? (entity.attributes.options as string[]) : [];
+  const missing = missingState(entity.state);
+  return (
+    <StyledSelectBubble>
+      <Bubble
+        name={item.name || (entity.attributes.friendly_name as string | undefined) || item.entity}
+        state={missing ? t(missing) : entity.state}
+        icon={item.icon || (entity.attributes.icon as string | undefined) || 'mdi:format-list-bulleted'}
+        trailing={<Icon icon='mdi:menu-down' />}
+      />
+      <select
+        aria-label={item.name || (entity.attributes.friendly_name as string | undefined) || item.entity}
+        value={entity.state}
+        disabled={Boolean(missing)}
+        onChange={event =>
+          void callService(item.entity.split('.')[0], 'select_option', { option: event.target.value }, { entity_id: item.entity })
+        }
+      >
+        {options.map(option => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </StyledSelectBubble>
+  );
+};
+
 /** A device with what it shows: its sensor's reading, or else its own input. */
 const Device: React.FC<{ device: MediaDevice }> = ({ device }) => {
   const entity = useEntity(device.entity || undefined);
@@ -311,12 +367,16 @@ const Body: React.FC<{ config: MediaConfig; activeId: string | undefined }> = ({
       <MediaSources activeId={activeId} presets={config.presets} />
       <div className='middle'>
         <div className='column'>
-          <section>
-            <h3>{t('media_audio_info')}</h3>
-            <SoundFacts audio={audio} />
-          </section>
+          {/* Off, the receiver's last sound mode and rate are no news. */}
+          {audio.on && (
+            <section>
+              <h3>{t('media_audio_info')}</h3>
+              <SoundFacts audio={audio} />
+            </section>
+          )}
           {config.volume && <VolumeCard entityId={config.volume} volume={audio.volume} />}
           {config.night && <NightMode entityId={config.night} text={config.nightText} />}
+          <RemotePad config={config} activeId={activeId} />
         </div>
         {config.layout && (
           <div className='column room'>
@@ -358,13 +418,22 @@ const Body: React.FC<{ config: MediaConfig; activeId: string | undefined }> = ({
             </section>
           )}
           {/* The tile's own extra button, here under a heading of its own below the outlets. */}
-          {config.extra.entity && (
+          {(config.extra.entity || config.more.length > 0) && (
             <section>
               <h3>{config.extra.title || t('media_extra_heading')}</h3>
               <div className='bubbles'>
-                <PowerBubble
-                  item={{ id: 'extra', entity: config.extra.entity, name: config.extra.name, icon: config.extra.icon, subs: [] }}
-                />
+                {config.extra.entity && (
+                  <PowerBubble
+                    item={{ id: 'extra', entity: config.extra.entity, name: config.extra.name, icon: config.extra.icon, subs: [] }}
+                  />
+                )}
+                {config.more.map(item =>
+                  /^(input_)?select\./.test(item.entity) ? (
+                    <SelectBubble key={item.id} item={item} />
+                  ) : (
+                    <PowerBubble key={item.id} item={{ ...item, subs: [] }} />
+                  )
+                )}
               </div>
             </section>
           )}
@@ -425,10 +494,7 @@ const PowerButton: React.FC<{ entityId: string }> = ({ entityId }) => {
 
 const MediaPopup: React.FC<MediaPopupProps> = ({ open, onClose, config, activeId, name }) => {
   const theme = useTheme();
-  const t = useT();
-  const remotes = useRemoteTargets(config);
-  const [remote, setRemote] = useState(false);
-  const closeRemote = useCallback(() => setRemote(false), []);
+
   const player = useEntity(activeId);
   const subtitle = playerOn(player)
     ? [playerApp(player), player?.attributes.media_title as string | undefined].filter(Boolean).join(' · ')
@@ -444,19 +510,9 @@ const MediaPopup: React.FC<MediaPopupProps> = ({ open, onClose, config, activeId
       iconColor={theme.colors.accent}
       full
       fixedBody
-      actions={
-        <>
-          {remotes.length > 0 && (
-            <StyledPower type='button' aria-label={t('remote')} data-tip={t('remote')} onClick={() => setRemote(true)}>
-              <Icon icon='mdi:remote-tv' />
-            </StyledPower>
-          )}
-          <PowerButton entityId={config.power} />
-        </>
-      }
+      actions={<PowerButton entityId={config.power} />}
     >
       <Body config={config} activeId={activeId} />
-      <RemotePopup open={remote} onClose={closeRemote} config={config} activeId={activeId} />
     </Popup>
   );
 };

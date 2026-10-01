@@ -4,6 +4,7 @@ import { newId } from '../../lib/editing';
 import {
   MAX_DEVICES,
   MAX_PRESETS,
+  MAX_MORE,
   MAX_SWITCHES,
   PRESET_KINDS,
   SCREEN_SHOWS,
@@ -12,6 +13,7 @@ import {
   knownApps,
   mediaConfig,
   type MediaDevice,
+  type MediaMore,
   type MediaPreset,
   type MediaSwitch,
   type PresetKind,
@@ -238,6 +240,30 @@ const MediaOptions: React.FC<{ tile: Tile; onChange: (options: Record<string, un
           onChange={extra_title => set({ extra_title })}
         />
       )}
+
+      <StyledField as='div'>
+        <span className='label'>{t('media_more')}</span>
+        <small>{t('media_more_hint')}</small>
+      </StyledField>
+      <NamedEntityList<MediaMore>
+        items={config.more}
+        max={MAX_MORE}
+        domains={[
+          'select',
+          'input_select',
+          'switch',
+          'input_boolean',
+          'light',
+          'fan',
+          'script',
+          'scene',
+          'button',
+          'input_button',
+          'automation',
+        ]}
+        addLabel={t('add_media_more')}
+        onChange={more => set({ more })}
+      />
 
       <EntityField
         label={t('media_night_entity')}

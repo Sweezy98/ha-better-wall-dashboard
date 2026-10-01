@@ -84,11 +84,39 @@ export function remoteCall(
   return { domain: 'webostv', service: 'button', data: { button: WEBOS[key] }, entity: target.entity };
 }
 
-/** Which remote to open with: the one for what plays, else the first that is on, else the first. */
-export function defaultTarget(
+interface PlayerState {
+  state: string;
+  attributes: Record<string, unknown>;
+}
+
+const OFF = ['off', 'standby', 'unavailable', 'unknown'];
+
+/** A TV showing one of its inputs -- a box or the receiver on HDMI -- is not itself the source. */
+function onInput(player: PlayerState): boolean {
+  const app = String(player.attributes.app_id ?? '');
+  const source = String(player.attributes.source ?? '');
+  return /^com\.webos\.app\.(hdmi|externalinput|composite|component)/i.test(app) || /^(hdmi|av|component|composite)\b/i.test(source);
+}
+
+/**
+ * The remote for what is being watched, or none: the player that plays, if
+ * it has one; else a TV on one of its own apps; else a box that is on. A TV
+ * on an HDMI input is only the screen for a box, and a system that is off
+ * has nothing to steer.
+ */
+export function sourceTarget(
   targets: RemoteTarget[],
   activeId: string | undefined,
-  isOn: (id: string) => boolean
+  states: Record<string, PlayerState | undefined>
 ): RemoteTarget | undefined {
-  return targets.find(target => target.player === activeId) ?? targets.find(target => isOn(target.player)) ?? targets[0];
+  const on = (target: RemoteTarget) => {
+    const player = states[target.player];
+    return Boolean(player) && !OFF.includes(player!.state);
+  };
+  const exact = targets.find(target => target.player === activeId && on(target));
+  if (exact && !(exact.kind === 'webos' && onInput(states[exact.player]!))) return exact;
+  return (
+    targets.find(target => target.kind === 'webos' && on(target) && !onInput(states[target.player]!)) ??
+    targets.find(target => target.kind === 'android' && on(target))
+  );
 }

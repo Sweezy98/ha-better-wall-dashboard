@@ -339,7 +339,7 @@ const MediaTile: React.FC<TileProps> = ({ tile }) => {
               {audio.volume.level !== null && (
                 <span className='volume' data-tip={t('media_volume')}>
                   <Icon className='speaker' icon={volumeIcon(audio.volume.level, audio.volume.muted)} />
-                  {audio.volume.muted ? t('media_muted') : audio.volume.text}
+                  {!audio.on ? t('off') : audio.volume.muted ? t('media_muted') : audio.volume.text}
                 </span>
               )}
             </span>

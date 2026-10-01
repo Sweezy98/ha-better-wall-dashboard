@@ -655,6 +655,10 @@ const en = {
   remote_back: 'Back',
   remote_home: 'Home',
   remote_menu: 'Menu',
+  media_more: 'More in the details',
+  media_more_hint:
+    'Buttons of your own, and dropdowns for a select (the receiver’s display brightness, its sound mode), under the heading of the extra button. Not on the tile.',
+  add_media_more: 'Add',
 };
 
 export type TranslationKey = keyof typeof en;
@@ -1305,6 +1309,10 @@ const de: Record<TranslationKey, string> = {
   remote_back: 'Zurück',
   remote_home: 'Startseite',
   remote_menu: 'Menü',
+  media_more: 'Mehr in den Details',
+  media_more_hint:
+    'Eigene Buttons und Auswahllisten für ein Select (Display-Helligkeit des Receivers, sein Klangmodus), unter der Überschrift des zusätzlichen Buttons. Nicht auf der Kachel.',
+  add_media_more: 'Hinzufügen',
 };
 
 export const TRANSLATIONS: Record<string, Record<TranslationKey, string>> = { en, de };

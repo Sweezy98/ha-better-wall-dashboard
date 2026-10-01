@@ -94,16 +94,16 @@ your own if you like (the room's automatic lighting, say), and the **volume** of
 choice — in dB for a Denon receiver. It shows whichever of its players has the most
 going on, so the streaming box that plays wins over the receiver it plays through.
 
-A **double tap** opens the whole system on one screen, with its own power button at the top and a
-**remote** for the streaming box or the TV (Android TV Remote, LG webOS): arrows round OK, back,
-home, menu, play and pause, and the volume:
+A **double tap** opens the whole system on one screen, with its own power button at the top:
 
 - **Sources** along the top: what plays now, and presets that switch to another — a receiver's
   input, an app on an Android TV box (picked from a list of the usual apps, each with its icon —
   the brand's own logo where [custom-brand-icons] or [Simple Icons] is installed),
   an app or input of an LG TV (it lists its installed ones itself), or a script or scene.
 - **Audio**: the sound mode, the source's channels (*7.1*), decoder, input signal and sample rate
-  where the receiver reports them; the **volume** with quieter, mute and louder; **night mode**.
+  where the receiver reports them (hidden while it is off); the **volume** with quieter, mute and
+  louder; **night mode**; and a **remote** for what is being watched — the streaming box, or the
+  TV on one of its own apps (Android TV Remote, LG webOS) — found by itself, gone while all is off.
 - **The room in 3D**: your speakers — any layout from 2.0 to 9.4.6, with front wides on stands
   for nine at ear height — where they stand, each aimed at the seat, lit while the receiver plays
   through it: Atmos, DTS:X and the upmixers fill them all, stereo the front pair, a plain decoder
@@ -114,6 +114,8 @@ home, menu, play and pause, and the volume:
   asleep while everything is off, if you like — no walls, and turned, panned and zoomed by hand.
   The screen lights up with the TV: what is playing, or a picture of your own, at the size and
   fill you choose (whole, cropped to fill, or stretched).
+- **More**: your extra button, and further buttons and dropdowns of your own — the receiver's
+  display brightness, its sound mode — that the tile itself leaves out.
 - **Devices and outlets**: the TV and the box with their power and what they show (*4K HDR*,
   *HDMI 3*, the app by its name — *Netflix*, not `com.netflix.ninja`), and the outlets to switch, such as the subwoofers'.
 - **The player** along the foot: the track to drag, shuffle, repeat, previous, play, next, stop.
