@@ -10,6 +10,7 @@ import { useBackgroundImage } from '../../hooks/useBackgroundImage';
 import { trackGlow, waveFrom } from '../../panel/glow';
 import { bouncePress } from '../../panel/bounce';
 import ConnectionLost from '../base/connectionLost/ConnectionLost';
+import { PopupTimeout } from '../base/popup/popupTimeout';
 import { useConnectionLost } from '../../hooks/useConnectionLost';
 
 const Dashboard: React.FC = () => {
@@ -28,20 +29,23 @@ export const DashboardLayout: React.FC = () => {
   const image = useBackgroundImage(background.image);
   const plain = background.mode === 'color';
   const lostSince = useConnectionLost();
+  const minutes = view!.dashboard.popup_close_minutes ?? 2;
 
   return (
-    <StyledDashboardContainer ref={ref} onPointerMove={trackGlow} onPointerDown={waveFrom} onClick={bouncePress}>
-      {plain ? (
-        <StyledBackground $color={background.color} />
-      ) : (
-        <StyledBackground $image={image} $dim={background.dim} $blur={background.blur} />
-      )}
-      <StyledDashboardGrid>
-        <Sidebar />
-        <Main />
-      </StyledDashboardGrid>
-      {lostSince !== null && <ConnectionLost since={lostSince} />}
-    </StyledDashboardContainer>
+    <PopupTimeout.Provider value={minutes * 60_000}>
+      <StyledDashboardContainer ref={ref} onPointerMove={trackGlow} onPointerDown={waveFrom} onClick={bouncePress}>
+        {plain ? (
+          <StyledBackground $color={background.color} />
+        ) : (
+          <StyledBackground $image={image} $dim={background.dim} $blur={background.blur} />
+        )}
+        <StyledDashboardGrid>
+          <Sidebar />
+          <Main />
+        </StyledDashboardGrid>
+        {lostSince !== null && <ConnectionLost since={lostSince} />}
+      </StyledDashboardContainer>
+    </PopupTimeout.Provider>
   );
 };
 

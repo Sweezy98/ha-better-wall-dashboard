@@ -631,6 +631,10 @@ const en = {
   fullscreen: 'Full screen',
   fullscreen_on: 'On. Tap to leave.',
   fullscreen_off: 'Off. Tap to fill the screen.',
+  popup_close: 'Popups close by themselves',
+  popup_close_hint: 'After this long without a touch. The PIN’s closes after half a minute regardless.',
+  popup_close_after: 'After {minutes} min',
+  popup_close_never: 'Never',
 };
 
 export type TranslationKey = keyof typeof en;
@@ -1257,6 +1261,10 @@ const de: Record<TranslationKey, string> = {
   fullscreen: 'Vollbild',
   fullscreen_on: 'An. Tippen zum Verlassen.',
   fullscreen_off: 'Aus. Tippen, um den Bildschirm zu füllen.',
+  popup_close: 'Popups schließen von selbst',
+  popup_close_hint: 'Nach so langer Zeit ohne Berührung. Die PIN-Abfrage schließt sich immer nach einer halben Minute.',
+  popup_close_after: 'Nach {minutes} Min.',
+  popup_close_never: 'Nie',
 };
 
 export const TRANSLATIONS: Record<string, Record<TranslationKey, string>> = { en, de };

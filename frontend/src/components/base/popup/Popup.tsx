@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { PopupTimeout } from './popupTimeout';
 import Icon from '../icon/Icon';
 import { useT } from '../../../hooks/useHa';
 import {
@@ -24,11 +25,9 @@ interface PopupProps {
   /** In units. Wide by default: a wall tablet is read at arm's length. */
   width?: number;
   /**
-   * Close after this long without a touch. A popup left open on a wall
-   * tablet stays open until somebody walks over; two minutes is long enough
-   * to read a forecast and short enough that the house does not find it
-   * still open in the evening. 0 never closes -- the editor, where somebody
-   * reading a form is not idle.
+   * Close after this long without a touch; 0 never closes. Without it, the
+   * dashboard's own setting (see popupTimeout) -- a popup left open on a
+   * wall tablet otherwise stays open until somebody walks over.
    */
   idleMs?: number;
   /** Fill the screen, for the editor. */
@@ -61,7 +60,7 @@ const Popup: React.FC<PopupProps> = ({
   iconColor,
   glow,
   width = 50,
-  idleMs = 120_000,
+  idleMs: ownIdleMs,
   full = false,
   fixedBody = false,
   actions,
@@ -69,6 +68,9 @@ const Popup: React.FC<PopupProps> = ({
 }) => {
   const ref = useRef<HTMLDialogElement>(null);
   const t = useT();
+  // Its own, where it has one (the PIN's); else the dashboard's.
+  const dashboardIdleMs = useContext(PopupTimeout);
+  const idleMs = ownIdleMs ?? dashboardIdleMs;
   // Its content stays while it animates out, and goes once it is closed.
   const [rendered, setRendered] = useState(open);
   if (open && !rendered) setRendered(true);

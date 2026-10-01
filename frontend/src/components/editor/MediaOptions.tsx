@@ -171,16 +171,14 @@ const MediaOptions: React.FC<{ tile: Tile; onChange: (options: Record<string, un
         onChange={devices => set({ devices })}
       />
 
-      <StyledRow>
-        <EntityField
-          label={t('media_night_entity')}
-          hint={t('media_night_entity_hint')}
-          domains={['switch', 'input_boolean', 'script']}
-          value={config.night}
-          onChange={night => set({ night })}
-        />
-        <TextField label={t('media_night_text')} value={config.nightText} onChange={night_text => set({ night_text })} />
-      </StyledRow>
+      <EntityField
+        label={t('media_night_entity')}
+        hint={t('media_night_entity_hint')}
+        domains={['switch', 'input_boolean', 'script']}
+        value={config.night}
+        onChange={night => set({ night })}
+      />
+      <TextField label={t('media_night_text')} value={config.nightText} onChange={night_text => set({ night_text })} />
 
       <StyledField as='div'>
         <span className='label'>{t('media_sound_heading')}</span>

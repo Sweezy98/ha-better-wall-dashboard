@@ -60,8 +60,8 @@ export function speakerBoxes(layout: SpeakerLayout, mounts: HeightMounts = WALL_
     FR: box(1.35, 0.4, 0, 0.3, 0.32, 1.1),
     C: box(0, 0.32, 0.6, 0.62, 0.26, 0.2),
     // Front wides on stands, about 60° off the seat's centre line.
-    FWL: box(-1.85, 2.9, 0.95, 0.22, 0.26, 0.36),
-    FWR: box(1.85, 2.9, 0.95, 0.22, 0.26, 0.36),
+    FWL: box(-1.85, 2.2, 0.95, 0.22, 0.26, 0.36),
+    FWR: box(1.85, 2.2, 0.95, 0.22, 0.26, 0.36),
     SL: box(-1.8, 4.05, 0.95, 0.22, 0.26, 0.36),
     SR: box(1.8, 4.05, 0.95, 0.22, 0.26, 0.36),
     // Behind the sofa's corners.
@@ -409,7 +409,7 @@ export function listenerFigure(): Figure {
 
 /**
  * Someone asleep on the back seat, the system off: on their back along it,
- * head toward the arm at the far end from an L's extension, clear of every
+ * head toward an arm -- on an L, in the corner by its extension -- clear of every
  * cushion and back rest, so the sofa never paints over them.
  */
 export function sleeperFigure(sofa: Sofa): Figure {
@@ -417,7 +417,9 @@ export function sleeperFigure(sofa: Sofa): Figure {
   const y = 4.04;
   // On the cushions, whose top is 0.44 up.
   const lie = (radius: number) => 0.445 + radius;
-  const at = (x: number, dy: number, z: number): Point3 => [x * flip, y + dy, z];
+  // On an L, turned round: the head in the corner, the feet toward the arm.
+  const along = (x: number) => (sofa === 'straight' ? x : 0.62 - x) * flip;
+  const at = (x: number, dy: number, z: number): Point3 => [along(x), y + dy, z];
   const limb = (from: Point3, to: Point3, radius: number): Limb => ({ from, to, radius });
   const both = (make: (side: number) => Limb) => [make(-1), make(1)];
   return {

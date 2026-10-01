@@ -13,6 +13,16 @@ const GeneralScreen: React.FC<ScreenProps> = ({ draft, update }) => {
       <ScreenTitle title={t('tab_general')} lead={t('lead_general')} />
       <StyledFieldset>
         <TextField label={t('name')} value={draft.name} onChange={name => update({ ...draft, name })} />
+        <SelectField
+          label={t('popup_close')}
+          hint={t('popup_close_hint')}
+          value={String(draft.popup_close_minutes ?? 2)}
+          options={[0, 1, 2, 5, 10, 30].map(minutes => ({
+            value: String(minutes),
+            label: minutes ? t('popup_close_after', { minutes }) : t('popup_close_never'),
+          }))}
+          onChange={minutes => update({ ...draft, popup_close_minutes: Number(minutes) })}
+        />
       </StyledFieldset>
       <StyledFieldset>
         <h3>{t('background')}</h3>

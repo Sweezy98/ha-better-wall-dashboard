@@ -156,6 +156,8 @@ export interface Dashboard {
   sidebar: SidebarConfig;
   pages: Page[];
   buttons: BarButton[];
+  /** Minutes untouched before a popup closes by itself; 0, never. Missing from an older backend. */
+  popup_close_minutes?: number;
 }
 
 /** What `better_wall_dashboard/subscribe` pushes to a tablet. */

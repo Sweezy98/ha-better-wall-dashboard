@@ -159,7 +159,8 @@ Open **Wall Dashboard Editor** from the sidebar. Pick a dashboard at the top, or
 the right half shows it as a chosen tablet would — 10″, 11″, 12″, Full HD, a 7″ panel, in
 landscape or portrait — updating as you type. Nothing reaches the tablets until you **Save**.
 
-- **General** — name, background image (e.g. `/local/wall.jpg`), how much to darken and blur it.
+- **General** — name, how long a popup stays open untouched (or for good), background image
+  (e.g. `/local/wall.jpg`), how much to darken and blur it.
 - **Sidebar** — the entities for each block. Anything left empty simply is not drawn.
 - **Pages** — sections, their size in cells, their header readings, and their tiles. **Add tile**
   opens a picker of every tile type there is, each with what it is for.

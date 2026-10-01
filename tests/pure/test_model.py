@@ -438,3 +438,15 @@ def test_a_readings_own_icon_is_kept_by_its_entity_and_only_for_a_reading_shown(
     )["pages"][0]["sections"][0]
     assert section["status"] == ["sensor.alarm", "sensor.co2"]
     assert section["status_icons"] == {"sensor.alarm": "mdi:alarm"}
+
+
+def test_popups_close_after_two_minutes_unless_set_otherwise() -> None:
+    assert model.normalize_dashboard({})["popup_close_minutes"] == 2
+    assert (
+        model.normalize_dashboard({"popup_close_minutes": 0})["popup_close_minutes"]
+        == 0
+    )
+    assert (
+        model.normalize_dashboard({"popup_close_minutes": 999})["popup_close_minutes"]
+        == 60
+    )
