@@ -89,8 +89,9 @@ colour. Hover anything with more to say for a tooltip.
 ### The media player tile
 
 What plays, with its album art behind it: the source, title and artist, where it is in the track,
-previous / play / next, a **power button** for the device of your choice and the **volume** of the
-device of your choice — in dB for a Denon receiver. It shows whichever of its players has the most
+previous / play / next, a **power button** for the device of your choice, an **extra button** of
+your own if you like (the room's automatic lighting, say), and the **volume** of the device of your
+choice — in dB for a Denon receiver. It shows whichever of its players has the most
 going on, so the streaming box that plays wins over the receiver it plays through.
 
 A **double tap** opens the whole system on one screen, with its own power button at the top:

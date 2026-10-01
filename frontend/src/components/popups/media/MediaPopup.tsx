@@ -355,6 +355,14 @@ const Body: React.FC<{ config: MediaConfig; activeId: string | undefined }> = ({
               </div>
             </section>
           )}
+          {/* The tile's own extra button, here as a row of its own under the outlets. */}
+          {config.extra.entity && (
+            <div className='bubbles'>
+              <PowerBubble
+                item={{ id: 'extra', entity: config.extra.entity, name: config.extra.name, icon: config.extra.icon, subs: [] }}
+              />
+            </div>
+          )}
         </div>
       </div>
       <NowPlaying activeId={activeId} />

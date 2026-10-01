@@ -8,12 +8,13 @@ import Icon from '../../base/icon/Icon';
 import MediaControls from '../../popups/media/MediaControls';
 import MediaTimeline from '../../popups/media/MediaTimeline';
 import MediaPopup from '../../popups/media/MediaPopup';
-import { toggleService, useCallService, useEntity, useT } from '../../../hooks/useHa';
+import { domainIcon, toggleService, useCallService, useEntity, useT } from '../../../hooks/useHa';
 import { useActivePlayer, useAudio, usePlayerArt } from '../../../hooks/useMedia';
 import { useTaps } from '../../../hooks/useTaps';
 import { missingState } from '../../../lib/format';
 import { pressedInside } from '../../../lib/dom';
-import { mediaConfig, playerApp, playerOn, volumeIcon } from '../../../lib/media';
+import { mediaConfig, playerApp, playerOn, volumeIcon, type MediaConfig } from '../../../lib/media';
+import { runService } from '../../../lib/actions';
 
 const StyledMedia = styled(StyledTile)`
   /* Asked how big it came out, in units (one to the em): see the end. */
@@ -80,6 +81,13 @@ const StyledMedia = styled(StyledTile)`
 
   .power[aria-pressed='true'] {
     color: ${({ theme }) => theme.colors.accent};
+  }
+
+  .right {
+    display: flex;
+    align-items: center;
+    gap: ${u(0.5)};
+    min-width: 0;
   }
 
   .volume {
@@ -228,6 +236,29 @@ const StyledMedia = styled(StyledTile)`
   }
 `;
 
+/** The tile's own extra button, by the power button's look: lit while what it switches is on. */
+const ExtraButton: React.FC<{ extra: MediaConfig['extra'] }> = ({ extra }) => {
+  const entity = useEntity(extra.entity);
+  const callService = useCallService();
+  const name = extra.name || (entity?.attributes.friendly_name as string | undefined) || extra.entity;
+  return (
+    <button
+      type='button'
+      className='power'
+      aria-label={name}
+      data-tip={name}
+      aria-pressed={entity?.state === 'on'}
+      disabled={!entity || entity.state === 'unavailable'}
+      onClick={() => {
+        const [domain, service] = runService(extra.entity);
+        void callService(domain, service, undefined, { entity_id: extra.entity });
+      }}
+    >
+      <Icon icon={extra.icon || (entity?.attributes.icon as string | undefined) || domainIcon(extra.entity)} />
+    </button>
+  );
+};
+
 /**
  * What plays, as a tile: its art behind it, the power button and the
  * volume at the top, and the track, where it is in it and its controls at
@@ -303,12 +334,15 @@ const MediaTile: React.FC<TileProps> = ({ tile }) => {
             >
               <Icon icon='mdi:power' />
             </button>
-            {audio.volume.level !== null && (
-              <span className='volume' data-tip={t('media_volume')}>
-                <Icon className='speaker' icon={volumeIcon(audio.volume.level, audio.volume.muted)} />
-                {audio.volume.muted ? t('media_muted') : audio.volume.text}
-              </span>
-            )}
+            <span className='right'>
+              {config.extra.entity && <ExtraButton extra={config.extra} />}
+              {audio.volume.level !== null && (
+                <span className='volume' data-tip={t('media_volume')}>
+                  <Icon className='speaker' icon={volumeIcon(audio.volume.level, audio.volume.muted)} />
+                  {audio.volume.muted ? t('media_muted') : audio.volume.text}
+                </span>
+              )}
+            </span>
           </div>
           <div className='info'>
             <span className='source'>{above}</span>

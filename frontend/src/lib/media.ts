@@ -290,6 +290,8 @@ export interface MediaConfig {
   mounts: HeightMounts;
   /** The receiver's subwoofer output; found by itself for Denon's HACS integration. */
   subOutput: string;
+  /** One more button of one's own -- the room's automatic lighting, say -- on the tile and in the details. */
+  extra: { entity: string; icon: string; name: string };
 }
 
 export const SCREEN_FITS = ['contain', 'cover', 'stretch'] as const;
@@ -304,7 +306,7 @@ export type ScreenShows = (typeof SCREEN_SHOWS)[number];
  * `switches_title`, `devices`, `night`, `night_text`, `mode_entity`,
  * `format_entity`, `speakers` ("7.4.4"), `sofa`, `listener`, `listener_sleeps`, `room_movable`,
  * `hide_walls`, `screen`, `screen_image`, `screen_scale`, `screen_fit`, `tv_entity`,
- * `heights_front`, `heights_rear` and `sub_output`.
+ * `heights_front`, `heights_rear`, `sub_output`, `extra_entity`, `extra_icon` and `extra_name`.
  */
 export function mediaConfig(entity: string, options: Record<string, unknown>): MediaConfig {
   const extra = Array.isArray(options.players) ? options.players.filter((id): id is string => typeof id === 'string' && id !== '') : [];
@@ -338,6 +340,7 @@ export function mediaConfig(entity: string, options: Record<string, unknown>): M
       rear: MOUNTS.includes(options.heights_rear as Mount) ? (options.heights_rear as Mount) : 'wall',
     },
     subOutput: text(options.sub_output),
+    extra: { entity: text(options.extra_entity), icon: text(options.extra_icon), name: text(options.extra_name) },
   };
 }
 

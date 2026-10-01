@@ -640,6 +640,9 @@ const en = {
   hide_toasts_hint:
     'The bar at the bottom saying an integration is starting and the like. Only while the dashboard shows; Home Assistant’s other pages keep them.',
   update_available_badge: 'A new version is ready: reload the dashboard',
+  media_extra: 'Extra button',
+  media_extra_hint:
+    'One more button of your own at the top right of the tile, beside the volume, and in the details under the outlets -- the room’s automatic lighting, say.',
 };
 
 export type TranslationKey = keyof typeof en;
@@ -1275,6 +1278,9 @@ const de: Record<TranslationKey, string> = {
   hide_toasts_hint:
     'Die Leiste unten, die z. B. sagt, dass eine Integration startet. Nur solange das Dashboard zu sehen ist; die anderen Seiten von Home Assistant zeigen sie weiter.',
   update_available_badge: 'Eine neue Version ist bereit: Dashboard neu laden',
+  media_extra: 'Zusätzlicher Button',
+  media_extra_hint:
+    'Ein weiterer Button oben rechts auf der Kachel, neben der Lautstärke, und in den Details unter den Steckdosen -- z. B. die automatische Lichtsteuerung des Raums.',
 };
 
 export const TRANSLATIONS: Record<string, Record<TranslationKey, string>> = { en, de };

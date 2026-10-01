@@ -19,7 +19,7 @@ import { BEDS, HEIGHTS, SUB_COUNTS, SUBS, layoutText, type SpeakerLayout } from 
 import { MOUNTS, SOFAS } from '../../lib/room';
 import type { TranslationKey } from '../../lib/i18n';
 import NamedEntityList from './screens/NamedEntityList';
-import { CheckField, EntityField, EntityListField, MediaField, NumberField, SelectField, TextField } from './fields';
+import { CheckField, EntityField, EntityListField, IconField, MediaField, NumberField, SelectField, TextField } from './fields';
 import { StyledField, StyledRow } from './fields.styled';
 
 /** What a preset does with its value: the player's inputs to choose from, or an app's id to type. */
@@ -170,6 +170,23 @@ const MediaOptions: React.FC<{ tile: Tile; onChange: (options: Record<string, un
         )}
         onChange={devices => set({ devices })}
       />
+
+      <StyledField as='div'>
+        <span className='label'>{t('media_extra')}</span>
+        <small>{t('media_extra_hint')}</small>
+      </StyledField>
+      <EntityField
+        label={t('entity')}
+        domains={['switch', 'input_boolean', 'light', 'fan', 'script', 'scene', 'button', 'input_button', 'automation']}
+        value={config.extra.entity}
+        onChange={extra_entity => set({ extra_entity })}
+      />
+      {config.extra.entity && (
+        <StyledRow>
+          <TextField label={t('name')} hint={t('name_hint')} value={config.extra.name} onChange={extra_name => set({ extra_name })} />
+          <IconField label={t('icon')} value={config.extra.icon} onChange={extra_icon => set({ extra_icon })} />
+        </StyledRow>
+      )}
 
       <EntityField
         label={t('media_night_entity')}
